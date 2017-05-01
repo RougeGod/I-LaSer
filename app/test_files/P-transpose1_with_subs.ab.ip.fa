@@ -1,0 +1,9 @@
+@Transducer 1 4
+1 a a  1
+1 b b  1
+1 a b  2
+1 b a  3
+2 b a  4
+3 a b  4
+4 a a  4
+4 b b  4

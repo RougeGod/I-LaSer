@@ -1,0 +1,569 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <title>I-Laser</title>
+    {% load staticfiles %}
+    <meta name="viewport" content="width=device-width, initial-scale: 1.0"/>
+    <link rel="stylesheet" href='{% static "css/bootstrap-select.css" %}' />
+    <link rel="stylesheet" href='{% static "css/bootstrap.css" %}' />
+    <link rel="stylesheet" href='{% static "css/style.css" %}' />
+
+    <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
+    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.js' %}"></script>
+    <script src="{% static 'js/general.js' %}"></script>
+</head>
+
+<body>
+<div class="container text-center">
+    <h2>I-LaSer</h2> <h4>(Independent Language Server, v.4)</h4>
+    <h5><i>v.4 released in Oct. 2016; some things need to be fixed</i></h5>
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
+        <li><a data-toggle="tab" href="#automaton">Format for ...automata</a></li>
+        <li><a data-toggle="tab" href="#transducer">...transducers</a></li>
+        <li><a data-toggle="tab" href="#trajectory">...trajectories</a></li>
+        <li><a data-toggle="tab" href="#notes">Technical Notes</a></li>
+        <li><a data-toggle="tab" href="#about">About</a></li>
+    </ul>
+
+    <div class="tab-content">
+        <div id="home" class="tab-pane fade in active">
+           <!-- <div class="col-md-12 text-center"><h3 class="text-center"><b>Independent Language Server</b></h3></div> -->
+            <div class="col-md-12 text-justify">
+                <br>
+                I-LaSer answers questions about regular languages and independent properties---prefix code property,
+                suffix code property,..., various error-detection and error-correction properties.
+                <ul>
+                    <li><b> Satisfaction question: </b>
+                        Given language L and property P, does L satisfy P?</li>
+                    <li><b> Maximality question: </b>
+                        Given language L and property P, is L maximal
+                        with respect to P? </li>
+                    <li><b> Construction question: </b>
+                        Given property P and integers N,k>0, return a language of N words of length k
+                        satisfying P.
+                    </li>
+                </ul>
+                <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 0&lt s &lt 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 
+            </div>
+            <div class="col-md-12" style="border: solid #c0c0c0 1px; margin-top: 20px; margin-bottom: 10px;"></div>
+            <form action="{% url 'app:independence' %}" method="post" enctype="multipart/form-data" name="form1">
+                {% csrf_token %}
+                <div class="col-md-12 text-center" style="color: red; font-size: 12px;">{{ error_message }}</div>
+
+                <div class="col-md-12 text-center">
+                    <div class="col-md-12 text-center" style="margin-top: 20px; margin-bottom: 5px;">
+                        <b>Which question do you want us to solve?</b>
+                    </div>
+                    <div class="col-md-12">
+                        <select  class="selectpicker selectC" style="margin-bottom: 15px;" onchange=setMaximality(); name="que">
+                            <OPTION value="" selected>-Please Select-</OPTION>
+                            <OPTION value=1>Satisfaction</OPTION>
+                            <OPTION value=2>Maximality</OPTION>
+                            <OPTION value=3>Construction</OPTION>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="fieldWrapper col-md-12 text-center" id="automata_load" style="margin-bottom: 30px;">
+                    {{ form.automata_file.errors }}
+                    <label for="id_automata_file" style="margin-top: 15px;">Provide <u>a language</u> (via an automaton):</label>
+                    <div class="col-lg-3 col-lg-offset-3 text-center" id="id_automata_file">
+                        <!--{{ form.automata_file }}-->
+                        <input type="file" name="automata_file" id="automata_file">
+                    </div>
+                    <div class="col-lg-3 text-center form-group">
+                        <label for="exampleTextarea"><b>OR</b> use this textarea:</label>
+                        <textarea class="form-control" id="exampleTextarea" rows="3"></textarea>
+                    </div>
+                </div>
+
+
+                <div id = "divsat" class="col-md-12 text-center" style="margin-top: 10px; display: none">
+                    <div class="col-md-12">
+                        <b>Select a type of property:</b>
+                    </div>
+                    <div class="col-md-3"></div>
+                    <div class="col-md-6">
+                        <select id="divsat_select" class="selectpicker selectC col-md-12 text-center" onchange=setFixedProperty(); name="prv">
+                            <option value="" selected>-Please Select-</option>
+                            <option value=1>Fixed (UD code, prefix code, suffix code,...)</option>
+                            <option value=2>Trajectory or Input-Altering Transducer </option>
+                            <option value=3>Error-Detection (via input-preserving transducer)</option>
+                            <option value=4>Error-Correction (via input-preserving transducer)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"></div>
+                </div>
+                <br>
+                <div id="integers_input" class="col-md-12 text-center" >
+                    <div class="col-md-12 int_title" > <b>Input below the integers for the Construction question:</b></div>
+                    <div class="col-md-6 text-right align-num" >S (# of digits in the alphabet)</div><div class="col-md-6 text-left align-num" ><input type="number" name="s_int"/></div>
+                    <div class="col-md-6 text-right align-num" >N (# of words to construct)</div><div class="col-md-6 text-left align-num" ><input type="number" name="n_int"/></div>
+                    <div class="col-md-6 text-right align-num" >L (length of these words)</div><div class="col-md-6 text-left align-num" ><input type="number" name="l_int"/></div>
+                </div>
+                <div id="div1" class="col-md-12 text-center" >
+                    <div class="col-md-12">
+                        {{ form.fixed_type.errors }}
+                    </div>
+                    <br>
+                    <div class="col-md-12">
+                        <label for="id_a" style="margin-top: 15px;">Select the fixed property:</label>
+                    </div>
+                    <div class="col-lg-4 col-lg-offset-4">
+                        <select  class="selectpicker selectC" style="margin-bottom: 15px;" name="fixed_type">
+                            <option value="1" selected>Prefix</option>
+                            <option value="2">Suffix</option>
+                            <option value="3">Infix</option>
+                            <option value="4">Outfix</option>
+                            <option value="5">Hypercode</option>
+                            <option value="6">UD Code</option>
+                        </select>
+                        <!--{{ form.fixed_type }}-->
+                    </div>
+                </div>
+                <div id="div2" class="col-md-12 text-center">
+                    <div class="col-md-12">
+                        {{ form.transducer_file.errors }}
+                    </div>
+                    <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
+                    <div class="col-lg-5 col-lg-offset-5">
+                       <!-- {{ form.transducer_file }}-->
+                        <input type="file" name="transducer_file">
+                    </div>
+                </div>
+                <div id="div3" class="col-md-12">
+                    <div class="col-md-12" >
+
+                        {{ form.transducer_file.errors }}
+                    </div>
+                    <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
+                    <div class="col-lg-5 col-lg-offset-5" >
+                        <!-- {{ form.transducer_file }}-->
+                        <input type="file" name="transducer_file">
+                    </div>
+                </div>
+                <div class="col-md-12 text-center" id="subbutton">
+                    <input type="submit" value = "Submit Request" name = "run_code" />&nbsp;&nbsp;
+                    <input type="submit" value = "Generate Program" name = "gen_code" /> &nbsp;&nbsp;
+                    <input type="submit" id="reset" value = "        Clear        " name="clear_page"/>
+                </div>
+            </form>
+
+
+            <div id="div4" class="col-md-12 text-center center-block">
+                <h4>{{ automaton }}</h4>
+                <h4>{{ transducer }}</h4>
+                <h4>{{ result|safe }}</h4>
+                <h4>{{ max_result }}</h4>
+                <h4><a href="{{ MEDIA_URL }}{{ construct_path }}" >{{ construct_text }}</a></h4>
+                <h4>{{ proof }}</h4>
+            </div>
+        </div>
+        <div id="notes" class="tab-pane fade">
+            <div class="col-md-12 text-center">
+                <h4>SOME TECHNICAL NOTES</h4>
+            </div>
+
+            <div class="col-md-12 text-justify">
+                <b>What is this about?</b> This server accepts the description of a <i>regular
+                language</i> via a finite automaton and the description of a language <i>property</i>, and returns YES/NO, depending on whether the
+                language satisfies the property. In case the answer is NO, appropriate counterexamples (also called witness words) are provided. If the language satisfies the property, the server can also return YES/NO, depending on whether the language is maximal with respect to the property. The Maximality question is PSPACE-hard. In the case of the Construction question [10], I-LaSer accepts the description of  a property and three positive integers s, N, k, and generates a language of (up to) N words of length k satisfying the given property. The integer s must be less than 10 and specifies that the alphabet must be {'0','1',...,'s'}. See further below how to describe properties.
+            </div>
+
+            <div class="col-md-12 text-justify">
+                <br>
+                <b>Online computation</b> VS <b>Program generation: </b> When a user specifies a 
+                question to solve and the required input, ILaSer  either computes the answer in real time, if the user clicks on "Submit Request", or it produces a zip file containing a self contained Python2.7 executable file, if the user clicks on "Generate Program". In the latter case, the executable file can produce the answer on the user's local machine.
+                <!-- by, either dragging it into the user's python.exe icon, or by entering 'python fname.zip' on a command line window, where fname.zip is the name of the downloaded executable file.  -->
+                <br>
+                <b>Limits on online computations:</b> Depending on the sizes of the given automaton and transducer,
+                the underlying software could perform a great deal of processing before it returns
+                an answer. For this reason, the following limits on processing requests are
+                enforced.
+                <ul>
+                <li>
+                Requests for the Satisfaction question are not processed, if the quantity N*N*M exceeds 500,000, where N and M are the numbers of transitions in the automaton and
+                transducer, respectively.  
+                </li><li>
+                Requests for the Construction question are not processed, if the quantity N*N*L*M exceeds 500,000, where N is the requested number of words, L is the requested length of these words, and M is, either the number of transitions in the 
+                transducer describing the property, or M=1 if the property is fixed.
+                </li>
+                </ul>
+            </div>
+
+            <div class="col-md-12 text-justify">
+                <br>
+                <b>Properties</b> Examples of language properties are: prefix code, infix code, 1-substitution-error-detecting language [6,5,3]. These are examples of <i>independences</i> (independent properties). Roughly speaking, a language satisfies an independence if every subset of the language also satisfies that independence. Many independent properties have the following characteristic: a language L satisfies the property P if there are NO different words u,v in L such that v can result by performing a certain word <u>operation</u> on u--this word operation is what defines the property P. For example, prefix codes are defined by the word operation of removing any nonempty ending of the word u; and 1-substitution-detecting languages are defined by the operation that changes exactly 1 symbol in the word u. Certain transducers can conveniently be used to realize such operations, and we say that each such transducer <u>describes</u> a property.  The method of trajectories is more limited in describing independences, but the descriptions are much simpler.
+                I-LaSer supports the following independent properties.  
+                </p>
+                <ul>
+                    <div class="col-md-12 text-justify" style="margin-bottom: 5px;">
+                        <li><u>Fixed properties</u> These are (uniquely decipherable/decodable) code, prefix code, suffix code, infix code, outfix code, hypercode.
+                        </li>
+                    </div>
+
+                    <div class="col-md-12 text-justify" style="margin-bottom: 5px;">
+                        <li><u>Regular trajectory properties [2]</u>
+                            A regular expression <i>e</i> over {0, 1} describes the following property.
+                            All languages <i>L</i> in
+                            which no two words are related as expressed in <i>e</i>. In particular,
+                            when the zeros in <i>e</i> represent
+                            positions of a word v in  <i>L</i>, then there can be no other word in <i>L</i>
+                            containg v as expressed in <i>e</i>.
+                            For example, 0*1* describes the <i>prefix code</i> property, since a prefix code
+                            cannot have a word u containing another word v as a prefix (v as 0* and u as 0*1*).
+                            Similarly, 1*0* describes the <i>suffix code</i> property.
+                        </li>
+                    </div>
+
+                    <div class="col-md-12 text-justify" style="margin-bottom: 5px;">
+                        <li>
+                            <u>Input-altering Transducer properties [1]</u> 
+                            A <u>transducer</u> <i>t</i> is a 
+                            nondeterministic automaton with output such that <i>t(w)</i> = the set of possible output words of <i>t</i> when the input is the word <i>w</i>. Note that <i>t(w)</i> could be empty for some words <i>w</i>. An input-altering transducer is one such that, for any input word <i>w</i>,  the output is never equal to <i>w</i>.
+                            An input-altering transducer <i>t</i> <u>describes</u> the following property.
+                            All languages <i>L</i>  such that
+                            <code>
+                                t(L) &cap; L = EmptySet
+                            </code>
+                            that is, the transducer <i>t</i> cannot take as input an <i>L</i>-word and also output an <i>L</i>-word. For example, the <i>prefix code</i> property can be
+                            described via a transducer that, on input w, returns all <i>proper</i> prefixes
+                            of w---see <b>Format
+                            for transducers</b> for more details. 
+                        </li>
+                    </div>
+
+                    <div class="col-md-12 text-justify" style="margin-bottom: 5px;">
+                        <li>
+                            <u>Error-detecting properties [1,9]</u> Such a property is described by
+                            an input-preserving transducer <i>t</i> as follows.
+                            All languages <i>L</i>  such that
+                            <code>
+                                y in t(x) implies y=x,
+                            </code>
+                            for any words <code>x, y in L</code>; that is, on any input word x from <i>L</i>, the
+                            transducer <i>t</i> will never output another word in <i>L</i>.
+                            An <u>input-preserving transducer</u>, also called <u>channel</u>, is a transducer t 
+                            that, on any input word w for which t(w) is nonempty, the set t(w) includes w; thus, t acts as a communication channel that receives a word w and can always return w (case of no error) or posiibly a word other than w (case of error). For example, the <i>1-subsitution-detection</i> property can be
+                            described by a transducer that, on input w, returns either w or any word that obtains by changing 1 symbol of w---see <b>Format
+                            for transducers</b> for examples.  
+                        </li>
+                    </div>
+
+                    <div class="col-md-12 text-justify" style="margin-bottom: 5px;">
+                        <li>
+                            <u>Error-correcting properties [9]</u> Such a property is described by
+                            an input-preserving transducer <i>t</i>  as follows.
+                            All languages <i>L</i>  such that
+                            <code>
+                                w in t(x) and w in t(y) implies y=x,
+                            </code>
+                            for any words <code>x, y in L</code> and any word w; that is, the transducer cannot turn two different input words x, y from <i>L</i> into the same word. For example, the <i>1-subsitution-correction</i> property can be
+                            described by a transducer that, on input w, returns either w or any word that obtains by changing 1 symbol of w.  
+                        </li>
+                    </div>
+
+                 </ul>
+
+                <br>
+                <b>Implementation: </b> Based on <a href="http://fado.dcc.fc.up.pt/">FAdo</a>, a set of Python libraries, which includes modules for automata, transducers,
+                and code properties.
+
+            </div>
+
+            <div class="col-md-12 text-center"><h4> <b>Some References</b></h4>
+            </div>
+            <div class="col-md-12 text-justify">
+                [1] K. Dudzinski and S. Konstantinidis.
+                <a href="http://cs.smu.ca/~stavros/papers/submit-final-DuKo.pdf">
+                    Formal descriptions of code properties:</a> decidability, complexity, implementation. International Journal of Foundations of Computer Science 23:1 (2012), 67--85. Presented at <a href="http://www.cs.usask.ca/dcfs2010/">DCFS 2010</a>.
+                <br>
+                [2] M. Domaratzki.
+                Trajectory-Based Codes. Acta Informatica, vol. 40, n. 6-7 (2004) 491-527.
+                <br>
+                [3] H. Jurgensen and S. Konstantinidis. Codes:
+                In G. Rozenberg, A. Salomaa (eds): Handbook of Formal Languages, vol. I,
+                511-607. Springer-Verlag, Berlin, 1997.
+                <br>
+                [4] Jurgen Dassow. Comment following the presentation in [1].
+                <br>
+                [5] H.J. Shyr.
+                Free monoids and languages. Hon Min Book Company, Taichung, Taiwan, 1991.
+                <br>
+                [6] H.J. Shyr and G. Thierrin.
+                Codes and binary relations. Seminaire d'Algebre Paul Dubreil, Paris 1975--1976
+                (29\`eme Ann\'ee), Lecture Notes in Mathematics, 586, 1977, 180--188.
+                <br>
+                [7] <a href="http://fado.dcc.fc.up.pt/">FAdo: Tools for Formal Languages
+                manipulation</a>.
+                <br>
+                [8] Andre Almeida, Marco Almeida, Jose Alves, Nelma Moreira, and Rogerio Reis.
+                Fado and guitar: tools for automata manipulation and visualization.
+                In S. Maneth, editor, CIAA 2009: Fourteenth International Conference on
+                Implementation and Application of Automata, volume 5642 of Lecture Notes on
+                Computer Science, pages 65-74, Sydney, Australia, July 2009. Springer-Verlag.
+                <br>
+                [9] Konstantinidis S, Meijer C, Moreira N, Reis R. (2016). Implementation of Code Properties via Transducers. Lecture Notes in Computer Science 9705. 21st International Conference on the Implementation and Application of Automata (CIAA 2016), Seoul, Korea, Republic of (189-201). ArXiv version: Symbolic manipulation of code properties. arXiv:1504.04715v1, 2015
+                <br>
+                [10] Konstantinidis S, Moreira N, Reis R. (2016). Generating Error Control Codes with Automata and Transducers. OCG Proceedings. 8th Workshop on Non-Classical Models of Automata and Applications, Debrecen, Hungary.
+            </div>
+
+        </div> 
+
+        <div id="about" class="tab-pane fade">
+                <h3>ABOUT I-LaSer</h3>  
+                <h5>(Names of I-LaSer versions are those of research students who contributed to their implementation)</h5>
+            <div class="col-md-12 text-justify">
+                <p>
+                    <a name="about"></a>
+                <p>
+                    <b>Project initiator</b>: Stavros Konstantinidis
+                    (<a href="http://cs.smu.ca/~stavros/">http://cs.smu.ca/~stavros/</a>)
+                    <br>-<br>
+                    <b>Significant contributors</b>: 
+                    <br>
+                    <a href="http://www.dcc.fc.up.pt/~nam/web/">Nelma Moreira</a> &amp
+                    <a href="http://www.dcc.fc.up.pt/~rvr/">Rogerio Reis</a>: as of version 3, LaSer's back end is based on
+                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a>
+                    <br>-<br>
+                    <a href="#about">4: Abisola Adeniran</a> (October 2016, <b>current version</b>) <br>
+                    Incorporating into LaSer the construction problem.
+                    <br>-<br>
+                    <a href="#about">3: Casey Meijer</a> (June 2014) <br>
+                    Deciding maximality of all available properties, generation of executable code
+                    <br>-<br>
+                    <a href="#about">2: Meng Yang</a>  (June 2012) <br>
+                    Deciding satisfaction of: Input-preserving transducer, Error-detection,
+                    and Error-correction properties 
+                    <br>-<br>
+                    <a href="#about">1: Krystian Dudzinski</a> (June 2010) <br>
+                    Deciding satisfaction of: Trajectory and Input-altering transducer properties
+                <p>
+            </div>
+        </div>
+        <div id="automaton" class="tab-pane fade">
+            <h3>Format for Automata</h3>
+            <div class="col-md-12 text-justify">
+                <p>One can use the <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats
+                for nondeterministic finite automata (those with nonempty transitions).
+                The format of <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:   
+                <!-- <div class="col-md-3 text-justify"></div> -->
+                <!-- <div class="col-md-6 text-justify"> -->
+                    <br>1. '#' begins a comment
+                    <br>2. <b>@NFA</b>, or <b>@DFA</b>, begins a new automaton (and determines its type) and must
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be followed by the list of the final states
+                    separated by blanks
+                    <br>3. Transitions are written one per line and consist of three fields separated by blanks:
+                    "state" "symbol" "new state"
+                    <br>4. The source state of the first transition is the initial state.
+                <!--</div> -->
+                <div class="col-md-3 text-center"></div>
+                <div class="col-md-12 text-justify">
+                    <br>Here is an example of an automaton accepting ab* using
+                    both, <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and
+                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats:
+                    </p>
+                    <br>
+                    <code>
+                        <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
+                        <br><br>
+                        (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 2<br>
+                        1 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 2<br>
+                        2 b 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 b 2<br>
+                        2 -| (FINAL)<br>
+                    </code>
+
+                    <br>
+                    <p>
+                        <b>More examples follow:</b>
+                    </p>
+
+                    <p>Automaton accepting aaa(aaa)*b + aa(ba)*a(aa(ba)*a)*b:<br>
+                        <br>
+                        <code>
+                            <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
+                            <br><br>
+                            (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 8<br>
+                            1 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 2<br>
+                            2 a 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 a 3<br>
+                            3 b 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 b 2<br>
+                            3 a 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 a 4<br>
+                            4 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4 a 2<br>
+                            4 b 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4 b 8<br>
+                            1 a 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 5<br>
+                            5 a 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5 a 6<br>
+                            6 a 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6 a 7<br>
+                            7 a 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7 a 5<br>
+                            7 b 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7 b 8<br>
+                            8 -| (FINAL)  <br>
+                        </code>
+                    </p>
+                    <p>Automaton accepting ab + bba:<br>
+                        <br>
+                        <code>
+                            <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
+                            <br><br>
+                            (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 3<br>
+                            1 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 2<br>
+                            2 b 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 b 3<br>
+                            1 b 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 b 4<br>
+                            4 b 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4 b 5<br>
+                            5 a 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5 a 3<br>
+                            3 -| (FINAL)
+                        </code>
+                    </p>
+                    <br>------------------------------------<br>
+                </div>
+            </div>
+        </div>
+
+        <div id="transducer" class="tab-pane fade">
+            <div class="col-md-12 text-center">
+                <h3>Format for Transducers</h3>
+            </div>
+            <div class="col-md-12 text-justify">
+                <div class="col-md-12 text-justify">
+                    As of June 2014, only the FAdo format of transducers is
+                    accepted, as the Grail-like format is not generally supported.
+                    Transducers must be in standard form, that is, having <i>transitions
+                    of the form  &nbsp p x y q</i>, where p and q are states, and each of x and y is either
+                    a single alphabet symbol or the empty word. The empty word is written as <i>@epsilon</i>. The format of transducer <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:
+                    <br>1. '#' begins a comment
+                    <br>2. <b>@Transducer</b> begins a new transducer and must
+                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be followed by the list of the final states separated
+                    by blanks
+                    <br>3. Transitions are written one per line and must be in standard form as noted above.
+                    <br>4. The source state of the first transition is the initial state.
+                    <br><br>
+                    Please see the FAdo documentation for the full description of Transducer format.
+                    <br><br>
+                    Below is an example of an input-altering transducer describing the <i>suffix code</i> property over the alphabet {a, b}. The transducer outputs any <i>proper</i> suffix of a given input word.
+                </div>
+                <div class="col-md-12 text-justify">
+                    <br>
+                    <code>
+                        @Transducer 2 3<br>
+                        1 a @epsilon 2<br>
+                        1 b @epsilon 2<br>
+                        2 a @epsilon 2<br>
+                        2 b @epsilon 2<br>
+                        2 a a 3<br>
+                        2 b b 3<br>
+                        3 a a 3<br>
+                        3 b b 3<br>
+                    </code>
+                    <br>
+                    <h4><b>More examples below:</b></h4>
+
+                    <p>Input-preserving transducer describing the <i>1-substitution-detecting</i> property over the alphabet {0, 1}. On input <i>w</i>, the transducer outputs either <i>w</i>, or any word resulting by substituting 1 bit of <i>w</i> with a different bit.
+                        <br>-<br>
+                        <code>
+                            @Transducer 0 1
+                            <br>
+                            0 0 0 0
+                            <br>
+                            0 1 1 0
+                            <br>
+                            0 0 1 1
+                            <br>
+                            0 1 0 1
+                            <br>
+                            1 0 0 1
+                            <br>
+                            1 1 1 1
+                        </code>
+                    </p>
+
+                    <p>Input-preserving transducer describing the <i>1-sid-detecting</i> property over the alphabet {a, b}. On input <i>w</i>, the transducer outputs any word resulting by performing at most one symbol substitution/insertion/deletion operation on <i>w</i>.
+                        <br>-<br>
+                        <code>
+                            @Transducer 0 1
+                            <br>
+                            0 a a 0
+                            <br>
+                            0 b b 0
+                            <br>
+                            0 a b 1
+                            <br>
+                            0 b a 1
+                            <br>
+                            0 a @epsilon  1
+                            <br>
+                            0 b @epsilon  1
+                            <br>
+                            0 @epsilon  a 1
+                            <br>
+                            0 @epsilon  b 1
+                            <br>
+                            1 a a 1
+                            <br>
+                            1 b b 1
+                        </code>
+                    </p>
+
+                    <p>Input-altering transducer describing the <i>thin</i> property (= all languages whose words are of different lengths). On input <i>w</i>, the transducer outputs any word of the same length as <i>w</i>, but different from <i>w</i>.
+                        <br>-<br>
+                        <code>
+                            @Transducer 2<br>
+                            1 a a 1<br>
+                            1 b b 1<br>
+                            1 a b 2<br>
+                            1 b a 2<br>
+                            2 a a 2<br>
+                            2 b b 2<br>
+                            2 a b 2<br>
+                            2 b a 2<br>
+                        </code>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="trajectory" class="tab-pane fade">
+            <div class="col-md-12 text-center">
+                <h3>Format for Trajectory Expressions</h3>
+            </div>
+            <div class="col-md-12 text-justify">
+                <p>
+                    Regular trajectory properties can be described by regular expressions in the
+                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a> format. For example, 
+                    <br>
+                    the regular expression 1*0*
+                    describes the <i>suffix code</i> property;
+                    <br> 
+                    the regular expression 1*0*1* describes the <i>infix code</i> property;
+                    <br>
+                    the regular expression 0*1* + 1*0* describes the bifix code property 
+                    (being prefix and suffix code).
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

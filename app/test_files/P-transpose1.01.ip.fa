@@ -1,0 +1,11 @@
+@Transducer 1 4
+1 0 0 1
+1 1 1 1
+1 0 @epsilon 2
+1 1 @epsilon 3
+2 1 1 5
+5 @epsilon 0 4
+3 0 0 6
+6 @epsilon 1 4
+4 0 0 4
+4 1 1 4

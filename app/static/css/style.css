@@ -1,0 +1,207 @@
+#nav-menu ul
+{
+list-style: none;
+}
+
+#nav-menu li a
+{
+height: 2em;
+width: 15em;
+display: block;
+border: 0.1em solid #dcdce9;
+color: #0d2474;
+text-decoration: none;
+text-align: center;
+margin-left: auto;
+margin-right: auto;
+}
+
+#nav-menu
+{
+width: 100%;
+text-align: center;
+margin-left: auto;
+margin-right: auto;
+}
+button{
+    margin-top: 10px;
+    font-size: 40px;
+    font-family: "Adobe Devanagari";
+    background-color: #6e0408;
+    border-color: #300103;
+    height: 50px;
+    color: white;
+    border-radius: 7px;
+}
+button:hover{
+    background-color: #300103;
+}
+button#independence:hover {
+    color: white;
+}
+button#others:hover {
+    color: white;
+}
+.top-content{
+    padding: 80px;
+    padding-left: 60px;
+}
+
+.top-header{
+    background-color: #6e0408;
+    color: white;
+    height: 70px;
+    padding-top: 1px;
+    border-radius: 4px;
+}
+
+.top-con{
+    border-radius: 4px;
+    background-color: #6e0408;
+    height: 450px;
+
+}
+.top-body
+{
+    background-color: #e7e7e7;
+    padding-top: 2px;
+    padding-bottom: 20px;
+    height: 100%;
+    border-radius: 70px;
+    font-size: 20px;
+}
+.selectC button{
+    background-color: #f7f7f7;
+    height: 40px;
+}
+.selectB{
+    background-color: #f7f7f7;
+    height: 40px;
+    display: inline-block;
+    padding: 6px 12px;
+    margin-bottom: 0;
+    font-size: 14px;
+    font-weight: normal;
+    line-height: 1.42857143;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -ms-touch-action: manipulation;
+    touch-action: manipulation;
+    cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    background-image: none;
+    border: 1px solid #adadad;
+    border-radius: 4px;
+}
+
+.selectB option{
+    display: block;
+    position: relative;
+    background-color: white;
+}
+#home ul{
+    list-style: none;
+}
+#home input[type="submit"]{
+    font-family: "Adobe Devanagari";
+    background-color: #6e0408;
+    border-color: #300103;
+    height: 50px;
+    color: white;
+    font-size: 16px;
+    border-radius: 7px;
+}
+
+#home input[type="submit"]:hover{
+    background-color: #300103;
+}
+
+#home input[type="reset"]{
+    font-family: "Adobe Devanagari";
+    background-color: #6e0408;
+    border-color: #300103;
+    height: 50px;
+    color: white;
+    font-size: 16px;
+    min-width: 100px;
+    border-radius: 7px;
+
+}
+
+
+#home input[type="reset"]:hover{
+    background-color: #300103;
+}
+
+#subbutton{
+    margin-top: 20px;
+}
+
+#integers_input{
+    margin-top: 10px;
+}
+
+.int_title{
+    margin-bottom: 10px;
+}
+.sub_upl
+{
+    font-family: "Adobe Devanagari";
+    background-color: #6e0408;
+    border-color: #300103;
+    border-radius: 7px;
+    height: 50px;
+    color: white;
+    min-width: 100px;
+}
+.nav-tabs{
+    background-color: #6e0408;
+    border-radius: 4px;
+}
+.nav-tabs > li > a{
+    font-family: "Adobe Devanagari";
+    border: medium none;
+    color:white;
+    font-size: 18px;
+    font-weight: 200;
+    margin-right: 0;
+
+}
+.nav-tabs > li > a:hover{
+    color:#000;
+}
+
+@media (max-width: 768px) {
+  .btn-responsive {
+    padding:2px 4px;
+    font-size:80%;
+    line-height: 1;
+  }
+    .top-body
+{
+    font-size: 14px;
+}
+
+    .align-num{
+        text-align: center;
+    }
+}
+
+@media (min-width: 769px) and (max-width: 992px) {
+  .btn-responsive {
+    padding:4px 9px;
+    font-size:90%;
+    line-height: 1.2;
+  }
+    .top-body
+{
+    font-size: 18px;
+}
+    .align-num{
+        text-align: center;
+    }
+}

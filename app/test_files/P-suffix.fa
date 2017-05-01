@@ -1,0 +1,7 @@
+@Transducer 2
+1 a @epsilon 1
+1 b @epsilon 1
+1 a @epsilon 2
+1 b @epsilon 2
+2 a a 2
+2 b b 2

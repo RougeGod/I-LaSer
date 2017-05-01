@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+    <title>LaSer</title>
+    {% load staticfiles %}
+
+    <link rel="stylesheet" href='{% static "css/bootstrap.css" %}' />
+    <link rel="stylesheet" href='{% static "css/style.css" %}' />
+
+    <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
+    <script src="{% static 'js/general.js' %}"></script>
+    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
+    <script src="{% static 'js/bootstrap.js' %}"></script>
+</head>
+<body>
+
+<section>
+    <div class="top-content">
+        <div class="container">
+            <div class="row">
+
+                <!--<div style="text-align:center; width:500px; margin-left: auto; margin-right:auto">-->
+                <div class="top-con">
+                    <div class="top-header">
+                        <div class="col-md-12 text-center"><h1>LaSer</h1></div></div>
+                    <div class="top-body">
+                        <div class="col-md-12 text-center"><h2>Language Server</h2></div>
+                        <div class="col-md-12 text-center"><h5>(ongoing project)</h5></div>
+                        <div class="col-md-12 text-center">
+                            <div class="col-md-2"></div>
+                            <div class="col-md-8">
+                                LaSer answers users' algorithmic questions about
+                                regular languages. For example, given a regular
+                                language L, LaSer can decide whether L satisfies a
+                                certain property (see I-LaSer), or it can compute
+                                the edit distance of L (see O-LaSer).
+                            </div>
+                            <div class="col-md-2"></div></div>
+
+                        <div class="col-md-12 center-block">
+                            <button id="independence" class="btn center-block btn-responsive" onclick="location.href='{% url "app:independence" %}'">
+                            <b>I-LaSer</b>: Questions about Independent Properties
+                            </button>
+                            <button id="others" class="btn center-block btn-responsive" onclick="location.href='{% url "app:others" %}'">
+                            <b>O-LaSer</b>: Other Questions
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>
