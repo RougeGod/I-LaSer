@@ -70,12 +70,12 @@
 
                 <div class="fieldWrapper col-md-12 text-center" id="automata_load" style="margin-bottom: 30px;">
                     {{ form.automata_file.errors }}
-                    <label for="id_automata_file" style="margin-top: 15px;">Provide <u>a language</u> (via an automaton):</label>
-                    <div class="col-lg-3 col-lg-offset-3 text-center" id="id_automata_file">
+                    <div class="col-lg-4 col-lg-offset-2 text-center" id="id_automata_file">
+                        <label for="id_automata_file" style="margin-top: 15px;">Provide <u>a language</u> (via an automaton):</label>
                         <!--{{ form.automata_file }}-->
                         <input type="file" name="automata_file" id="automata_file">
                     </div>
-                    <div class="col-lg-3 text-center form-group">
+                    <div class="col-lg-4 text-center form-group">
                         <label for="exampleTextarea"><b>OR</b> use this textarea:</label>
                         <textarea class="form-control" id="exampleTextarea" rows="3"></textarea>
                     </div>
@@ -86,8 +86,7 @@
                     <div class="col-md-12">
                         <b>Select a type of property:</b>
                     </div>
-                    <div class="col-md-3"></div>
-                    <div class="col-md-6">
+                    <div class="col-md-offset-3 col-md-6">
                         <select id="divsat_select" class="selectpicker selectC col-md-12 text-center" onchange=setFixedProperty(); name="prv">
                             <option value="" selected>-Please Select-</option>
                             <option value=1>Fixed (UD code, prefix code, suffix code,...)</option>
@@ -96,7 +95,6 @@
                             <option value=4>Error-Correction (via input-preserving transducer)</option>
                         </select>
                     </div>
-                    <div class="col-md-3"></div>
                 </div>
                 <br>
                 <div id="integers_input" class="col-md-12 text-center" >
