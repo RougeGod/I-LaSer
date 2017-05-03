@@ -49,62 +49,20 @@ function setMaximality() {
 }
 
 function setFixedProperty() {
-    switch (document.form1.prv.value) {
-        case "" :
-            hide('div1');
-            hide('div2');
-            hide('div3');
-        break;
+    hide('div1');
+    hide('div2');
+    hide('div3');
+    switch (document.getElementById('divsat_select').value) {
         case "1" :
             show('div1');
-            hide('div2');
-            hide('div3');
-        break;
+            break;
         case "2" :
-            hide('div1');
-            hide('div2');
             show('div3');
-        break;
+            break;
         case "3" :
-            hide('div1');
-            show('div2');
-            hide('div3');
-        break;
         case "4" :
-            hide('div1');
             show('div2');
-            hide('div3');
-        break;
-    }
-}
-
-function setFixedProperty1() {
-    switch (document.form1.prv1.value) {
-        case "" :
-            hide('div1');
-            hide('div2');
-            hide('div3');
-        break;
-        case "1" :
-            show('div1');
-            hide('div2');
-            hide('div3');
-        break;
-        case "2" :
-            hide('div1');
-            hide('div2');
-            show('div3');
-        break;
-        case "3" :
-            hide('div1');
-            show('div2');
-            hide('div3');
-        break;
-        case "4" :
-            hide('div1');
-            show('div2');
-            hide('div3');
-        break;
+            break;
     }
 }
 

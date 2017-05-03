@@ -39,12 +39,12 @@
                             <div class="col-md-2"></div></div>
 
                         <div class="col-md-12 center-block">
-                            <button id="independence" class="btn center-block btn-responsive" onclick="location.href='{% url "app:independence" %}'">
-                            <b>I-LaSer</b>: Questions about Independent Properties
-                            </button>
-                            <button id="others" class="btn center-block btn-responsive" onclick="location.href='{% url "app:others" %}'">
-                            <b>O-LaSer</b>: Other Questions
-                            </button>
+                            <a id="independence" role="button" class="btn center-block btn-responsive" href="{% url 'app:independence' %}">
+                                <b>I-LaSer</b>: Questions about Independent Properties
+                            </a>
+                            <a id="others" class="btn center-block btn-responsive" href="{% url 'app:others' %}">
+                                <b>O-LaSer</b>: Other Questions
+                            </a>
                         </div>
                     </div>
                 </div>
