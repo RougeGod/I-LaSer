@@ -5,6 +5,7 @@ test the decision question.
 """
 
 from time import time
+import logging
 import django
 from django.shortcuts import render_to_response, render
 from django.conf import settings
@@ -31,7 +32,6 @@ try:
 except django.core.exceptions.ImproperlyConfigured:
     LIMIT = 500000
     LIMIT_AUTOMATON = 250
-
 
 DECIDE_REQUEST = 'decide whether the given language '
 TEST_DICT = {'1': 'SATW', '2': 'MAXW', '3': 'MAXP', '4': 'MKCO'}
@@ -90,19 +90,31 @@ def get_response(post, files, form = True):
         return {'form': form, 'error_message': decision}
 
     if question == "1" or question == "2":
-        try:
-            #automaton string
-            aut_str = files['automata_file'].read()
+        file_ = files.get('automata_file', False)
+
+        if file_ != False:
+            # automaton string
+            thing = file_.read()
+            aut_str = thing
+
+            logging.info(thing == post['automata_text'])
+            logging.info(len(thing) == len(post['automata_text']))
+            logging.info(len(thing))
+            logging.info(len(post['automata_text']))
 
             #automaton name
-            aut_name = "Language: " + files['automata_file'].name
-            files['automata_file'].close()
-        except:
+            aut_name = "Language: " + file_.name
+
+            file_.close()
+        elif post['automata_text'] != "":
+            aut_str = str(post['automata_text'])
+            aut_name = "Language: N/A"
+            logging.info(len(aut_str))
+        else:
             decision = "Please provide an automaton file."
             return {'form': form, 'error_message': decision}
 
         try:
-            #print aut_str
             aut = constructAutomaton(aut_str)
         except IncorrectFormat:
             decision = "ERROR: the automaton appears to be incorrectly formatted"
@@ -261,20 +273,20 @@ def get_response(post, files, form = True):
                 if (int(n_num)*int(l_num)) > LIMIT:
                     decision = "Size of request exceeds limit! (See \"Technical Notes\")"
                     return {'form':form, 'error_message': decision}
-                # try:
-                    # a, witness = makeBlockCode(int(n_num), int(l_num), int(s_num))
-                # except DFAsymbolUnknown:
-                decision = "Something went wrong (views.py: construction, fixed property)."
-                return {'form': form, 'error_message': decision}
-                # filename = str(int(time() * 1000))
-                # #text_path, text_title = write_witness(witness, filename)
-                # words = write_witness(witness, filename)
-                # result = '<div class="text-center" style="font-size: 14px; \
-                # color: #999999; margin-bottom: 10px;">\Your Output</div>\
-                # <div><textarea class="text-center" rows="6" cols="50" \
-                # readonly>'+ words +'</textarea></div>'
-                # return {'form': form, 'construct_path': '',
-                #         'construct_text': '', 'result': result}
+                try:
+                    a, witness = makeBlockCode(int(n_num), int(l_num), int(s_num))
+                except DFAsymbolUnknown:
+                    decision = "Something went wrong (views.py: construction, fixed property)."
+                    return {'form': form, 'error_message': decision}
+                filename = str(int(time() * 1000))
+                #text_path, text_title = write_witness(witness, filename)
+                words = write_witness(witness, filename)
+                result = '<div class="text-center" style="font-size: 14px; \
+                color: #999999; margin-bottom: 10px;">\Your Output</div>\
+                <div><textarea class="text-center" rows="6" cols="50" \
+                readonly>'+ words +'</textarea></div>'
+                return {'form': form, 'construct_path': '',
+                        'construct_text': '', 'result': result}
 
             else:
                 try:
@@ -404,8 +416,12 @@ def get_code(post, files, form=True, testMode=None):
             aut_str = files['automata_file'].read()
             files['automata_file'].close()
         except:
-            decision = "Please provide an automaton file."
-            return {'form': form, 'error_message': decision}
+            if not post['automata_text'] == "":
+                decision = "Good Vibes."
+                return {'form': form, 'error_message': decision}
+            else:
+                decision = "Please provide an automaton file."
+                return {'form': form, 'error_message': decision}
 
         try:
             aut = constructAutomaton(aut_str)

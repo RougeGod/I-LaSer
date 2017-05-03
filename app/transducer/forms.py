@@ -1,5 +1,6 @@
 """This module is used to create the forms used in the website."""
 from django import forms
+import django.forms.widgets as widgets
 
 # Meng
 PROPERTY_TYPE_CHOICE = [['1', 'Fixed (TODO)'],
@@ -24,7 +25,7 @@ class UploadFileForm(forms.Form):
    # title = forms.CharField(max_length=50)
     automata_file = forms.FileField(required=False)
 
-    automata_text = forms.FileField(required=False)
+    automata_text = widgets.Textarea()
 
     transducer_file = forms.FileField(required=False)
 

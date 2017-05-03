@@ -1,5 +1,7 @@
-#Django settings for laser project.
+"""Contains the configuration options for the entire site
+"""
 import os
+import logging
 import django
 
 
@@ -39,6 +41,21 @@ MANAGERS = ADMINS
 DATABASES = {
 
 }
+
+if DEBUG:
+    # will output to your console
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(message)s',
+    )
+else:
+    # will output to logging file
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s %(levelname)s %(message)s',
+        filename='/my_log_file.log',
+        filemode='a'
+    )
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -96,8 +113,7 @@ ROOT_URLCONF = 'laser.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'app/templates')]
-        ,
+        'DIRS': [os.path.join(BASE_DIR, 'app/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -112,17 +128,18 @@ TEMPLATES = [
     },
 ]
 
-MEDIA_ROOT = os.path.join(BASE_DIR,'media/')
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
-STATIC_ROOT = os.path.join(BASE_DIR,'app/static/')
+
+STATIC_ROOT = ''
 STATIC_URL = '/static/'
+
+logging.info(BASE_DIR)
+
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "app/static"),
-    # Put strings here, like "/home/html/static" or "C:/www/django/static".
-    # Always use forward slashes, even on Windows.
-    # Don't forget to use absolute paths, not relative paths.
-    )
+    os.path.join(BASE_DIR, "static"),
+)
 
 INSTALLED_APPS = (
     'django.contrib.auth',
@@ -133,6 +150,6 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable the admin:
     'django.contrib.admin',
     'django.contrib.staticfiles',
-   #'laser.DEV.SK.templates', #SK added this, but then not even the main worked
+    #'laser.DEV.SK.templates', #SK added this, but then not even the main worked
 )
 

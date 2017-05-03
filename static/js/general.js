@@ -5,7 +5,50 @@ $(function() {
     $('#reset').click(function() {
         location.reload();
     });
+
+    $('#automata_text').on('change keyup paste', function() {
+        var this_ = $(this);
+
+        if(this_.val() !== '') {
+            if(validate(this_.val())) {
+                this_.removeClass('border-failure').addClass('border-success');
+            } else {
+                this_.removeClass('border-success').addClass('border-failure');
+            }
+        } else {
+            this_.removeClass('border-success border-failure');
+        }
+    });
 });
+
+function validate(str) {
+    var type,
+        header,
+        remainder
+
+    str = str.replace(/\r/g, "").replace(/\n$/, "");
+
+    header = str.replace(/^(.+?)\n[\s\S]+/, "$1");
+    remainder = str.replace(/^.+?\n([\s\S]+)$/, "$1");
+
+    if(header.startsWith('@')) {
+        type = 'fa'
+    } else if(header.startsWith('(')) {
+        type = 'other'
+    } else return false;
+
+    if(type === 'fa') {
+        var safe = true;
+
+        remainder.split('\n').forEach(function(line) {
+            if(!/^\d+ \S+? \d+$/.test(line) && !/^\d+ \S+? \S+? \d+$/.test(line)) {
+                safe = false;
+            }
+        });
+
+        return safe;
+    } else return false;
+}
 
 function setRadio() {
     var radios = document.getElementsByName('choice');
@@ -63,6 +106,7 @@ function setFixedProperty() {
         case "4" :
             show('div2');
             break;
+        default: break;
     }
 }
 
@@ -77,8 +121,9 @@ window.onload = function() {
         if (document.form1.que.options[i].value=="")
             document.form1.que.selectedIndex = i;
     }
+
     setFixedProperty();
-}
+};
 
 function hide(id) {
     document.getElementById(id).style.display="none";

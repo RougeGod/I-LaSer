@@ -205,3 +205,13 @@ button#others:hover {
         text-align: center;
     }
 }
+
+.form-control.border-success:focus {
+    border-color: green;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px green;
+}
+
+.form-control.border-failure:focus {
+    border-color: red;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px red;
+}

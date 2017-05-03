@@ -6,9 +6,12 @@ from FAdo.yappy_parser import YappyError
 from FAdo.codes import IATProp, buildTrajPropS, TrajProp
 from FAdo.fa import DFA, NFA
 
+import logging
+
 def constructAutomaton(autStr):
     autStr.strip()
     autStr += "\n"
+    logging.info('\n'+autStr)
     try:
         return readOneFromString(autStr)
     except YappyError:

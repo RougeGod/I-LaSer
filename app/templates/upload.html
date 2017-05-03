@@ -5,9 +5,9 @@
     <title>I-Laser</title>
     {% load staticfiles %}
     <meta name="viewport" content="width=device-width, initial-scale: 1.0"/>
-    <link rel="stylesheet" href='{% static "css/bootstrap-select.css" %}' />
-    <link rel="stylesheet" href='{% static "css/bootstrap.css" %}' />
-    <link rel="stylesheet" href='{% static "css/style.css" %}' />
+    <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 
     <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
     <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
@@ -60,10 +60,10 @@
                     </div>
                     <div class="col-md-12">
                         <select  class="selectpicker selectC" style="margin-bottom: 15px;" onchange=setMaximality(); name="que">
-                            <OPTION value="" selected>-Please Select-</OPTION>
-                            <OPTION value=1>Satisfaction</OPTION>
-                            <OPTION value=2>Maximality</OPTION>
-                            <OPTION value=3>Construction</OPTION>
+                            <option value="" selected>-Please Select-</option>
+                            <option value=1>Satisfaction</option>
+                            <option value=2>Maximality</option>
+                            <option value=3>Construction</option>
                         </select>
                     </div>
                 </div>
@@ -73,12 +73,12 @@
                     <div class="col-lg-4 col-lg-offset-2 text-center" id="id_automata_file">
                         <label for="automata_file" style="margin-top: 15px;">Provide <u>a language</u> (via an automaton):</label>
                         <!--{{ form.automata_file }}-->
-                        <input type="file" id="automata_file">
+                        <input type="file" id="automata_file" name="automata_file">
                     </div>
                     <div class="col-lg-4 text-center form-group">
                         <label for="automata_text"><b>OR</b> use this textarea:</label>
                         <!--{{ form.automata_text }}-->
-                        <textarea class="form-control" id="automata_text" rows="5"></textarea>
+                        <textarea class="form-control" id="automata_text" rows="5" name="automata_text"></textarea>
                     </div>
                 </div>
 
@@ -88,7 +88,7 @@
                         <b>Select a type of property:</b>
                     </div>
                     <div class="col-md-offset-3 col-md-6">
-                        <select id="divsat_select" class="selectpicker selectC col-md-12 text-center" onchange='setFixedProperty();'>
+                        <select id="divsat_select" class="selectpicker selectC col-md-12 text-center" name="prv" onchange='setFixedProperty();'>
                             <option value="" selected>-Please Select-</option>
                             <option value=1>Fixed (UD code, prefix code, suffix code,...)</option>
                             <option value=2>Trajectory or Input-Altering Transducer </option>
