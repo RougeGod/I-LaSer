@@ -22,7 +22,7 @@ from app.transducer.laserShared import constructAutomaton, IncorrectFormat, \
      constructInAltProp, limitAutP, limitTranP, formatCounterExample
 
 try:
-    from app.transducer.ILaser_gen import genProgram
+    from app.transducer.ILaser_gen import gen_program
     from app.transducer.forms import UploadFileForm
 except ImportError:
     pass
@@ -238,6 +238,7 @@ def handle_satisfaction_maximality(
 
             if witness == (None, None) or witness == (None, None, None):
                 decision = "YES, the language satisfies the property"
+                proof = ''
             else:
                 decision = "NO, the language does not satisfy the property"
                 proof = formatCounterExample(witness)
@@ -436,15 +437,20 @@ def get_code(post, files, form=True, test_mode=None):
     regexp = None
     name = str(int(time()*1000))
     sigma = None
+    n_num = ''
+    s_num = ''
+    l_num = ''
+
     if question == '1' or question == '2' or question == '3':
         file_ = files.get('automata_file')
 
-        if not file_:
-            decision = "Please provide an automaton file."
-            return {'form': form, 'error_message': decision}
-
-        aut_str = file_.read()
-        file_.close()
+        if file_: # Get it from the file by default
+            aut_str = file_.read()
+            file_.close()
+        elif post.get('automata_text'):
+            aut_str = str(post.get('automata_text'))
+        else:
+            return {'form': form, 'error_message': 'Please provide an automaton file.'}
 
         try:
             aut = constructAutomaton(aut_str)
@@ -539,7 +545,7 @@ def get_code(post, files, form=True, test_mode=None):
                 return {'form':form, 'error_message': decision}
             prop = "ERRCORR"
 
-    prog_lines = genProgram(name, prop, test, aut_str, t_str, sigma, regexp,
+    prog_lines = gen_program(name, prop, test, aut_str, t_str, sigma, regexp,
                             DESCRIBE[question], test_mode, s_num, l_num, n_num)
 
     if test_mode is not None:
