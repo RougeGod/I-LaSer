@@ -23,9 +23,13 @@ text-align: center;
 margin-left: auto;
 margin-right: auto;
 }
-button{
+
+a.btn{
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-top: 10px;
-    font-size: 40px;
+    font-size: 15px;
     font-family: "Adobe Devanagari";
     background-color: #6e0408;
     border-color: #300103;
@@ -33,13 +37,13 @@ button{
     color: white;
     border-radius: 7px;
 }
-button:hover{
+a.btn:hover{
     background-color: #300103;
 }
-button#independence:hover {
+a#independence:hover {
     color: white;
 }
-button#others:hover {
+a#others:hover {
     color: white;
 }
 .top-content{

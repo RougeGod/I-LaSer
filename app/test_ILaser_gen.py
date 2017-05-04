@@ -177,7 +177,7 @@ class MyTestCase(unittest.TestCase):
         request = 'decide error corection.'
         plines = generate_program(lines, None, request).split("\n")
         self.assertTrue(plines[LN_REQ] == "print \"\\nREQUEST: "+request+"\"")
-        # standAlone('1502161240', lines, None, None, request)
+        # stand_alone('1502161240', lines, None, None, request)
 
 
     def test_DETmaxNO(self):

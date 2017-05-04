@@ -39,12 +39,18 @@
                             <div class="col-md-2"></div>
                         </div>
                         <div class="col-md-12 center-block">
-                            <a id="independence" role="button" class="btn center-block btn-responsive" href="{% url 'app:independence' %}">
-                                <b>I-LaSer</b>: Questions about Independent Properties
-                            </a>
-                            <a id="others" class="btn center-block btn-responsive" href="{% url 'app:others' %}">
-                                <b>O-LaSer</b>: Other Questions
-                            </a>
+                            <div class="row">
+                                <div class="col-md-push-2 col-md-4">
+                                    <a id="independence" role="button" class="btn center-block btn-responsive" href="{% url 'app:independence' %}">
+                                        <b>I-LaSer</b>: Questions about Independent Properties
+                                    </a>
+                                </div>
+                                <div class="col-md-push-2 col-md-4">
+                                    <a id="others" class="btn center-block btn-responsive" href="{% url 'app:others' %}">
+                                        <b>O-LaSer</b>: Other Questions
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
