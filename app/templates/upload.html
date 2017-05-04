@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 <head>
     <title>I-Laser</title>
@@ -10,9 +9,8 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 
     <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
-    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.js' %}"></script>
-    <script src="{% static 'js/bootstrap-select.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
     <script src="{% static 'js/general.js' %}"></script>
 </head>
 
@@ -27,27 +25,26 @@
         <li><a data-toggle="tab" href="#trajectory">...trajectories</a></li>
         <li><a data-toggle="tab" href="#notes">Technical Notes</a></li>
         <li><a data-toggle="tab" href="#about">About</a></li>
+        <li class="pull-right"><a target="_self" href="/">Back</a></li>
     </ul>
 
     <div class="tab-content">
         <div id="home" class="tab-pane fade in active">
            <!-- <div class="col-md-12 text-center"><h3 class="text-center"><b>Independent Language Server</b></h3></div> -->
             <div class="col-md-12 text-justify">
-                <br>
-                I-LaSer answers questions about regular languages and independent properties---prefix code property,
-                suffix code property,..., various error-detection and error-correction properties.
+                <p>I-LaSer answers questions about regular languages and independent properties - prefix code property, suffix code property, ..., various error-detection and error-correction properties.</p>
                 <ul>
                     <li><b> Satisfaction question: </b>
-                        Given language L and property P, does L satisfy P?</li>
+                        Given language L and property P, does L satisfy P?
+                    </li>
                     <li><b> Maximality question: </b>
-                        Given language L and property P, is L maximal
-                        with respect to P? </li>
+                        Given language L and property P, is L maximal with respect to P?
+                    </li>
                     <li><b> Construction question: </b>
-                        Given property P and integers N,k>0, return a language of N words of length k
-                        satisfying P.
+                        Given property P and integers N,k>0, return a language of N words of length k satisfying P.
                     </li>
                 </ul>
-                <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 0&lt s &lt 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 
+                <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 0 &lt s &lt 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 
             </div>
             <div class="col-md-12" style="border: solid #c0c0c0 1px; margin-top: 20px; margin-bottom: 10px;"></div>
             <form action="{% url 'app:independence' %}" method="post" enctype="multipart/form-data" name="form1">
@@ -162,6 +159,7 @@
                 <h4>{{ proof }}</h4>
             </div>
         </div>
+
         <div id="notes" class="tab-pane fade">
             <div class="col-md-12 text-center">
                 <h4>SOME TECHNICAL NOTES</h4>
@@ -326,6 +324,7 @@
                 <p><a href="#about">1: Krystian Dudzinski</a> (June 2010) <br> Deciding satisfaction of: Trajectory and Input-altering transducer properties</p>
             </div>
         </div>
+
         <div id="automaton" class="tab-pane fade">
             <h3>Format for Automata</h3>
             <div class="col-md-12 text-justify">
@@ -339,16 +338,16 @@
                 <div class="col-md-3 text-center"></div>
                 <div class="col-md-12 text-justify">
                     <p>Here is an example of an automaton accepting ab* using both, <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats:</p>
-<pre><code>
-Grail:              FAdo:
-(START) |- 1        @NFA 2
-1 a 2               1 a 2
-2 b 2               2 b 2
+                    <pre><code>
+Grail:                  FAdo:
+(START) |- 1            @NFA 2
+1 a 2                   1 a 2
+2 b 2                   2 b 2
 2 -| (FINAL)
-</code></pre>
+                    </code></pre>
                     <p><b>More examples follow:</b></p>
                     <p>Automaton accepting aaa(aaa)*b + aa(ba)*a(aa(ba)*a)*b:</p>
-<pre><code>
+                    <pre><code>
 Grail:              FAdo:
 (START) |- 1        @NFA 8
 1 a 2               1 a 2
@@ -363,18 +362,18 @@ Grail:              FAdo:
 7 a 5               7 a 5
 7 b 8               7 b 8
 8 -| (FINAL)
-</code></pre>
+                    </code></pre>
                     <p>Automaton accepting ab + bba:</p>
-<pre><code>
-Grail:              FAdo:
-(START) |- 1        @NFA 3
-1 a 2               1 a 2
-2 b 3               2 b 3
-1 b 4               1 b 4
-4 b 5               4 b 5
-5 a 3               5 a 3
+                    <pre><code>
+Grail:                  FAdo:
+(START) |- 1            @NFA 3
+1 a 2                   1 a 2
+2 b 3                   2 b 3
+1 b 4                   1 b 4
+4 b 5                   4 b 5
+5 a 3                   5 a 3
 3 -| (FINAL)
-</code></pre>
+                    </code></pre>
                 </div>
             </div>
         </div>
@@ -397,7 +396,7 @@ Grail:              FAdo:
                     <p>Below is an example of an input-altering transducer describing the <i>suffix code</i> property over the alphabet {a, b}. The transducer outputs any <i>proper</i> suffix of a given input word.</p>
                 </div>
                 <div class="col-md-12 text-justify">
-<pre><code>
+                    <pre><code>
 @Transducer 2 3
 1 a @epsilon 2
 1 b @epsilon 2
@@ -407,10 +406,10 @@ Grail:              FAdo:
 2 b b 3
 3 a a 3
 3 b b 3
-</code></pre>
+                    </code></pre>
                     <h4><b>More examples below:</b></h4>
                     <p>Input-preserving transducer describing the <i>1-substitution-detecting</i> property over the alphabet {0, 1}. On input <i>w</i>, the transducer outputs either <i>w</i>, or any word resulting by substituting 1 bit of <i>w</i> with a different bit.</p>
-<pre><code>
+                    <pre><code>
 @Transducer 0 1
 0 0 0 0
 0 1 1 0
@@ -418,9 +417,9 @@ Grail:              FAdo:
 0 1 0 1
 1 0 0 1
 1 1 1 1
-</code></pre>
+                    </code></pre>
                     <p>Input-preserving transducer describing the <i>1-sid-detecting</i> property over the alphabet {a, b}. On input <i>w</i>, the transducer outputs any word resulting by performing at most one symbol substitution/insertion/deletion operation on <i>w</i>.</p>
-<pre><code>
+                    <pre><code>
 @Transducer 0 1
 0 a a 0
 0 b b 0
@@ -432,9 +431,9 @@ Grail:              FAdo:
 0 @epsilon b 1
 1 a a 1
 1 b b 1
-</code></pre>
+                    </code></pre>
                     <p>Input-altering transducer describing the <i>thin</i> property (= all languages whose words are of different lengths). On input <i>w</i>, the transducer outputs any word of the same length as <i>w</i>, but different from <i>w</i>.
-<pre><code>
+                    <pre><code>
 @Transducer 2
 1 a a 1
 1 b b 1
@@ -444,7 +443,7 @@ Grail:              FAdo:
 2 b b 2
 2 a b 2
 2 b a 2
-</code></pre>
+                    </code></pre>
                     </p>
                 </div>
             </div>

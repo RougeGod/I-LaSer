@@ -1,5 +1,4 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 <html>
 <head>
     <title>O-LaSer</title>
@@ -18,7 +17,6 @@
 <body>
 
 <!--<SCRIPT language=javascript>
-
     function setRadio()
     {
         var radios = document.getElementsByName('choice');
@@ -55,8 +53,6 @@
     {
         hide('div4');
     }
-
-
 </SCRIPT>-->
 
 
@@ -68,6 +64,7 @@
         <li><a data-toggle="tab" href="#automaton">Format for Automaton</a></li>
         <li><a data-toggle="tab" href="#transducer">Format for Transducer</a></li>
         <li><a data-toggle="tab" href="#trajectory">Format for Trajectory Set</a></li>
+        <li class="pull-right"><a target="_self" href="/">Back</a></li>
     </ul>
     <div class="tab-content">
         <div id="home" class="tab-pane fade in active">
@@ -118,9 +115,8 @@
                         </div>
                 </div>
                 <div class="col-md-12 text-center">
-                    <input type="submit" class="sub_upl" value = "Submit" />&nbsp;&nbsp;<input onclick="resetForm()" type="reset" value = "Clear" />
+                    <input type="submit" class="sub_upl" value = "Submit" />  <input onclick="resetForm()" type="reset" value = "Clear" />
                 </div>
-
             </form>
             <div class="col-md-12 text-center">
                 <h4>{{ automaton }}</h4>
@@ -132,8 +128,7 @@
 
         <div id="references" class="tab-pane fade">
             <div class="col-md-12 text-center">
-                <h3> <b>Some References</b>
-                </h3>
+                <h3><b>Some References</b></h3>
 
                 [KoYo:2013]
                 Stavros Konstantinidis, Joshua Young: Deciding the density type of a given regular language. In Jan Holub and Jan Zdarek (Eds.):
@@ -142,103 +137,60 @@
                 <br><br>
                 [KaKoKoYa:2013]
                 Lila Kari, Stavros Konstantinidis, Steffen Kopecki, Meng Yang:
-                <a href="http://cs.smu.ca/~stavros/papers/edit-distance.efficient.pdf">An efficient algorithm for computing the edit distance of a regular
-                    language via input-altering transducers</a>.
+                <a href="http://cs.smu.ca/~stavros/papers/edit-distance.efficient.pdf">An efficient algorithm for computing the edit distance of a regular language via input-altering transducers</a>.
             </div>
         </div>
         <div id="automaton" class="tab-pane fade">
             <h3>Format for Automata</h3>
             <div class="col-md-12 text-center">
-                <p>One can use the <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and
-                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats
-                    for nondeterministic finite automata (those with nonempty transitions).<br>
-                    The format of <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:
-                <div class="col-md-3 text-center"></div>
-                <div class="col-md-6 text-justify">
-                    1. '#' begins a comment
-                    <br>2. <b>@NFA</b>, or <b>@DFA</b>, begins a new automaton (and determines its type) and must
-                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be followed by the list of the final states
-                    separated by blanks
-                    <br>3. Transitions are written one per line and consist of three fields separated by blanks:
-                    "state" "symbol" "new state"
-                    <br>4. The source state of the first transition is the initial state.
+                <p>One can use the <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats for nondeterministic finite automata (those with nonempty transitions).<br> The format of <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:</p>
+                <div class="col-md-push-3 col-md-6 text-justify">
+                    <ol>
+                        <li>'#' begins a comment</li>
+                        <li><b>@NFA</b>, or <b>@DFA</b>, begins a new automaton (and determines its type) and must be followed by the list of the final states separated by blanks</li>
+                        <li>Transitions are written one per line and consist of three fields separated by blanks: "state" "symbol" "new state"</li>
+                        <li>The source state of the first transition is the initial state.</li>
+                    </ol>
                 </div>
-                <div class="col-md-3 text-center"></div>
-                <div class="col-md-12 text-center">
-                    <br>Here is an example of an automaton accepting ab* using
-                    both, <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and
-                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats:
-                    </p>
-                    <br>
-                    <code>
-                        <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
-                        <br><br>
-                        (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 2<br>
-                        1 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 2<br>
-                        2 b 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 b 2<br>
-                        2 -| (FINAL)<br>
-                    </code>
+                <div class="col-md-12 text-justify">
+                    <p>Here is an example of an automaton accepting ab* using both, <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats:</p>
+<pre><code>
+Grail:                  FAdo:
+(START) |- 1            @NFA 2
+1 a 2                   1 a 2
+2 b 2                   2 b 2
+2 -| (FINAL)
+</code></pre>
+                    <p><b>More examples follow:</b></p>
 
-                    <br>
-                    <p>
-                        <b>More examples follow:</b>
-                    </p>
-
-                    <p>Automaton accepting aaa(aaa)*b + aa(ba)*a(aa(ba)*a)*b:<br>
-                        <br>
-                        <code>
-                            <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
-                            <br><br>
-                            (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 8<br>
-                            1 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 2<br>
-                            2 a 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 a 3<br>
-                            3 b 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 b 2<br>
-                            3 a 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 a 4<br>
-                            4 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4 a 2<br>
-                            4 b 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4 b 8<br>
-                            1 a 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 5<br>
-                            5 a 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5 a 6<br>
-                            6 a 7&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;6 a 7<br>
-                            7 a 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7 a 5<br>
-                            7 b 8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;7 b 8<br>
-                            8 -| (FINAL)  <br>
-                        </code>
-                    </p>
-                    <p>Automaton accepting ab + bba:<br>
-                        <br>
-                        <code>
-                            <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
-                            <br><br>
-                            (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 3<br>
-                            1 a 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 a 2<br>
-                            2 b 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 b 3<br>
-                            1 b 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 b 4<br>
-                            4 b 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;4 b 5<br>
-                            5 a 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;5 a 3<br>
-                            3 -| (FINAL)
-                        </code>
-                    </p>
+                    <p>Automaton accepting aaa(aaa)*b + aa(ba)*a(aa(ba)*a)*b:</p>
+<pre><code>
+Grail:                  FAdo:
+(START) |- 1            @NFA 8
+1 a 2                   1 a 2
+2 a 3                   2 a 3
+3 b 2                   3 b 2
+3 a 4                   3 a 4
+4 a 2                   4 a 2
+4 b 8                   4 b 8
+1 a 5                   1 a 5
+5 a 6                   5 a 6
+6 a 7                   6 a 7
+7 a 5                   7 a 5
+7 b 8                   7 b 8
+8 -| (FINAL)
+</code></pre>
+                    <p>Automaton accepting ab + bba:</p>
+<pre><code>
+Grail:                  FAdo:
+(START) |- 1            @NFA 3
+1 a 2                   1 a 2
+2 b 3                   2 b 3
+1 b 4                   1 b 4
+4 b 5                   4 b 5
+5 a 3                   5 a 3
+3 -| (FINAL)
+</code></pre>
                 </div>
             </div>
         </div>
@@ -248,94 +200,62 @@
             </div>
             <div class="col-md-12 text-center">
                 <div class="col-md-12 text-center">
-                    In the new version of I-LaSer (as of June 2014), only the FAdo format of transducers is
-                    accepted, as the Grail-like format is not generally supported.
-                    Transducers must be in standard form, that is, having <i>transitions
-                    of the form  &nbsp p x y q</i>, where p and q are states, and each of x and y is either
-                    a single alphabet symbol or the empty word. The empty word is written as <i>@epsilon</i>.
-                </div>
-                <div class="col-md-12 text-center">The format of transducer <a href="http://fado.dcc.fc.up.pt/">FAdo</a>
-                    files must be as follows:</div>
-                <div class="col-md-3 text-center"></div>
-                <div class="col-md-6 text-justify">
-                    <br>1. '#' begins a comment
-                    <br>2. <b>@Transducer</b> begins a new transducer and must
-                    <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;be followed by the list of the final states separated
-                    by blanks
-                    <br>3. Transitions are written one per line and must be in standard form as noted above.
-                    <br>4. The source state of the first transition is the initial state.
-                    <br><br>
-                </div>
-                <div class="col-md-3 text-center"></div>
-                <div class="col-md-12 text-center">
-                    Please see the FAdo documentation for the full description of Transducer format.
-                    <br>
-                    -
-                    <br>
-                    Here is an example of an input-altering transducer defining the <i>suffix code</i> property.
-                    The transducer returns the set of all <i>proper</i> suffixes of a given input word.
+                    <p>In the new version of I-LaSer (as of June 2014), only the FAdo format of transducers is accepted, as the Grail-like format is not generally supported. Transducers must be in standard form, that is, having <i>transitions of the form  &nbsp p x y q</i>, where p and q are states, and each of x and y is either a single alphabet symbol or the empty word. The empty word is written as <i>@epsilon</i>.</p>
                 </div>
                 <div class="col-md-12 text-center">
-                    <br>
-                    <code>
-                        @Transducer 2 3<br>
-                        1 a @epsilon 2<br>
-                        1 b @epsilon 2<br>
-                        2 a @epsilon 2<br>
-                        2 b @epsilon 2<br>
-                        2 a a 3<br>
-                        2 b b 3<br>
-                        3 a a 3<br>
-                        3 b b 3<br>
-                    </code>
-                    <br>
+                    The format of transducer <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:
+                </div>
+                <div class="col-md-push-3 col-md-6 text-justify">
+                    <ol>
+                        <li>'#' begins a comment.</li>
+                        <li><b>@Transducer</b> begins a new transducer and must be followed by the list of the final states separated by blanks.</li>
+                        <li>Transitions are written one per line and must be in standard form as noted above.</li>
+                        <li>The source state of the first transition is the initial state.</li>
+                    </ol>
+                </div>
+                <div class="col-md-12 text-center">
+                    <p>Please see the FAdo documentation for the full description of Transducer format.</p>
+                    <p>Here is an example of an input-altering transducer defining the <i>suffix code</i> property. The transducer returns the set of all <i>proper</i> suffixes of a given input word.</p>
+                </div>
+                <div class="col-md-12 text-justify">
+<pre><code>
+@Transducer 2 3
+1 a @epsilon 2
+1 b @epsilon 2
+2 a @epsilon 2
+2 b @epsilon 2
+2 a a 3
+2 b b 3
+3 a a 3
+3 b b 3
+</code></pre>
                     <h4><b>More examples below:</b></h4>
-
-                    <p>Input-preserving transducer defining the <i>1-sid error-detecting</i> property.
-                        On input <i>w</i>, the transducer returns all words resulting by performing at most
-                        one symbol substitution/insertion/deletion operation on <i>w</i>.
-                        <br><br>
-                        <code>
-                            @Transducer 0 1
-                            <br>
-                            0 a a 0
-                            <br>
-                            0 b b 0
-                            <br>
-                            0 a b 1
-                            <br>
-                            0 b a 1
-                            <br>
-                            0 a @epsilon  1
-                            <br>
-                            0 b @epsilon  1
-                            <br>
-                            0 @epsilon  a 1
-                            <br>
-                            0 @epsilon  b 1
-                            <br>
-                            1 a a 1
-                            <br>
-                            1 b b 1
-                        </code>
-                    </p>
-
-                    <p>Input-altering transducer defining the <i>thin</i> property
-                        (those languages whose words are of different lengths). On input <i>w</i>, the transducer
-                        returns all words of the same length as <i>w</i>, but different from <i>w</i>.
-                        <br><br>
-                        <code>
-                            @Transducer 2<br>
-                            1 a a 1<br>
-                            1 b b 1<br>
-                            1 a b 2<br>
-                            1 b a 2<br>
-                            2 a a 2<br>
-                            2 b b 2<br>
-                            2 a b 2<br>
-                            2 b a 2<br>
-                        </code>
-                    </p>
+                    <p>Input-preserving transducer defining the <i>1-sid error-detecting</i> property. On input <i>w</i>, the transducer returns all words resulting by performing at most one symbol substitution/insertion/deletion operation on <i>w</i>.</p>
+<pre><code>
+@Transducer 0 1
+0 a a 0
+0 b b 0
+0 a b 1
+0 b a 1
+0 a @epsilon 1
+0 b @epsilon 1
+0 @epsilon a 1
+0 @epsilon b 1
+1 a a 1
+1 b b 1
+</code></pre>
+                    <p>Input-altering transducer defining the <i>thin</i> property (those languages whose words are of different lengths). On input <i>w</i>, the transducer returns all words of the same length as <i>w</i>, but different from <i>w</i>.</p>
+<pre><code>
+@Transducer 2
+1 a a 1
+1 b b 1
+1 a b 2
+1 b a 2
+2 a a 2
+2 b b 2
+2 a b 2
+2 b a 2
+</code></pre>
                 </div>
             </div>
         </div>
@@ -343,67 +263,36 @@
             <div class="col-md-12 text-center">
                 <h3>Format for Trajectory Sets</h3>
             </div>
-            <div class="col-md-12 text-center">
-
-                <p>
-                    Regular trajectory sets can be described via regular expressions or automata over {0,1}.
-                    For regular expressions, one can use
-                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a> format.
-                    For finite automata (those with nonempty transitions),
-                    one can use the <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> or
-                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a> format.
-                    <br>
-                    Here is an example of an automaton accepting the language described
-                    by the regular expression 1*0*,
-                    which defines the <i>suffix code</i> property.
-                </p>
-
-                <code>
-                    <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
-                    <br><br>
-                    (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 1 2<br>
-                    1 0 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 0 1<br>
-                    1 1 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 1 2<br>
-                    2 1 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 1 2<br>
-                    1 -| (FINAL)<br>
-                    2 -| (FINAL)<br>
-                </code>
-
-                <br>
-                <h4>
-                    <b>More examples below:</b>
-                </h4>
-
-                <p>Automaton accepting 1*0*1*, which defines the <i>infix code</i> property.<br>
-                    <br>
-                    <code>
-                        <b><u>Grail:</u>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            &nbsp;&nbsp;&nbsp;&nbsp;<u>FAdo:</u></b>
-                        <br><br>
-                        (START) |- 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;@NFA 1 2 3<br>
-                        1 1 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 1 1<br>
-                        1 0 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 0 2<br>
-                        2 0 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 0 2<br>
-                        2 1 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2 1 3<br>
-                        3 1 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3 1 3<br>
-                        1 -| (FINAL) <br>
-                        2 -| (FINAL) <br>
-                        3 -| (FINAL) <br>
-                    </code>
-                </p>
+            <div class="col-md-12 text-justify">
+                <p>Regular trajectory sets can be described via regular expressions or automata over {0,1}. For regular expressions, one can use <a href="http://fado.dcc.fc.up.pt/">FAdo</a> format. For finite automata (those with nonempty transitions), one can use the <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> or <a href="http://fado.dcc.fc.up.pt/">FAdo</a> format.</p>
+                <p>Here is an example of an automaton accepting the language described by the regular expression 1*0*, which defines the <i>suffix code</i> property.</p>
+<pre><code>
+Grail:                  FAdo:
+(START) |- 1            @NFA 1 2
+1 0 1                   1 0 1
+1 1 2                   1 1 2
+2 1 2                   2 1 2
+1 -| (FINAL)
+2 -| (FINAL)
+</code></pre>
+                <h4><b>More examples below:</b></h4>
+                <p>Automaton accepting 1*0*1*, which defines the <i>infix code</i> property.</p>
+<pre><code>
+Grail:                  FAdo:
+(START) |- 1            @NFA 1 2 3
+1 1 1                   1 1 1
+1 0 2                   1 0 2
+2 0 2                   2 0 2
+2 1 3                   2 1 3
+3 1 3                   3 1 3
+1 -| (FINAL)
+2 -| (FINAL)
+3 -| (FINAL)
+</code></pre>
             </div>
         </div>
     </div>
 </div>
 
 </body>
-</html>  
+</html>
