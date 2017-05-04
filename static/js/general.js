@@ -52,7 +52,6 @@ function validate(str) {
 
         remainder.split('\n').forEach(function(line) {
             if(!/^\d+ \S+? \d+ *$/.test(line) && !/\d+ -\| \(FINAL\) *$/.test(line)) {
-                console.log(line)
                 safe = false;
             }
         });

@@ -128,11 +128,11 @@ TEMPLATES = [
     },
 ]
 
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+MEDIA_ROOT = '/var/www/project/media/'
 MEDIA_URL = '/media/'
 
 
-STATIC_ROOT = ''
+STATIC_ROOT = '/var/www/project/static'
 STATIC_URL = '/static/'
 
 logging.info(BASE_DIR)
