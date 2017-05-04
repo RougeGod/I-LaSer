@@ -47,7 +47,18 @@ function validate(str) {
         });
 
         return safe;
-    } else return false;
+    } else {
+        var safe = true;
+
+        remainder.split('\n').forEach(function(line) {
+            if(!/^\d+ \S+? \d+ *$/.test(line) && !/\d+ -\| \(FINAL\) *$/.test(line)) {
+                console.log(line)
+                safe = false;
+            }
+        });
+
+        return safe;
+    }
 }
 
 function setRadio() {

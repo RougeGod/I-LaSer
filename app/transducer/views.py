@@ -244,6 +244,7 @@ def handle_satisfaction_maximality(
             return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                     'result':decision, 'proof': proof}
         elif question == "2":
+            err = ''
             try:
                 witness = prop.notMaximalW(aut)
             except PropertyNotSatisfied:
@@ -257,6 +258,7 @@ def handle_satisfaction_maximality(
 
             if witness is None:
                 decision = "YES, the language is maximal with respect to the property."
+                proof = ''
             else:
                 decision = "NO, the language is not maximal with respect to the property."
                 proof = formatCounterExample(witness)
