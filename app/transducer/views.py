@@ -16,6 +16,7 @@ import FAdo.codes as codes
 from FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnknown, \
 ErrCorrectProp, regexpInvalid, infixTransducer, IATProp
 from FAdo.yappy_parser import YappyError
+import FAdo.fl as fl
 
 from app.transducer.laserShared import constructAutomaton, IncorrectFormat, \
      constructInAltProp, limitAutP, limitTranP, formatCounterExample
@@ -70,358 +71,378 @@ def upload_file(request):
         return render(request, 'upload.html', {'form': form, 'error_message': k.message+"\n You \
         either have uploaded only a file or no file."})
 
-def get_response(post, files, form = True):
-    """This does something with the response?"""
-    if form:
-        form = UploadFileForm(post, files)
+def list_to_string(list_, dict_):
+    """
+    :param list list_: list of nonnegative integers from some set {0,1,...,q-1}
+    :param dict dict_: mapping from {0,1,...,q-1} to some alphabet symbols
+    :return: string of symbols corresponding to the integers in list_
+    :rtype: str"""
+    return "".join([dict_[i] for i in list_])
+
+def long_to_base(num, base):
+    """
+    Maps num to a list of digits corresponding to the base q representation of n in reverse order
+
+    :param int num: a positive integer
+    :param int base: base to represent n
+    :return: list of base-ary 'digits', that is, elements of {0,1,..,base-1}
+    :rtype: list"""
+    list_ = []
+    while num > 0:
+        list_.append(num % base)
+        num /= base
+    return list_
+
+def make_block_code(list_length, word_length, alphabet_size):
+    """Returns an NFA and a list W of up to N words of length word_length, such that the NFA
+    accepts W, which satisfies the property. The alphabet to use is
+    {0,1,...,s-1}. where s <= 10.
+
+    :param int length: the number of words to construct
+    :param int word_length: the codeword length
+    :param int s: the alphabet size (must be <= 10)
+    :return: an automaton and a list of strings
+    :rtype: tuple"""
+    words = []
+    list_ = dict()
+
+    for i in range(alphabet_size):
+        list_[i] = str(i)
+    size = min(list_length, alphabet_size**word_length)
+    for j in range(size):
+        if j == 0:
+            digit_list = [0]
+        else:
+            digit_list = long_to_base(j, alphabet_size)
+        zeros = []
+        for _ in range(word_length - len(digit_list)):
+            zeros.append(0)
+        digit_list.extend(zeros)
+        word = list_to_string(digit_list, list_)
+        words.append(word)
+    aut = fl.FL(words).trieFA().toNFA()
+    return aut, words
+
+def handle_satisfaction_maximality(
+        property_type, question, post,
+        files, form=True
+    ):
+    """This method handles satisfaction and maximality choices."""
+    file_ = files.get('automata_file')
+
+    if file_: # Get it from the file by default
+        # automaton string
+        aut_str = file_.read()
+
+        #automaton name
+        aut_name = "Language: " + file_.name
+
+        file_.close()
+    elif post.get('automata_text'):
+        # automaton string
+        aut_str = str(post.get('automata_text'))
+
+        #automaton name
+        aut_name = "Language: N/A"
     else:
-        form = None
+        return {'form': form, 'error_message': 'Please provide an automaton file.'}
 
     try:
-        question = post['que']
-    except:
-        decision = "Please select a question."
-        return {'form': form, 'error_message': decision}
+        aut = constructAutomaton(aut_str)
+    except (IncorrectFormat, TypeError):
+        return {'form': form, 'error_message':
+                'ERROR: The property file appears to be incorrectly formatted.',
+                'automaton': aut_name}
+
+    if limitAutP(aut, LIMIT_AUTOMATON):
+        return {'form':form, 'error_message':
+                'Size of the automaton exceeds limit! (See "Technical Notes")',
+                'automaton':aut_name}
+
+    if property_type == "1":
+        t_name = ""
+        fixed_type = post.get('fixed_type')
+        if 0 < int(fixed_type) < 6:
+            prop = create_fixed_property(aut.Sigma, fixed_type)
+        else:
+            p_name = "code"
+            prop = UDCodeProp(aut.Sigma)
+            if question == '2':
+                try:
+                    if prop.maximalP(aut):
+                        decision = "YES, the language is a maximal " + p_name
+                    else:
+                        decision = "NO, the language is not a maximal " + p_name
+                except PropertyNotSatisfied:
+                    decision = "ERROR: the language doesn't satisfy the property"
+            else:
+                witness = prop.notSatisfiesW(aut)
+                if witness == (None, None):
+                    decision = "YES, the language satisfies the " + p_name + " property"
+                else:
+                    decision = "NO, the language does not satisfy the " + p_name + " property"
+                    proof = formatCounterExample(witness)
+
+            return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
+
+    # User-Input Property
+    else:
+        file_ = files.get('transducer_file', False)
+        if not file_:
+            return {'form':form, 'error_message': "Please provide a property file.",
+                    'automaton':aut_name}
+
+        t_str = file_.read()
+        t_name = "Property: " + file_.name
+        file_.close()
+
+        # Input-Altering Property (given as trajectory or transducer)
+        if property_type == "2":
+            try:
+                prop = constructInAltProp(t_str, aut.Sigma)
+            except (IncorrectFormat, TypeError):
+                return {'form':form, 'error_message':
+                        'The property file appears to be incorrectly formatted.',
+                        'automaton':aut_name, 'transducer':t_name}
+
+        # Input-Preserving Property
+        elif property_type == "3":
+            try:
+                prop = IPTProp(readOneFromString(t_str))
+            except (YappyError, AttributeError):
+                return {'form':form, 'error_message':
+                        'The property file appears to be incorrectly formatted.',
+                        'automaton':aut_name, 'transducer':t_name}
+
+        # Error-Correction
+        elif property_type == "4":
+            try:
+                prop = ErrCorrectProp(readOneFromString(t_str))
+            except (YappyError, AttributeError):
+                return {'form':form, 'error_message':
+                        'The property file appears to be incorrectly formatted.',
+                        'automaton':aut_name, 'transducer':t_name}
+
+    if limitTranP(aut.delta, prop.Aut.delta, LIMIT):
+        return {'form':form, 'error_message':
+                'Sizes of the automaton and transducer exceed limit! (See "Technical Notes")',
+                'automaton':aut_name, 'transducer':t_name}
+    else:
+        if question == "1":
+            try:
+                witness = prop.notSatisfiesW(aut)
+            except TypeError:
+                decision = "The automaton file appears to be incorrectly formatted."
+                return {'form':form, 'error_message': decision,
+                        'automaton':aut_name, 'transducer':t_name}
+
+            if witness == (None, None) or witness == (None, None, None):
+                decision = "YES, the language satisfies the property"
+            else:
+                decision = "NO, the language does not satisfy the property"
+                proof = formatCounterExample(witness)
+            return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+                    'result':decision, 'proof': proof}
+        elif question == "2":
+            try:
+                witness = prop.notMaximalW(aut)
+            except PropertyNotSatisfied:
+                err = "ERROR: the language does not satisfy the property."
+            except TypeError:
+                err = "The automaton file appears to be incorrectly formatted."
+
+            if err:
+                return {'form':form, 'error_message': err,
+                        'automaton':aut_name, 'transducer':t_name}
+
+            if witness is None:
+                decision = "YES, the language is maximal with respect to the property."
+            else:
+                decision = "NO, the language is not maximal with respect to the property."
+                proof = formatCounterExample(witness)
+
+            return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+                    'result':decision, 'proof': proof}
+
+def handle_construction(
+        property_type, post,
+        files, form=True
+    ):
+    """Handle the construction choice of the website"""
+    n_num = int(post.get("n_int", -1))
+    s_num = int(post.get("s_int", -1))
+    l_num = int(post.get("l_int", -1))
+
+    err = ''
+    if n_num <= 0 or s_num <= 0 or l_num <= 0:
+        err = "Please enter three positive integers S, N, L."
+    elif s_num < 2  or s_num > 10:
+        err = "S must be less than 10 and greater than 1"
+    elif s_num > l_num:
+        err = "S must be less than L"
+
+    if err != '':
+        return {'form': form, 'error_message': err}
+
+    if property_type == "1":
+        if (n_num * l_num) > LIMIT:
+            return {'form':form, 'error_message':
+                    "Size of request exceeds limit! (See 'Technical Notes')"}
+        try:
+            _, witness = make_block_code(int(n_num), int(l_num), int(s_num))
+        except DFAsymbolUnknown:
+            return {'form': form, 'error_message':
+                    "Something went wrong (views.py: construction, fixed property)."}
+        #text_path, text_title = write_witness(witness, filename)
+        words = write_witness(witness)
+        result = '<div class="text-center" style="font-size: 14px; \
+        color: #999999; margin-bottom: 10px;">Your Output</div>\
+        <div><textarea class="text-center" rows="6" cols="50" \
+        readonly>'+ words +'</textarea></div>'
+        return {'form': form, 'construct_path': '',
+                'construct_text': '', 'result': result}
+
+    file_ = files.get('transducer_file')
+    if not file_:
+        return {'form':form, 'error_message':"Please provide a correct property file."}
+
+    t_str = file_.read()
+    t_name = "Property: " + file_.name
+    file_.close()
+
+    # Input-Altering Property (given as trajectory or transducer)
+    if property_type == "2":
+        result = handle_iap(n_num, l_num, s_num, t_name, t_str, form)
+    # Input-Preserving Property
+    elif property_type == "3":
+        result = handle_ipp(n_num, l_num, s_num, t_name, t_str, form)
+
+    return result
+
+def handle_iap(
+        n_num, l_num, s_num,
+        t_name, t_str, form=True
+    ):
+    """Handle Input-altering properties"""
+    alp = set()
+    for i in range(int(s_num)):
+        alp.add(str(i))
 
     try:
-        property_type = post['prv']
-    except:
-        decision = "Please select a property type."
-        return {'form': form, 'error_message': decision}
+        prop = constructInAltProp(t_str, alp)
+    except (IncorrectFormat, TypeError):
+        return {'form': form, 'error_message':
+                "The property file appears to be incorrectly formatted.",
+                'transducer': t_name}
+
+    if limitTranP({}, prop.Aut.delta, LIMIT, int(n_num)):
+        return {'form':form, 'error_message':
+                "Size of request exceeds limit! (See 'Technical Notes')"}
+
+    try:
+        _, witness = prop.makeCode(n_num, l_num, s_num)
+    except DFAsymbolUnknown:
+        return {'form': form, 'error_message':
+                'The property file appears to be incorrectly formatted.',
+                'transducer': t_name}
+
+    words = write_witness(witness)
+    result = '<div class="text-center" style="font-size: 14px; color: #999999; \
+    margin-bottom: 10px;"> Your Output</div><div><textarea class="text-center" \
+    rows="6" cols="50" readonly>'+ words +'</textarea></div>'
+    return {'form': form, 'construct_path': '',
+            'construct_text': '', 'result': result}
+
+def handle_ipp(
+        n_num, l_num, s_num,
+        t_name, t_str, form=True
+    ):
+    """Handle Input-preserving properties"""
+    try:
+        prop = codes.buildErrorDetectPropS(t_str)
+    except (YappyError, AttributeError):
+        return {'form':form, 'error_message':
+                "The property file appears to be incorrectly formatted.",
+                'transducer':t_name}
+
+    if limitTranP({}, prop.Aut.delta, LIMIT, int(n_num)):
+        return {'form':form, 'error_message':
+                "Size of request exceeds limit! (See 'Technical Notes')"}
+
+    try:
+        _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
+    except DFAsymbolUnknown:
+        return {'form': form, 'error_message':
+                "The property file appears to be incorrectly formatted.",
+                'transducer': t_name}
+
+    #text_path, text_title = write_witness(witness, filename)
+    words = write_witness(witness)
+    result = '<div class="text-center" style="font-size: 14px; color: #999999; \
+    margin-bottom: 10px;"> Your Output</div><div><textarea class="text-center" \
+    rows="6" cols="50" readonly>'+ words +'</textarea></div>'
+    return {'form': form, 'witness': witness, 'prop': prop,
+            'construct_path': '', 'construct_text': '', 'result': result}
+
+
+def get_response(post, files, form=True):
+    """This does something with the response?"""
+    form = UploadFileForm(post, files) if form else None
+
+    question = post.get('que', False)
+    property_type = post.get('prv', False)
+
+    if not question:
+        return {'form': form, 'error_message': "Please select a question."}
+    elif not property_type:
+        return {'form': form, 'error_message': "Please select a property type."}
 
     if question == "1" or question == "2":
-        file_ = files.get('automata_file', False)
-
-        if file_ != False:
-            # automaton string
-            thing = file_.read()
-            aut_str = thing
-
-            logging.info(thing == post['automata_text'])
-            logging.info(len(thing) == len(post['automata_text']))
-            logging.info(len(thing))
-            logging.info(len(post['automata_text']))
-
-            #automaton name
-            aut_name = "Language: " + file_.name
-
-            file_.close()
-        elif post['automata_text'] != "":
-            aut_str = str(post['automata_text'])
-            aut_name = "Language: N/A"
-            logging.info(len(aut_str))
-        else:
-            decision = "Please provide an automaton file."
-            return {'form': form, 'error_message': decision}
-
-        try:
-            aut = constructAutomaton(aut_str)
-        except IncorrectFormat:
-            decision = "ERROR: the automaton appears to be incorrectly formatted"
-            return {'form': form, 'error_message': decision, 'automaton': aut_name}
-        except TypeError:
-            decision = "The property file appears to be incorrectly formatted."
-            return {'form':form, 'error_message': decision, 'automaton':aut_name}
-
-        if limitAutP(aut, LIMIT_AUTOMATON):
-            decision = "Size of the automaton exceeds limit! (See \"Technical Notes\")"
-            return {'form':form, 'error_message': decision, 'automaton':aut_name}
-
-        # Fixed Property
-        if property_type == "1":
-            t_name = ""
-            fixed_type = post['fixed_type']
-            if 0 < int(fixed_type) < 6:
-                prop = create_fixed_property(aut.Sigma, fixed_type)
-            else:
-                p_name = "code"
-                proof = ''
-                prop = UDCodeProp(aut.Sigma)
-                if question == '2':
-                    try:
-                        if prop.maximalP(aut):
-                            decision = "YES, the language is a maximal " + p_name
-                            proof = ""
-                        else:
-                            decision = "NO, the language is not a maximal " + p_name
-                    except PropertyNotSatisfied:
-                        decision = "ERROR: the language doesn't satisfy the property"
-                        proof = ""
-                else:
-                    witness = prop.notSatisfiesW(aut)
-                    if witness == (None, None):
-                        decision = "YES, the language satisfies the " + p_name + " property"
-                    else:
-                        decision = "NO, the language does not satisfy the " + p_name + " property"
-                        proof = formatCounterExample(witness)
-
-                return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
-
-        # User-Input Property
-        else:
-            try:
-                t_str = files['transducer_file'].read()
-                t_name = "Property: " + files['transducer_file'].name
-                files['transducer_file'].close()
-            except:
-                decision = "Please provide a property file."
-                return {'form':form, 'error_message': decision, 'automaton':aut_name}
-
-            # Input-Altering Property (given as trajectory or transducer)
-            if property_type == "2":
-                try:
-                    prop = constructInAltProp(t_str, aut.Sigma)
-                except IncorrectFormat:
-                    decision = "The property file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-                except TypeError:
-                    decision = "The property file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-
-            # Input-Preserving Property
-            elif property_type == "3":
-                try:
-                    prop = IPTProp(readOneFromString(t_str))
-                except YappyError:
-                    decision = "The property file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-                except AttributeError:
-                    decision = "The property file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-
-            # Error-Correction
-            elif property_type == "4":
-                try:
-                    prop = ErrCorrectProp(readOneFromString(t_str))
-                except YappyError:
-                    decision = "The property file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-                except AttributeError:
-                    decision = "The property file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-
-        if limitTranP(aut.delta, prop.Aut.delta, LIMIT):
-            decision = "Sizes of the automaton and transducer exceed limit! (See 'Technical Notes')"
-            return {'form':form, 'error_message': decision,
-                    'automaton':aut_name, 'transducer':t_name}
-        else:
-            proof = ""
-            if question == "1":
-                try:
-                    witness = prop.notSatisfiesW(aut)
-                except TypeError:
-                    decision = "The automaton file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-
-                if witness == (None, None) or witness == (None, None, None):
-                    decision = "YES, the language satisfies the property"
-                    proof = ""
-                else:
-                    decision = "NO, the language does not satisfy the property"
-                    proof = formatCounterExample(witness)
-                return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-                        'result':decision, 'proof': proof}
-            elif question == "2":
-                try:
-                    witness = prop.notMaximalW(aut)
-                except PropertyNotSatisfied:
-                    decision = "ERROR: the language does not satisfy the property."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-                except TypeError:
-                    decision = "The automaton file appears to be incorrectly formatted."
-                    return {'form':form, 'error_message': decision,
-                            'automaton':aut_name, 'transducer':t_name}
-
-                if witness is None:
-                    decision = "YES, the language is maximal with respect to the property."
-                else:
-                    decision = "NO, the language is not maximal with respect to the property."
-                    proof = formatCounterExample(witness)
-
-                return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-                        'result':decision, 'proof': proof}
+        return handle_satisfaction_maximality(property_type, question, post, files, form)
     elif question == "3":
-        n_num = post["n_int"]
-        s_num = post["s_int"]
-        l_num = post["l_int"]
+        return handle_construction(property_type, post, files, form)
 
-        if n_num == "" or s_num == "" or l_num == "":
-            decision = "Please enter three positive integers S, N, L."
-            return {'form': form, 'error_message': decision}
-        elif int(s_num) < 2  or int(s_num) > 10:
-            decision = "S must be less than 10 and greater than 1"
-            return {'form': form, 'error_message': decision}
-        elif int(s_num) > int(l_num):
-            decision = "S must be less than L"
-            return {'form': form, 'error_message': decision}
-        else:
-            decision = ''
-            witness = ''
-            alp = set()
-            for i in range(int(s_num)):
-                alp.add(str(i))
-
-            if property_type == "1":
-                if (int(n_num)*int(l_num)) > LIMIT:
-                    decision = "Size of request exceeds limit! (See \"Technical Notes\")"
-                    return {'form':form, 'error_message': decision}
-                try:
-                    a, witness = makeBlockCode(int(n_num), int(l_num), int(s_num))
-                except DFAsymbolUnknown:
-                    decision = "Something went wrong (views.py: construction, fixed property)."
-                    return {'form': form, 'error_message': decision}
-                filename = str(int(time() * 1000))
-                #text_path, text_title = write_witness(witness, filename)
-                words = write_witness(witness, filename)
-                result = '<div class="text-center" style="font-size: 14px; \
-                color: #999999; margin-bottom: 10px;">\Your Output</div>\
-                <div><textarea class="text-center" rows="6" cols="50" \
-                readonly>'+ words +'</textarea></div>'
-                return {'form': form, 'construct_path': '',
-                        'construct_text': '', 'result': result}
-
-            else:
-                try:
-                    t_str = files['transducer_file'].read()
-                    t_name = "Property: " + files['transducer_file'].name
-                    files['transducer_file'].close()
-                    #print '\n-----------> ', len(t_str), '   line 256 of views.py'
-                except:
-                    decision = "Please provide a correct property file."
-                    return {'form': form, 'error_message': decision}
-
-                # Input-Altering Property (given as trajectory or transducer)
-                if property_type == "2":
-                    try:
-                        prop = constructInAltProp(t_str, alp)
-                    except IncorrectFormat:
-                        decision = "The property file appears to be incorrectly formatted."
-                        return {'form': form, 'error_message': decision, 'transducer': t_name}
-                    except TypeError:
-                        decision = "The property file appears to be incorrectly formatted."
-                        return {'form':form, 'error_message': decision,
-                                'automaton':aut_name, 'transducer':t_name}
-
-                    if limitTranP({}, prop.Aut.delta, LIMIT, int(n_num)):
-                        decision = "Size of request exceeds limit! (See \"Technical Notes\")"
-                        return {'form':form, 'error_message': decision}
-
-                    try:
-                        aut, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
-                    except DFAsymbolUnknown:
-                        decision = "The property file appears to be incorrectly formatted."
-                        return {'form': form, 'error_message': decision, 'transducer': t_name}
-
-                    filename = str(int(time()*1000))
-                    #text_path, text_title = write_witness(witness, filename)
-                    words = write_witness(witness, filename)
-                    result = '<div class="text-center" style="font-size: 14px; color: #999999; \
-                    margin-bottom: 10px;"> Your Output</div><div><textarea class="text-center" \
-                    rows="6" cols="50" readonly>'+ words +'</textarea></div>'
-                    return {'form': form, 'construct_path': '',
-                            'construct_text': '', 'result': result}
-
-                # Input-Preserving Property
-                elif property_type == "3":
-                    try:
-                        #prop = codes.ErrDetectProp(readOneFromString(t_str))
-                        prop = codes.buildErrorDetectPropS(t_str)
-                    except YappyError:
-                        decision = "The property file appears to be incorrectly formatted."
-                        return {'form': form, 'error_message': decision, 'transducer': t_name}
-                    except AttributeError:
-                        decision = "The property file appears to be incorrectly formatted."
-                        return {'form':form, 'error_message': decision,
-                                'automaton':aut_name, 'transducer':t_name}
-
-                    if limitTranP({}, prop.Aut.delta, LIMIT, int(n_num)):
-                        decision = "Size of request exceeds limit! (See \"Technical Notes\")"
-                        return {'form':form, 'error_message': decision}
-
-                    try:
-                        aut, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
-                    except DFAsymbolUnknown:
-                        decision = "The property file appears to be incorrectly formatted."
-                        return {'form': form, 'error_message': decision, 'transducer': t_name}
-
-                    filename = str(int(time() * 1000))
-                    #text_path, text_title = write_witness(witness, filename)
-                    words = write_witness(witness, filename)
-                    result = '<div class="text-center" style="font-size: 14px; color: #999999; \
-                    margin-bottom: 10px;"> Your Output</div><div><textarea class="text-center" \
-                    rows="6" cols="50" readonly>'+ words +'</textarea></div>'
-                    return {'form': form, 'witness': witness, 'prop': prop,
-                            'construct_path': '', 'construct_text': '', 'result': result}
-
-def write_witness(witness, filename):
-    '''
-    if not os.path.exists('media/' + filename):
-        os.mkdir('media/' + filename)
-    textfile = open('media/' + filename + "/construct.txt", 'w')
-    for w in witness:
-        textfile.write(w+'\n')
-    textfile.close()
-    text_path = '/' + filename + "/construct.txt"
-    text_title = 'Download your text file'
-    return text_path, text_title
-    '''
+def write_witness(witness):
+    """Creates the witness for a given error"""
     string = ''
     for line in witness:
         string += line + '\n'
     return string
 
 
-def get_code(post, files, form=True, testMode=None):
-
+def get_code(post, files, form=True, test_mode=None):
     if form:
         form = UploadFileForm(post, files)
     else:
         form = None
 
-    try:
-        question = post['que']
-    except:
-        decision = "Please select a question."
-        return {'form': form, 'error_message': decision}
+    question = post.get('que')
+    property_type = post.get('prv')
 
-    try:
-        property_type = post['prv']
-    except:
-        decision = "Please select a property type."
-        return {'form': form, 'error_message': decision}
+    if not question:
+        return {'form': form, 'error_message': "Please select a question."}
+    elif not property_type:
+        return {'form': form, 'error_message': "Please select a property type."}
+
     if question == '3':
         question = '4'
-    if question == '2' and property_type == '1' and post['fixed_type'] == '6':
+    elif question == '2' and property_type == '1' and post['fixed_type'] == '6':
         question = '3'
 
     test = TEST_DICT[question]
     prop = None
     regexp = None
     name = str(int(time()*1000))
-    n_num = ""
-    s_num = ""
-    l_num = ""
-    aut_str = ""
     sigma = None
     if question == '1' or question == '2' or question == '3':
-        try:
-            aut_str = files['automata_file'].read()
-            files['automata_file'].close()
-        except:
-            if not post['automata_text'] == "":
-                decision = "Good Vibes."
-                return {'form': form, 'error_message': decision}
-            else:
-                decision = "Please provide an automaton file."
-                return {'form': form, 'error_message': decision}
+        file_ = files.get('automata_file')
+
+        if not file_:
+            decision = "Please provide an automaton file."
+            return {'form': form, 'error_message': decision}
+
+        aut_str = file_.read()
+        file_.close()
 
         try:
             aut = constructAutomaton(aut_str)
@@ -430,16 +451,17 @@ def get_code(post, files, form=True, testMode=None):
             decision = "ERROR: the automaton appears to be incorrectly formatted"
             return {'form': form, 'error_message': decision}
     elif question == '4':
-        n_num = post["n_int"]
-        s_num = post["s_int"]
-        l_num = post["l_int"]
-        if n_num == "" or s_num == "" or l_num == "":
+        n_num = int(post.get("n_int", -1))
+        s_num = int(post.get("s_int", -1))
+        l_num = int(post.get("l_int", -1))
+
+        if n_num <= 0 or s_num <= 0 or l_num <= 0:
             decision = "Please enter three positive integers S, N, L."
             return {'form': form, 'error_message': decision}
-        elif int(s_num) < 2  or int(s_num) > 10:
+        elif s_num < 2 or s_num > 10:
             decision = "S must be less than 10 and greater than 1"
             return {'form': form, 'error_message': decision}
-        elif int(s_num) > int(l_num):
+        elif s_num > l_num:
             decision = "S must be less than L"
             return {'form': form, 'error_message': decision}
 
@@ -449,16 +471,17 @@ def get_code(post, files, form=True, testMode=None):
         fixed_type = post['fixed_type']
         prop = FIXED_DICT[fixed_type]
     else:
-        try:
-            t_str = files['transducer_file'].read()
-            files['transducer_file'].close()
-        except:
+        file_ = files.get('transducer_file')
+
+        if not file_:
             decision = "Please provide a property file."
             return {'form':form, 'error_message': decision}
 
+        t_str = file_.read()
+        file_.close()
+
         # Input-Altering Property (given as trajectory or transducer)
         if property_type == "2":
-
             try:
                 result = readOneFromString(t_str)
                 if isinstance(result, NFA) or isinstance(result, DFA):
@@ -499,9 +522,9 @@ def get_code(post, files, form=True, testMode=None):
         elif property_type == "3":
             try:
                 IPTProp(readOneFromString(t_str))
-            except:
-                decision = "The property file appears to be incorrectly formatted."
-                return {'form':form, 'error_message': decision}
+            except (YappyError, AttributeError):
+                return {'form':form, 'error_message':
+                        'The property file appears to be incorrectly formatted.'}
 
             prop = "INPRES"
 
@@ -515,9 +538,9 @@ def get_code(post, files, form=True, testMode=None):
             prop = "ERRCORR"
 
     prog_lines = genProgram(name, prop, test, aut_str, t_str, sigma, regexp,
-                            DESCRIBE[question], testMode, s_num, l_num, n_num)
+                            DESCRIBE[question], test_mode, s_num, l_num, n_num)
 
-    if testMode is not None:
+    if test_mode is not None:
         return prog_lines
     else:
         decision = "<a href='"+settings.MEDIA_URL+"%s.zip'> \
@@ -525,21 +548,20 @@ def get_code(post, files, form=True, testMode=None):
         return {'form': form, 'result': decision}
 
 
-def create_fixed_property(alphabet, n):
+def create_fixed_property(alphabet, fixed_type):
     """
+    Create a property of a fixed variety such as prefix or suffix codes
     """
-    if n == "1":
+    if fixed_type == "1":
         return codes.buildPrefixProperty(alphabet)
-    elif n == "2":
+    elif fixed_type == "2":
         return codes.buildSuffixProperty(alphabet)
-    elif n == "3":
-        tran = infixTransducer(alphabet)
-        return IATProp(tran)
-    elif n == "4":
+    elif fixed_type == "3":
+        return IATProp(infixTransducer(alphabet))
+    elif fixed_type == "4":
         return codes.buildOutfixProperty(alphabet)
-    elif n == "5":
+    elif fixed_type == "5":
         return codes.buildHypercodeProperty(alphabet)
-
 
 def index(request):
     """returns the rendered index.html files"""
