@@ -1,3 +1,6 @@
+"""Interfaces for the website to communicate with the FAdo backend"""
+import logging
+import re
 
 from FAdo.fio import readOneFromString
 from FAdo.grail import importFromGrailString
@@ -6,21 +9,21 @@ from FAdo.yappy_parser import YappyError
 from FAdo.codes import IATProp, buildTrajPropS, TrajProp
 from FAdo.fa import DFA, NFA
 
-import logging
+FIXED = ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']
 
-def constructAutomaton(autStr):
-    autStr.strip()
-    autStr += "\n"
-    logging.info('\n'+autStr)
+def construct_automaton(aut_str):
+    """construct an automaton from a string"""
+    aut_str.strip()
+    aut_str += "\n"
     try:
-        return readOneFromString(autStr)
+        return readOneFromString(aut_str)
     except YappyError:
         try:
-            return importFromGrailString(autStr)
+            return importFromGrailString(aut_str)
         except YappyError:
             try:
-                autStr.strip()
-                return reex.str2regexp(autStr).toNFA()
+                aut_str.strip()
+                return reex.str2regexp(aut_str).toNFA()
             except Exception:
                 raise IncorrectFormat()
 

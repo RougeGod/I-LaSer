@@ -135,8 +135,6 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = '/var/www/project/static'
 STATIC_URL = '/static/'
 
-logging.info(BASE_DIR)
-
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static/"),
 )

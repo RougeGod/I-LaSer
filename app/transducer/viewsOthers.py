@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response
 from django.shortcuts import render
 
 from FAdo.codes import exponentialDensityP, editDistanceW
-from laserShared import constructAutomaton, IncorrectFormat, isLimitExceedForEditDist
+from laserShared import construct_automaton, IncorrectFormat, isLimitExceedForEditDist
 
 
 
@@ -29,7 +29,7 @@ def upload_file(request):
         automatonName = "Language: " + request.FILES['automata_file'].name
 
         try:
-            automaton = constructAutomaton(autStr)
+            automaton = construct_automaton(autStr)
         except IncorrectFormat:
             decision = "The automaton appears to be formatted incorrectly!"
             return render(request,'upload_others.html', {'form':form, 'result': decision})

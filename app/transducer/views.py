@@ -5,6 +5,7 @@ test the decision question.
 """
 
 from time import time
+import re
 import logging
 import django
 from django.shortcuts import render_to_response, render
@@ -18,7 +19,7 @@ ErrCorrectProp, regexpInvalid, infixTransducer, IATProp
 from FAdo.yappy_parser import YappyError
 import FAdo.fl as fl
 
-from app.transducer.laserShared import constructAutomaton, IncorrectFormat, \
+from app.transducer.laserShared import construct_automaton, IncorrectFormat, \
      constructInAltProp, limitAutP, limitTranP, formatCounterExample
 
 try:
@@ -43,6 +44,42 @@ DESCRIBE = {'1': DECIDE_REQUEST + 'satisfies the given property. \
             '4': 'Construct set of words satisfying the given property.'}
 FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'INFIX',
               '4': 'OUTFIX', '5': 'HYPERCODE', '6': 'CODE'}
+
+def list_to_string(list_, dict_):
+    """turns a list into a string"""
+    return "".join([dict_[i] for i in list_])
+
+def long_to_base(num, base):
+    """Maps num to a list of digits corresponding to base q representation of n in reverse order"""
+    list_ = []
+    while num > 0:
+        list_.append(num % base)
+        num /= base
+    return list_
+
+def make_block_code(list_length, word_length, alphabet_size):
+    """Returns an NFA and a list W of up to N words of length word_length, such that the NFA
+    accepts W, which satisfies the property. The alphabet to use is
+    {0,1,...,s-1}. where s <= 10."""
+    words = []
+    list_ = dict()
+
+    for i in range(alphabet_size):
+        list_[i] = str(i)
+    size = min(list_length, alphabet_size**word_length)
+    for j in range(size):
+        if j == 0:
+            digit_list = [0]
+        else:
+            digit_list = long_to_base(j, alphabet_size)
+        zeros = []
+        for _ in range(word_length - len(digit_list)):
+            zeros.append(0)
+        digit_list.extend(zeros)
+        word = list_to_string(digit_list, list_)
+        words.append(word)
+    aut = fl.FL(words).trieFA().toNFA()
+    return aut, words
 
 def upload_file(request):
     """This method handles the parsing of a file uploaded from the website."""
@@ -71,57 +108,15 @@ def upload_file(request):
         return render(request, 'upload.html', {'form': form, 'error_message': k.message+"\n You \
         either have uploaded only a file or no file."})
 
-def list_to_string(list_, dict_):
-    """
-    :param list list_: list of nonnegative integers from some set {0,1,...,q-1}
-    :param dict dict_: mapping from {0,1,...,q-1} to some alphabet symbols
-    :return: string of symbols corresponding to the integers in list_
-    :rtype: str"""
-    return "".join([dict_[i] for i in list_])
+def get_fixed_type(aut_str):
+    if aut_str.count('@') > 1:
+        res = re.search(r'(.+?)\n([\s\S]+)$', re.sub(r'\r', "", aut_str))
+        fixed_type = res.group(1).strip(' @')
 
-def long_to_base(num, base):
-    """
-    Maps num to a list of digits corresponding to the base q representation of n in reverse order
+        aut_str = res.group(2)
 
-    :param int num: a positive integer
-    :param int base: base to represent n
-    :return: list of base-ary 'digits', that is, elements of {0,1,..,base-1}
-    :rtype: list"""
-    list_ = []
-    while num > 0:
-        list_.append(num % base)
-        num /= base
-    return list_
-
-def make_block_code(list_length, word_length, alphabet_size):
-    """Returns an NFA and a list W of up to N words of length word_length, such that the NFA
-    accepts W, which satisfies the property. The alphabet to use is
-    {0,1,...,s-1}. where s <= 10.
-
-    :param int length: the number of words to construct
-    :param int word_length: the codeword length
-    :param int s: the alphabet size (must be <= 10)
-    :return: an automaton and a list of strings
-    :rtype: tuple"""
-    words = []
-    list_ = dict()
-
-    for i in range(alphabet_size):
-        list_[i] = str(i)
-    size = min(list_length, alphabet_size**word_length)
-    for j in range(size):
-        if j == 0:
-            digit_list = [0]
-        else:
-            digit_list = long_to_base(j, alphabet_size)
-        zeros = []
-        for _ in range(word_length - len(digit_list)):
-            zeros.append(0)
-        digit_list.extend(zeros)
-        word = list_to_string(digit_list, list_)
-        words.append(word)
-    aut = fl.FL(words).trieFA().toNFA()
-    return aut, words
+        return aut_str, fixed_type
+    return aut_str, None
 
 def handle_satisfaction_maximality(
         property_type, question, post,
@@ -147,8 +142,10 @@ def handle_satisfaction_maximality(
     else:
         return {'form': form, 'error_message': 'Please provide an automaton file.'}
 
+    aut_str, fixed_type = get_fixed_type(aut_str)
+
     try:
-        aut = constructAutomaton(aut_str)
+        aut = construct_automaton(aut_str)
     except (IncorrectFormat, TypeError):
         return {'form': form, 'error_message':
                 'ERROR: The property file appears to be incorrectly formatted.',
@@ -158,8 +155,13 @@ def handle_satisfaction_maximality(
         return {'form':form, 'error_message':
                 'Size of the automaton exceeds limit! (See "Technical Notes")',
                 'automaton':aut_name}
-
-    if property_type == "1":
+    if not property_type:
+        if fixed_type is not None:
+            t_name = ""
+            prop = create_fixed_property(aut.Sigma, fixed_type)
+        else:
+            return {'form': form, 'error_message': "Please select a property type."}
+    elif property_type == "1":
         t_name = ""
         fixed_type = post.get('fixed_type')
         if 0 < int(fixed_type) < 6:
@@ -279,7 +281,7 @@ def handle_construction(
     err = ''
     if n_num <= 0 or s_num <= 0 or l_num <= 0:
         err = "Please enter three positive integers S, N, L."
-    elif s_num < 2  or s_num > 10:
+    elif s_num < 2 or s_num > 10:
         err = "S must be less than 10 and greater than 1"
     elif s_num > l_num:
         err = "S must be less than L"
@@ -397,8 +399,6 @@ def get_response(post, files, form=True):
 
     if not question:
         return {'form': form, 'error_message': "Please select a question."}
-    elif not property_type:
-        return {'form': form, 'error_message': "Please select a property type."}
 
     if question == "1" or question == "2":
         return handle_satisfaction_maximality(property_type, question, post, files, form)
@@ -424,8 +424,6 @@ def get_code(post, files, form=True, test_mode=None):
 
     if not question:
         return {'form': form, 'error_message': "Please select a question."}
-    elif not property_type:
-        return {'form': form, 'error_message': "Please select a property type."}
 
     if question == '3':
         question = '4'
@@ -452,8 +450,10 @@ def get_code(post, files, form=True, test_mode=None):
         else:
             return {'form': form, 'error_message': 'Please provide an automaton file.'}
 
+        aut_str, fixed_type = get_fixed_type(aut_str)
+
         try:
-            aut = constructAutomaton(aut_str)
+            aut = construct_automaton(aut_str)
             #aut_str = saveToString(aut, '\n')
         except IncorrectFormat:
             decision = "ERROR: the automaton appears to be incorrectly formatted"
@@ -474,7 +474,13 @@ def get_code(post, files, form=True, test_mode=None):
             return {'form': form, 'error_message': decision}
 
     # Fixed Property
-    if property_type == "1":
+    if not property_type:
+        if fixed_type is not None:
+            t_str = None
+            prop = fixed_type
+        else:
+            return {'form': form, 'error_message': "Please select a property type."}
+    elif property_type == "1":
         t_str = None
         fixed_type = post['fixed_type']
         prop = FIXED_DICT[fixed_type]
@@ -560,15 +566,15 @@ def create_fixed_property(alphabet, fixed_type):
     """
     Create a property of a fixed variety such as prefix or suffix codes
     """
-    if fixed_type == "1":
+    if fixed_type == "1" or fixed_type == "PREFIX":
         return codes.buildPrefixProperty(alphabet)
-    elif fixed_type == "2":
+    elif fixed_type == "2" or fixed_type == "SUFFIX":
         return codes.buildSuffixProperty(alphabet)
-    elif fixed_type == "3":
+    elif fixed_type == "3" or fixed_type == "INFIX":
         return IATProp(infixTransducer(alphabet))
-    elif fixed_type == "4":
+    elif fixed_type == "4" or fixed_type == "OUTFIX":
         return codes.buildOutfixProperty(alphabet)
-    elif fixed_type == "5":
+    elif fixed_type == "5" or fixed_type == "HYPERCODE":
         return codes.buildHypercodeProperty(alphabet)
 
 def index(request):

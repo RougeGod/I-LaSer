@@ -3,7 +3,8 @@
 # coding=utf-8
 __author__ = 'rvr'
 import os
-import os.path
+import os.path as path
+import platform
 import base64
 from string import Template
 from django.conf import settings
@@ -12,11 +13,13 @@ ZIP_PROG = "zip"
 UNZIP_PROG = "unzip"
 
 #for running unittest
-#PATH='/Users/Stavros/Dropbox/Documents/my_documents/RESEARCH/myHQP/abisola/laser_update/laser/media/'
+#PATH='/Users/Stavros/Dropbox/Documents/\
+# my_documents/RESEARCH/myHQP/abisola/laser_update/laser/media/'
 #PATH = '/var/www/project/media/'
 
-#for running the server
-PATH = settings.MEDIA_ROOT
+#for running the server, it's beautiful
+PATH = settings.MEDIA_ROOT if platform.system() == 'Linux' else \
+    path.realpath(path.join(path.dirname(__file__), '..\\..', 'media\\'))
 FADO_ZIP = PATH + "FAdo.zip"
 
 def stand_alone(name, lines, request=None):

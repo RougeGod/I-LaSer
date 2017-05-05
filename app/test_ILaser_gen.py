@@ -23,7 +23,7 @@ strsx = '@Transducer 1 * 0\n0 a @epsilon 0\n0 b @epsilon 0\n0 a @epsilon 1\n0 b 
 #tsx = fio.readOneFromString(strsx)
 #
 #
-##  Input altering transducers 
+##  Input altering transducers
 str1sd = '@Transducer 1 * 0\n0 a a 0\n0 b b 0\n0 a b 1\n1 a a 1\n1 b b 1\n'
 #t1sd = fio.readOneFromString(str1sd)
 str2sd = '@Transducer 1 2 * 0\n0 a a 0\n0 b b 0\n0 a b 1\n1 a a 1\n1 b b 1\n1 a b 2\n1 b a 2\n2 a a 2\n2 b b 2\n'
@@ -170,7 +170,8 @@ strb7 = '@NFA 7 * 0\n0 a 1\n0 b 1\n1 a 2\n1 b 2\n2 a 3\n2 b 3\n3 a 4\n3 b 4\n4 a
 class MyTestCase(unittest.TestCase):
     def test_CORRsatNO(self):
         lines = program(ptype="ERRCORR", test="SATW", aname=a_bstar_a,
-                        strexp=None, sigma=None, tname=s1ts, s_num= None, l_num= None, n_num= None)
+                        strexp=None, sigma=None, tname=s1ts, s_num=None,
+                        l_num=None, n_num=None)
         should_be = (lines[LN_ANS-1] == 'p = buildErrorCorrectPropS(t)\n') and \
                     (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
         self.assertTrue(should_be)
@@ -209,7 +210,7 @@ class MyTestCase(unittest.TestCase):
                     (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
         self.assertTrue(should_be)
 
-        
+
     def test_IATsatNO(self):
         lines = program(ptype="INALT", test="SATW", aname=a_ab_bb,
                         strexp=None, sigma=None, tname=s1ts, s_num= None, l_num= None, n_num= None)
