@@ -96,10 +96,10 @@
                 </div>
                 <br>
                 <div id="integers_input" class="col-md-12 text-center" >
-                    <div class="col-md-12 int_title" > <b>Input below the integers for the Construction question:</b></div>
-                    <div class="col-md-6 text-right align-num" >S (# of digits in the alphabet)</div><div class="col-md-6 text-left align-num" ><input type="number" name="s_int"/></div>
-                    <div class="col-md-6 text-right align-num" >N (# of words to construct)</div><div class="col-md-6 text-left align-num" ><input type="number" name="n_int"/></div>
-                    <div class="col-md-6 text-right align-num" >L (length of these words)</div><div class="col-md-6 text-left align-num" ><input type="number" name="l_int"/></div>
+                    <div class="col-md-12 int_title"><b>Input below the integers for the Construction question:</b></div>
+                    <div class="col-md-6 text-right align-num">S (# of digits in the alphabet)</div><div class="col-md-6 text-left align-num" ><input type="number" name="s_int"/></div>
+                    <div class="col-md-6 text-right align-num">N (# of words to construct)</div><div class="col-md-6 text-left align-num" ><input type="number" name="n_int"/></div>
+                    <div class="col-md-6 text-right align-num">L (length of these words)</div><div class="col-md-6 text-left align-num" ><input type="number" name="l_int"/></div>
                 </div>
                 <div id="div1" class="col-md-12 text-center" >
                     <div class="col-md-12">
@@ -125,30 +125,36 @@
                     <div class="col-md-12">
                         {{ form.transducer_file.errors }}
                     </div>
-                    <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
-                    <div class="col-lg-5 col-lg-offset-5">
+                    <div class="col-lg-4 col-lg-offset-2 text-center">
+                        <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
                        <!-- {{ form.transducer_file }}-->
                         <input type="file" name="transducer_file">
+                    </div>
+                    <div class="col-lg-4 text-center form-group">
+                        <label for="transducer_text"><b>OR</b> use this textarea:</label>
+                        <textarea class="form-control" id="transducer_text1" rows="5" name="transducer_text"></textarea>
                     </div>
                 </div>
                 <div id="div3" class="col-md-12">
                     <div class="col-md-12" >
                         {{ form.transducer_file.errors }}
                     </div>
-                    <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
-                    <div class="col-lg-5 col-lg-offset-5" >
+                    <div class="col-lg-4 col-lg-offset-2 text-center" >
+                        <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
                         <!-- {{ form.transducer_file }}-->
                         <input type="file" name="transducer_file">
                     </div>
+                    <div class="col-lg-4 text-center form-group">
+                        <label for="transducer_text"><b>OR</b> use this textarea:</label>
+                        <textarea class="form-control" id="transducer_text2" rows="5" name="transducer_text"></textarea>
+                    </div>
                 </div>
                 <div class="col-md-12 text-center" id="subbutton">
-                    <input type="submit" value = "Submit Request" name = "run_code" />&nbsp;&nbsp;
-                    <input type="submit" value = "Generate Program" name = "gen_code" /> &nbsp;&nbsp;
-                    <input type="submit" id="reset" value = "        Clear        " name="clear_page"/>
+                    <input type="submit" value = "Submit Request" name = "run_code" />
+                    <input type="submit" value = "Generate Program" name = "gen_code" />
+                    <input type="submit" id="reset" value="Clear" name="clear_page"/>
                 </div>
             </form>
-
-
             <div id="div4" class="col-md-12 text-center center-block">
                 <h4>{{ automaton }}</h4>
                 <h4>{{ transducer }}</h4>

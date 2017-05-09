@@ -6,7 +6,6 @@ test the decision question.
 
 from time import time
 import re
-import logging
 import django
 from django.shortcuts import render_to_response, render
 from django.conf import settings
@@ -109,6 +108,9 @@ def upload_file(request):
         either have uploaded only a file or no file."})
 
 def get_fixed_type(aut_str):
+    """
+    Gets the fixed type of the automaton string, if it's there.
+    """
     if aut_str.count('@') > 1:
         res = re.search(r'(.+?)\n([\s\S]+)$', re.sub(r'\r', "", aut_str))
         fixed_type = res.group(1).strip(' @')
@@ -186,13 +188,23 @@ def handle_satisfaction_maximality(
     # User-Input Property
     else:
         file_ = files.get('transducer_file')
-        if file_ is None:
-            return {'form':form, 'error_message': "Please provide a property file.",
-                    'automaton':aut_name}
 
-        t_str = file_.read()
-        t_name = "Property: " + file_.name
-        file_.close()
+        if file_: # Get it from the file by default
+            # automaton string
+            t_str = file_.read()
+
+            #automaton name
+            t_name = "Property: " + file_.name
+
+            file_.close()
+        elif post.get('transducer_text'):
+            # automaton string
+            t_str = str(post.get('transducer_text'))
+
+            #automaton name
+            t_name = "Property: N/A"
+        else:
+            return {'form': form, 'error_message': 'Please provide a property file.'}
 
         # Input-Altering Property (given as trajectory or transducer)
         if property_type == "2":
@@ -269,7 +281,9 @@ def handle_construction(
         property_type, post,
         files, form=True
     ):
-    """Handle the construction choice of the website"""
+    """
+    Handle the construction choice of the website.
+    """
     n_num = int(post.get("n_int", -1))
     s_num = int(post.get("s_int", -1))
     l_num = int(post.get("l_int", -1))
@@ -282,7 +296,7 @@ def handle_construction(
     elif s_num > l_num:
         err = "S must be less than L"
 
-    if err != '':
+    if err:
         return {'form': form, 'error_message': err}
 
     if property_type == "1":
@@ -363,18 +377,18 @@ def handle_ipp(
         prop = codes.buildErrorDetectPropS(t_str)
     except (YappyError, AttributeError):
         return {'form':form, 'error_message':
-                "The property file appears to be incorrectly formatted.",
+                'The property file appears to be incorrectly formatted.',
                 'transducer':t_name}
 
     if limitTranP({}, prop.Aut.delta, LIMIT, int(n_num)):
         return {'form':form, 'error_message':
-                "Size of request exceeds limit! (See 'Technical Notes')"}
+                'Size of request exceeds limit! (See "Technical Notes")'}
 
     try:
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
     except DFAsymbolUnknown:
         return {'form': form, 'error_message':
-                "The property file appears to be incorrectly formatted.",
+                'The property file appears to be incorrectly formatted.',
                 'transducer': t_name}
 
     #text_path, text_title = write_witness(witness, filename)
@@ -556,7 +570,7 @@ def get_code(post, files, form=True, test_mode=None):
             prop = "ERRCORR"
 
     prog_lines = gen_program(name, prop, test, aut_str, t_str, sigma, regexp,
-                            DESCRIBE[question], test_mode, s_num, l_num, n_num)
+                             DESCRIBE[question], test_mode, s_num, l_num, n_num)
 
     if test_mode is not None:
         return prog_lines
@@ -583,11 +597,11 @@ def create_fixed_property(alphabet, fixed_type):
     else:
         return None
 
-def index(request):
+def index(_):
     """returns the rendered index.html files"""
     return render_to_response('index.html')
 
 
-def examples(request, example_type):
+def examples(_, example_type):
     """returns the various example html files"""
     return render_to_response('examples/'+example_type+'.html')

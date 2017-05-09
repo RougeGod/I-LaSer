@@ -29,6 +29,8 @@ class UploadFileForm(forms.Form):
 
     transducer_file = forms.FileField(required=False)
 
+    transducer_text = widgets.Textarea()
+
     property_type = forms.ChoiceField(choices=PROPERTY_TYPE_CHOICE,
                                       required=True)
     fixed_type = forms.ChoiceField(choices=FIXED_TYPE_CHOICE,

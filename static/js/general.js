@@ -19,9 +19,37 @@ $(function() {
             this_.removeClass('border-success border-failure');
         }
     });
+
+    $('#transducer_text1').on('change keyup paste', function() {
+        var this_ = $(this);
+
+        if(this_.val() !== '') {
+            if(validate(this_.val(), true)) {
+                this_.removeClass('border-failure').addClass('border-success');
+            } else {
+                this_.removeClass('border-success').addClass('border-failure');
+            }
+        } else {
+            this_.removeClass('border-success border-failure');
+        }
+    })
+
+    $('#transducer_text2').on('change keyup paste', function() {
+        var this_ = $(this);
+
+        if(this_.val() !== '') {
+            if(validate(this_.val(), true)) {
+                this_.removeClass('border-failure').addClass('border-success');
+            } else {
+                this_.removeClass('border-success').addClass('border-failure');
+            }
+        } else {
+            this_.removeClass('border-success border-failure');
+        }
+    })
 });
 
-function validate(str) {
+function validate(str, acceptTraj) {
     var type,
         header,
         remainder
@@ -31,6 +59,10 @@ function validate(str) {
     header = str.replace(/^(.+?)\n[\s\S]+/, "$1");
     remainder = str.replace(/^.+?\n([\s\S]+)$/, "$1");
 
+    if(acceptTraj && /[01*+() ]+/.test(header)) {
+        return true;
+    }
+
     if(header.startsWith('@')) {
         if(remainder.startsWith('@')) {
             type = 'fa-fixed'
@@ -39,7 +71,7 @@ function validate(str) {
         }
     } else if(header.startsWith('(')) {
         type = 'other'
-    } else return false;
+    }
 
     if(type === 'fa' || type === 'fa-fixed') {
         var safe = true;
