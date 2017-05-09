@@ -32,26 +32,36 @@ function validate(str) {
     remainder = str.replace(/^.+?\n([\s\S]+)$/, "$1");
 
     if(header.startsWith('@')) {
-        type = 'fa'
+        if(remainder.startsWith('@')) {
+            type = 'fa-fixed'
+        } else {
+            type = 'fa'
+        }
     } else if(header.startsWith('(')) {
         type = 'other'
     } else return false;
 
-    if(type === 'fa') {
+    if(type === 'fa' || type === 'fa-fixed') {
         var safe = true;
 
+        if(type == 'fa-fixed') {
+            remainder = remainder.replace(/^.+?\n([\s\S]+)$/, "$1");
+        }
+
         remainder.split('\n').forEach(function(line) {
-            if(!/^\d+ \S+? \d+$/.test(line) && !/^\d+ \S+? \S+? \d+$/.test(line)) {
+            if(!/^\d+ +\S+? +\d+$/.test(line.trim()) && !/^\d+ +\S+? +\S+? +\d+$/.test(line.trim())) {
                 safe = false;
             }
         });
 
         return safe;
+    } else if(type === 'fa-fixed') {
+
     } else {
         var safe = true;
 
         remainder.split('\n').forEach(function(line) {
-            if(!/^\d+ \S+? \d+ *$/.test(line) && !/\d+ -\| \(FINAL\) *$/.test(line)) {
+            if(!/^\d+ +\S+? +\d+ *$/.test(line) && !/\d+ -\| \(FINAL\) *$/.test(line)) {
                 safe = false;
             }
         });

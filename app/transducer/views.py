@@ -155,42 +155,38 @@ def handle_satisfaction_maximality(
         return {'form':form, 'error_message':
                 'Size of the automaton exceeds limit! (See "Technical Notes")',
                 'automaton':aut_name}
-    if not property_type:
-        if fixed_type is not None:
-            t_name = ""
-            prop = create_fixed_property(aut.Sigma, fixed_type)
-        else:
-            return {'form': form, 'error_message': "Please select a property type."}
-    elif property_type == "1":
+    if property_type == "1":
         t_name = ""
-        fixed_type = post.get('fixed_type')
-        if 0 < int(fixed_type) < 6:
-            prop = create_fixed_property(aut.Sigma, fixed_type)
-        else:
-            p_name = "code"
+        if fixed_type is None:
+            fixed_type = post.get('fixed_type')
+
+        prop = create_fixed_property(aut.Sigma, fixed_type)
+        if prop is None:
             prop = UDCodeProp(aut.Sigma)
-            if question == '2':
-                try:
-                    if prop.maximalP(aut):
-                        decision = "YES, the language is a maximal " + p_name
-                    else:
-                        decision = "NO, the language is not a maximal " + p_name
-                except PropertyNotSatisfied:
-                    decision = "ERROR: the language doesn't satisfy the property"
-            else:
+            if question == '1':
                 witness = prop.notSatisfiesW(aut)
                 if witness == (None, None):
-                    decision = "YES, the language satisfies the " + p_name + " property"
+                    decision = "YES, the language satisfies the code property"
+                    proof = ''
                 else:
-                    decision = "NO, the language does not satisfy the " + p_name + " property"
+                    decision = "NO, the language does not satisfy the code property"
                     proof = formatCounterExample(witness)
+            else:
+                proof = ''
+                try:
+                    if prop.maximalP(aut):
+                        decision = "YES, the language is a maximal code"
+                    else:
+                        decision = "NO, the language is not a maximal code"
+                except PropertyNotSatisfied:
+                    decision = "ERROR: the language doesn't satisfy the property"
 
             return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
 
     # User-Input Property
     else:
-        file_ = files.get('transducer_file', False)
-        if not file_:
+        file_ = files.get('transducer_file')
+        if file_ is None:
             return {'form':form, 'error_message': "Please provide a property file.",
                     'automaton':aut_name}
 
@@ -391,14 +387,19 @@ def handle_ipp(
 
 
 def get_response(post, files, form=True):
-    """This does something with the response?"""
+    """
+    This handles lighter tasks that can be safely computed on the server.
+    It gives the response to the user via the webpage
+    """
     form = UploadFileForm(post, files) if form else None
 
-    question = post.get('que', False)
-    property_type = post.get('prv', False)
+    question = post.get('que')
+    property_type = post.get('prv')
 
     if not question:
         return {'form': form, 'error_message': "Please select a question."}
+    elif not property_type:
+        return {'form': form, 'error_message': "Please select a property type."}
 
     if question == "1" or question == "2":
         return handle_satisfaction_maximality(property_type, question, post, files, form)
@@ -414,6 +415,11 @@ def write_witness(witness):
 
 
 def get_code(post, files, form=True, test_mode=None):
+    """
+    If a computation is too expensive to be run in due time on the server,
+    the user can generate code and allow the download of that. This method
+    handles that route.
+    """
     if form:
         form = UploadFileForm(post, files)
     else:
@@ -422,8 +428,10 @@ def get_code(post, files, form=True, test_mode=None):
     question = post.get('que')
     property_type = post.get('prv')
 
-    if not question:
+    if question is None:
         return {'form': form, 'error_message': "Please select a question."}
+    elif property_type is None:
+        return {'form': form, 'error_message': "Please select a property type."}
 
     if question == '3':
         question = '4'
@@ -473,17 +481,13 @@ def get_code(post, files, form=True, test_mode=None):
             decision = "S must be less than L"
             return {'form': form, 'error_message': decision}
 
-    # Fixed Property
-    if not property_type:
-        if fixed_type is not None:
-            t_str = None
-            prop = fixed_type
-        else:
-            return {'form': form, 'error_message': "Please select a property type."}
-    elif property_type == "1":
+    if property_type == "1":
         t_str = None
-        fixed_type = post['fixed_type']
-        prop = FIXED_DICT[fixed_type]
+        if fixed_type is None:
+            fixed_type = post['fixed_type']
+            prop = FIXED_DICT[fixed_type]
+        else:
+            prop = fixed_type
     else:
         file_ = files.get('transducer_file')
 
@@ -576,6 +580,8 @@ def create_fixed_property(alphabet, fixed_type):
         return codes.buildOutfixProperty(alphabet)
     elif fixed_type == "5" or fixed_type == "HYPERCODE":
         return codes.buildHypercodeProperty(alphabet)
+    else:
+        return None
 
 def index(request):
     """returns the rendered index.html files"""

@@ -49,7 +49,9 @@
             <div class="col-md-12" style="border: solid #c0c0c0 1px; margin-top: 20px; margin-bottom: 10px;"></div>
             <form action="{% url 'app:independence' %}" method="post" enctype="multipart/form-data" name="form1">
                 {% csrf_token %}
-                <div class="col-md-12 text-center" style="color: red; font-size: 12px;">{{ error_message }}</div>
+                <div class="col-md-12 text-center" style="color: red; font-size: 12px;">
+                    {{ error_message }}
+                </div>
 
                 <div class="col-md-12 text-center">
                     <div class="col-md-12 text-center" style="margin-top: 20px; margin-bottom: 5px;">
@@ -74,11 +76,9 @@
                     </div>
                     <div class="col-lg-4 text-center form-group">
                         <label for="automata_text"><b>OR</b> use this textarea:</label>
-                        <!--{{ form.automata_text }}-->
                         <textarea class="form-control" id="automata_text" rows="5" name="automata_text"></textarea>
                     </div>
                 </div>
-
 
                 <div id = "divsat" class="col-md-12 text-center" style="margin-top: 10px; display: none">
                     <div class="col-md-12">
@@ -105,13 +105,13 @@
                     <div class="col-md-12">
                         {{ form.fixed_type.errors }}
                     </div>
-                    <br>
                     <div class="col-md-12">
-                        <label for="id_a" style="margin-top: 15px;">Select the fixed property:</label>
+                        <label for="id_a" style="margin-top: 15px;">Select the fixed property (If not specified in the file above):</label>
                     </div>
                     <div class="col-lg-4 col-lg-offset-4">
-                        <select  class="selectpicker selectC" style="margin-bottom: 15px;" name="fixed_type">
-                            <option value="1" selected>Prefix</option>
+                        <select class="selectpicker selectC" style="margin-bottom: 15px;" name="fixed_type">
+                            <option value="" selected>-Please Select-</option>
+                            <option value="1">Prefix</option>
                             <option value="2">Suffix</option>
                             <option value="3">Infix</option>
                             <option value="4">Outfix</option>
@@ -133,7 +133,6 @@
                 </div>
                 <div id="div3" class="col-md-12">
                     <div class="col-md-12" >
-
                         {{ form.transducer_file.errors }}
                     </div>
                     <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
