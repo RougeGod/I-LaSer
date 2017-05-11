@@ -18,7 +18,7 @@ ErrCorrectProp, regexpInvalid, infixTransducer, IATProp
 from FAdo.yappy_parser import YappyError
 import FAdo.fl as fl
 
-from app.transducer.laserShared import construct_automaton, IncorrectFormat, \
+from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      constructInAltProp, limitAutP, limitTranP, formatCounterExample
 
 try:
@@ -43,6 +43,8 @@ DESCRIBE = {'1': DECIDE_REQUEST + 'satisfies the given property. \
             '4': 'Construct set of words satisfying the given property.'}
 FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'INFIX',
               '4': 'OUTFIX', '5': 'HYPERCODE', '6': 'CODE'}
+
+PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 
 def list_to_string(list_, dict_):
     """turns a list into a string"""
@@ -85,20 +87,15 @@ def upload_file(request):
     form = UploadFileForm()
     try:
         if request.method == 'POST':
-            if 'run_code' in request.POST:
-                if request.POST['que'] == "":
-                    return render(request, 'upload.html',
-                                  {'error_message': 'You have to select a question \
-                                  and its options to perform a request', 'form':form})
+            if request.POST['que'] == "":
+                response = {'form':form, 'error_message':
+                            'You have to select a question and its options to perform a request'}
+            elif 'run_code' in request.POST:
                 response = get_response(request.POST, request.FILES)
             elif 'gen_code' in request.POST:
-                if request.POST['que'] == "":
-                    return render(request, 'upload.html',
-                                  {'error_message':'You have to select a question and its options \
-                                  to perform a request', 'form':form})
                 response = get_code(request.POST, request.FILES)
             elif 'clear_page' in request.POST:
-                return render(request, 'upload.html', {'form':form})
+                response = {'form': form}
         else:
             response = {'form': form}
 
@@ -149,15 +146,14 @@ def handle_satisfaction_maximality(
     try:
         aut = construct_automaton(aut_str)
     except (IncorrectFormat, TypeError):
-        return {'form': form, 'error_message':
-                'ERROR: The property file appears to be incorrectly formatted.',
+        return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'automaton': aut_name}
 
     if limitAutP(aut, LIMIT_AUTOMATON):
         return {'form':form, 'error_message':
                 'Size of the automaton exceeds limit! (See "Technical Notes")',
                 'automaton':aut_name}
-    if property_type == "1":
+    if property_type == "1": # Fixed type
         t_name = ""
         if fixed_type is None:
             fixed_type = post.get('fixed_type')
@@ -165,23 +161,22 @@ def handle_satisfaction_maximality(
         prop = create_fixed_property(aut.Sigma, fixed_type)
         if prop is None:
             prop = UDCodeProp(aut.Sigma)
+            proof = ''
             if question == '1':
                 witness = prop.notSatisfiesW(aut)
                 if witness == (None, None):
                     decision = "YES, the language satisfies the code property"
-                    proof = ''
                 else:
                     decision = "NO, the language does not satisfy the code property"
                     proof = formatCounterExample(witness)
             else:
-                proof = ''
                 try:
                     if prop.maximalP(aut):
                         decision = "YES, the language is a maximal code"
                     else:
                         decision = "NO, the language is not a maximal code"
                 except PropertyNotSatisfied:
-                    decision = "ERROR: the language doesn't satisfy the property"
+                    decision = "ERROR: the language doesn't satisfy the property."
 
             return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
 
@@ -211,8 +206,7 @@ def handle_satisfaction_maximality(
             try:
                 prop = constructInAltProp(t_str, aut.Sigma)
             except (IncorrectFormat, TypeError):
-                return {'form':form, 'error_message':
-                        'The property file appears to be incorrectly formatted.',
+                return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
 
         # Input-Preserving Property
@@ -220,8 +214,7 @@ def handle_satisfaction_maximality(
             try:
                 prop = IPTProp(readOneFromString(t_str))
             except (YappyError, AttributeError):
-                return {'form':form, 'error_message':
-                        'The property file appears to be incorrectly formatted.',
+                return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
 
         # Error-Correction
@@ -229,8 +222,7 @@ def handle_satisfaction_maximality(
             try:
                 prop = ErrCorrectProp(readOneFromString(t_str))
             except (YappyError, AttributeError):
-                return {'form':form, 'error_message':
-                        'The property file appears to be incorrectly formatted.',
+                return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
 
     if limitTranP(aut.delta, prop.Aut.delta, LIMIT):
@@ -339,15 +331,14 @@ def handle_iap(
         t_name, t_str, form=True
     ):
     """Handle Input-altering properties"""
-    alp = set()
+    alphabet = set()
     for i in range(int(s_num)):
-        alp.add(str(i))
+        alphabet.add(str(i))
 
     try:
-        prop = constructInAltProp(t_str, alp)
+        prop = constructInAltProp(t_str, alphabet)
     except (IncorrectFormat, TypeError):
-        return {'form': form, 'error_message':
-                "The property file appears to be incorrectly formatted.",
+        return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
 
     if limitTranP({}, prop.Aut.delta, LIMIT, int(n_num)):
@@ -357,8 +348,7 @@ def handle_iap(
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
-        return {'form': form, 'error_message':
-                'The property file appears to be incorrectly formatted.',
+        return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
 
     words = write_witness(witness)
@@ -376,8 +366,7 @@ def handle_ipp(
     try:
         prop = codes.buildErrorDetectPropS(t_str)
     except (YappyError, AttributeError):
-        return {'form':form, 'error_message':
-                'The property file appears to be incorrectly formatted.',
+        return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
 
     if limitTranP({}, prop.Aut.delta, LIMIT, int(n_num)):
@@ -387,8 +376,7 @@ def handle_ipp(
     try:
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
     except DFAsymbolUnknown:
-        return {'form': form, 'error_message':
-                'The property file appears to be incorrectly formatted.',
+        return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
 
     #text_path, text_title = write_witness(witness, filename)
@@ -434,13 +422,19 @@ def get_code(post, files, form=True, test_mode=None):
     the user can generate code and allow the download of that. This method
     handles that route.
     """
-    if form:
-        form = UploadFileForm(post, files)
-    else:
-        form = None
 
+    form = UploadFileForm(post, files) if form else None
     question = post.get('que')
     property_type = post.get('prv')
+    test = TEST_DICT[question]
+    prop = None
+    regexp = None
+    name = str(int(time()*1000))
+    sigma = None
+    n_num = ''
+    s_num = ''
+    l_num = ''
+    t_str = ''
 
     if question is None:
         return {'form': form, 'error_message': "Please select a question."}
@@ -452,16 +446,7 @@ def get_code(post, files, form=True, test_mode=None):
     elif question == '2' and property_type == '1' and post['fixed_type'] == '6':
         question = '3'
 
-    test = TEST_DICT[question]
-    prop = None
-    regexp = None
-    name = str(int(time()*1000))
-    sigma = None
-    n_num = ''
-    s_num = ''
-    l_num = ''
-
-    if question == '1' or question == '2' or question == '3':
+    if question in ['1', '2', '3']:
         file_ = files.get('automata_file')
 
         if file_: # Get it from the file by default
@@ -478,22 +463,19 @@ def get_code(post, files, form=True, test_mode=None):
             aut = construct_automaton(aut_str)
             #aut_str = saveToString(aut, '\n')
         except IncorrectFormat:
-            decision = "ERROR: the automaton appears to be incorrectly formatted"
-            return {'form': form, 'error_message': decision}
+            return {'form': form, 'error_message':
+                    'The automaton appears to be incorrectly formatted'}
     elif question == '4':
         n_num = int(post.get("n_int", -1))
         s_num = int(post.get("s_int", -1))
         l_num = int(post.get("l_int", -1))
 
         if n_num <= 0 or s_num <= 0 or l_num <= 0:
-            decision = "Please enter three positive integers S, N, L."
-            return {'form': form, 'error_message': decision}
+            return {'form':form, 'error_message':'Please enter three positive integers S, N, L.'}
         elif s_num < 2 or s_num > 10:
-            decision = "S must be less than 10 and greater than 1"
-            return {'form': form, 'error_message': decision}
+            return {'form':form, 'error_message':'S must be less than 10 and greater than 1'}
         elif s_num > l_num:
-            decision = "S must be less than L"
-            return {'form': form, 'error_message': decision}
+            return {'form':form, 'error_message':'S must be less than L'}
 
     if property_type == "1":
         t_str = None
@@ -505,69 +487,57 @@ def get_code(post, files, form=True, test_mode=None):
     else:
         file_ = files.get('transducer_file')
 
-        if not file_:
-            decision = "Please provide a property file."
-            return {'form':form, 'error_message': decision}
+        if file_: # Get it from the file by default
+            # transducer string
+            t_str = file_.read()
 
-        t_str = file_.read()
-        file_.close()
+            file_.close()
+        elif post.get('transducer_text'):
+            # transducer string
+            t_str = str(post.get('transducer_text'))
+        else:
+            return {'form': form, 'error_message': 'Please provide a property file.'}
 
         # Input-Altering Property (given as trajectory or transducer)
-        if property_type == "2":
-            try:
-                result = readOneFromString(t_str)
-                if isinstance(result, NFA) or isinstance(result, DFA):
-                    prop = "TRAJECT"
-                    if question == '1' or question == '2' or question == '3':
-                        sigma = aut.Sigma
-                    elif question == '4':
-                        alp = set()
-                        for i in range(int(s_num)):
-                            alp.add(str(i))
-                        sigma = alp
-                else:
-                    prop = "INALT"
-            except YappyError:
-                try:
-                    if question == '1' or question == '2' or question == '3':
-                        codes.buildTrajPropS(t_str, aut.Sigma)
-                    elif question == '4':
-                        alp = set()
-                        for i in range(int(s_num)):
-                            alp.add(str(i))
-                        codes.buildTrajPropS(t_str, alp)
-                except regexpInvalid:
-                    decision = "The property file appears to be incorrectly formatted."
-                    return {'form': form, 'error_message': decision}
-                prop = "TRAJECT"
-                regexp = "tStr"
-                if question == '1' or question == '2' or question == '3':
-                    # alp = set()
-                    # for i in range(int(s_num)):
-                    #     alp.add(str(i))
-                    # sigma = alp            ## Replace 3 lines with next
-                    sigma = aut.Sigma
-                elif question == '4':
-                    sigma = alp
+    if property_type == "2":
+        if question in ['1', '2', '3']:
+            sigma = aut.Sigma
+        elif question == '4':
+            sigma = set()
+            for i in range(int(s_num)):
+                sigma.add(str(i))
 
-        # Input-Preserving Property
-        elif property_type == "3":
+        try:
+            result = readOneFromString(t_str)
+            if isinstance(result, NFA) or isinstance(result, DFA):
+                prop = 'TRAJECT'
+            else:
+                sigma = None
+                prop = 'INALT'
+        except YappyError:
             try:
-                IPTProp(readOneFromString(t_str))
-            except (YappyError, AttributeError):
-                return {'form':form, 'error_message':
-                        'The property file appears to be incorrectly formatted.'}
+                codes.buildTrajPropS(t_str, sigma)
+            except regexpInvalid:
+                return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT}
+            prop = 'TRAJECT'
+            regexp = 'tStr'
 
-            prop = "INPRES"
+    # Input-Preserving Property
+    elif property_type == "3":
+        try:
+            IPTProp(readOneFromString(t_str))
+        except (YappyError, AttributeError):
+            return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT}
 
-        # Error-Correction
-        elif property_type == "4":
-            try:
-                ErrCorrectProp(readOneFromString(t_str))
-            except YappyError:
-                decision = "The property file appears to be incorrectly formatted."
-                return {'form':form, 'error_message': decision}
-            prop = "ERRCORR"
+        prop = "INPRES"
+
+    # Error-Correction
+    elif property_type == "4":
+        try:
+            ErrCorrectProp(readOneFromString(t_str))
+        except YappyError:
+            return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT}
+        prop = "ERRCORR"
 
     prog_lines = gen_program(name, prop, test, aut_str, t_str, sigma, regexp,
                              DESCRIBE[question], test_mode, s_num, l_num, n_num)
@@ -575,8 +545,8 @@ def get_code(post, files, form=True, test_mode=None):
     if test_mode is not None:
         return prog_lines
     else:
-        decision = "<a href='"+settings.MEDIA_URL+"%s.zip'> \
-        Download your code </a></br> (See 'Technical notes')" % name
+        decision = '<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")'\
+             % (settings.MEDIA_URL, name)
         return {'form': form, 'result': decision}
 
 
@@ -584,18 +554,19 @@ def create_fixed_property(alphabet, fixed_type):
     """
     Create a property of a fixed variety such as prefix or suffix codes
     """
+    result = None
     if fixed_type == "1" or fixed_type == "PREFIX":
-        return codes.buildPrefixProperty(alphabet)
+        result = codes.buildPrefixProperty(alphabet)
     elif fixed_type == "2" or fixed_type == "SUFFIX":
-        return codes.buildSuffixProperty(alphabet)
+        result = codes.buildSuffixProperty(alphabet)
     elif fixed_type == "3" or fixed_type == "INFIX":
-        return IATProp(infixTransducer(alphabet))
+        result = IATProp(infixTransducer(alphabet))
     elif fixed_type == "4" or fixed_type == "OUTFIX":
-        return codes.buildOutfixProperty(alphabet)
+        result = codes.buildOutfixProperty(alphabet)
     elif fixed_type == "5" or fixed_type == "HYPERCODE":
-        return codes.buildHypercodeProperty(alphabet)
-    else:
-        return None
+        result = codes.buildHypercodeProperty(alphabet)
+
+    return result
 
 def index(_):
     """returns the rendered index.html files"""

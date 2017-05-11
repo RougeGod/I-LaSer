@@ -52,7 +52,7 @@ $(function() {
 function validate(str, acceptTraj) {
     var type,
         header,
-        remainder
+        remainder;
 
     str = str.replace(/\r/g, "").replace(/\n$/, "");
 
