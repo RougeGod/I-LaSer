@@ -5,6 +5,9 @@ from FAdo import reex
 from FAdo.yappy_parser import YappyError
 from FAdo.codes import IATProp, buildTrajPropS, TrajProp
 from FAdo.fa import DFA, NFA
+import FAdo.fl as fl
+
+from app.transducer.util import list_to_string, long_to_base
 
 FIXED = ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']
 
@@ -24,7 +27,7 @@ def construct_automaton(aut_str):
             except Exception:
                 raise IncorrectFormat()
 
-def constructInAltProp(t_str, sigma):
+def construct_input_alt_prop(t_str, sigma):
     """Construct an input-altering property"""
     try:
         result = readOneFromString(t_str)
@@ -38,7 +41,7 @@ def constructInAltProp(t_str, sigma):
         except Exception:
             raise IncorrectFormat
 
-def formatCounterExample(witness):
+def format_counter_example(witness):
     """Using a witness object, output a string that shows an example where a property fails."""
     if isinstance(witness, tuple):
         if len(witness) == 3:
@@ -75,12 +78,12 @@ def isLimitExceedForEditDist(automaton):
     return size*size*len(automaton.Sigma) > 1000000
 
 
-def limitAutP(aut, limit):
+def limit_aut_prop(aut, limit):
     """Does something with limits"""
     return len(aut.delta) >= limit
 
 
-def limitTranP(aut_delta, tran_delta, limit, lang_size=0):
+def limit_tran_prop(aut_delta, tran_delta, limit, lang_size=0):
     """Find if the calculation would be too long to do on the server"""
     size = lang_size
     if size == 0:
@@ -98,6 +101,29 @@ def limitTranP(aut_delta, tran_delta, limit, lang_size=0):
 
     return size*size*size_2 > limit
 
+def make_block_code(list_length, word_length, alphabet_size):
+    """Returns an NFA and a list W of up to N words of length word_length, such that the NFA
+    accepts W, which satisfies the property. The alphabet to use is
+    {0,1,...,s-1}. where s <= 10."""
+    words = []
+    list_ = dict()
+
+    for i in range(alphabet_size):
+        list_[i] = str(i)
+    size = min(list_length, alphabet_size**word_length)
+    for j in range(size):
+        if j == 0:
+            digit_list = [0]
+        else:
+            digit_list = long_to_base(j, alphabet_size)
+        zeros = []
+        for _ in range(word_length - len(digit_list)):
+            zeros.append(0)
+        digit_list.extend(zeros)
+        word = list_to_string(digit_list, list_)
+        words.append(word)
+    aut = fl.FL(words).trieFA().toNFA()
+    return aut, words
 
 class IncorrectFormat(Exception):
     """IncorrectFormat error"""

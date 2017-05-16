@@ -84,5 +84,3 @@ def index(_):
 def examples(_, example_type):
     """Returns the various examples"""
     return render_to_response('examples/'+example_type+'.html')
-
-

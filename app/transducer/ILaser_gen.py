@@ -19,12 +19,12 @@ UNZIP_PROG = "unzip"
 
 #for running the server, it's beautiful
 PATH = settings.MEDIA_ROOT if platform.system() == 'Linux' else \
-    path.realpath(path.join(path.dirname(__file__), '..\\..', 'media\\'))
-FADO_ZIP = PATH + "FAdo.zip"
+    path.realpath(path.join(path.dirname(__file__), '..\\..', 'media'))
+FADO_ZIP = path.join(PATH, "Fado.zip")
 
 def stand_alone(name, lines, request=None):
     """Create the standalone python files"""
-    name = PATH + name
+    name = path.join(PATH, name)
     os.system("rm -rf %s" % name)
     os.mkdir(name)
     os.system("rm -f %s.zip" % name)
@@ -61,13 +61,15 @@ def the_prologue(request=None):
     """
     :param str request: the description of the request for which to generate program
     :rtype: str"""
-    pro = "try:\n" \
-          "    from FAdo.reex import *\n" \
-          "    from FAdo.codes import *\n" \
-          "    from FAdo.fio import *\n" \
-          "    import base64\n" \
-          "except:\n" \
-          "    exit()\n"
+    pro = """
+try:
+    from FAdo.reex import *
+    from FAdo.codes import *
+    from FAdo.fio import *
+    import base64
+except:
+    exit()
+"""
     if request is not None:
         pro += "print \"\\nREQUEST:\\n" + request + "\"\n"
     pro += "print \"\\nANSWER:\\n\",\n"
@@ -94,20 +96,18 @@ BUILD_NAME = {"CODE": ("buildUDCodeProperty", ["ssigma"], 1),
               "SUFFIX": ("buildSuffixProperty", ["ssigma"], 1),
               "TRAJECT": ("buildTrajPropS", ["$strexp", "$sigma"], 1)}
 
-
 TESTS = {"MAXP": "maximalP",
          "MAXW": "notMaximalW",
          "SATP": "satisfiesP",
          "SATW": "notSatisfiesW",
          "MKCO": "makeCode"}
 
-
 def program(
         ptype, test=None, aname=None,
         strexp=None, sigma=None, tname=None,
         s_num=None, l_num=None, n_num=None
     ):
-    """Generates the program"""
+    "Generates the program"
 
     def expand(string):
         """Expand a given string"""
@@ -134,9 +134,9 @@ def program(
                 else:
                     string += "%s," % expand(s_1)
             string = string[:-1] + ")\n"
-            list_.append(string)
-            list_.append("a, answer = p.%s(n_num, l_num, s_num)\n" % TESTS[test])
-            list_.append("print\nfor w in answer:\n    print w\n")
+            list_.extend([string,
+                          'a, answer = p.%s(n_num, l_num, s_num)\n' % TESTS[test],
+                          'print\nfor w in answer:\n    print w\n'])
         else:  # this is probably not needed
             string = "print " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -145,12 +145,12 @@ def program(
             list_.append(string)
         return list_
     else:
-        list_.append("ax = \"%s\"\n" % base64.b64encode(aname))
-        list_.append("a = readOneFromString(base64.b64decode(ax))\n")
+        list_.extend(["ax = \"%s\"\n" % base64.b64encode(aname),
+                      "a = readOneFromString(base64.b64decode(ax))\n"])
         if BUILD_NAME[ptype][2] == 1:
             if tname:
-                list_.append("tx = \"%s\"\n" % base64.b64encode(tname))
-                list_.append("t = base64.b64decode(tx)\n")
+                list_.extend(["tx = \"%s\"\n" % base64.b64encode(tname),
+                              "t = base64.b64decode(tx)\n"])
             string = "ssigma = a.Sigma\n"
             string += "p = " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -159,10 +159,8 @@ def program(
                 else:
                     string += "%s," % expand(s_1)
             string = string[:-1] + ")\n"
-            list_.append(string)
-            #l.append("print p.%s(a)\n" % TESTS[test])  # = the original line
-            list_.append("answer = p.%s(a)\n" % TESTS[test])
-            list_.append("print answer\n")
+            list_.extend([string, "answer = p.%s(a)\n" % TESTS[test],
+                          "print answer\n"])
         else:
             string = "print " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
