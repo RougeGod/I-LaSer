@@ -1,5 +1,7 @@
 """Module contains all of the various handlers for different branches of the site."""
 
+import re
+
 import django
 from django.conf import settings
 
@@ -14,9 +16,15 @@ from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
      make_block_code
 
-from app.transducer.util import create_fixed_property, write_witness, get_fixed_type
+from app.transducer.util import create_fixed_property, write_witness, parse_aut_str
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
+
+TRANSDUCER_TYPES = {
+    'InputAltering': '2',
+    'ErrorDetecting': '3',
+    'ErrorCorrecting': '4',
+}
 
 try:
     LIMIT = settings.LIMIT
@@ -176,7 +184,16 @@ def handle_satisfaction_maximality(
     else:
         return error('Please provide an automaton file.')
 
-    aut_str, fixed_type = get_fixed_type(aut_str)
+    parsed = parse_aut_str(aut_str)
+
+    aut_str = parsed['aut_str']
+    fixed_type = parsed['fixed_type']
+    transducer = parsed['transducer']
+    transducer_type = parsed['transducer_type']
+    trajectory = parsed['trajectory']
+
+    if fixed_type and not property_type:
+        property_type = "1"
 
     try:
         aut = construct_automaton(aut_str)
@@ -222,29 +239,50 @@ def handle_satisfaction_maximality(
         if file_: # Get it from the file by default
             # automaton string
             t_str = file_.read()
-
             #automaton name
             t_name = "Property: " + file_.name
-
             file_.close()
-        elif post.get('transducer_text'):
+
+            t_str = re.sub(r'\r', '', t_str)
+        elif post.get('transducer_text1'):
             # automaton string
-            t_str = str(post.get('transducer_text'))
+            t_str = re.sub(r'\r', '', str(post.get('transducer_text1')))
 
             #automaton name
             t_name = "Property: N/A"
+        elif post.get('transducer_text2'):
+            # automaton string
+            t_str = re.sub(r'\r', '', str(post.get('transducer_text2')))
+
+            #automaton name
+            t_name = "Property: N/A"
+        elif transducer:
+            t_str = re.sub(r'\r', '', transducer)
+
+            t_name = "Property: N/A"
+
+            if transducer_type:
+                property_type = TRANSDUCER_TYPES[transducer_type]
+        elif trajectory:
+            t_str = re.sub(r'\r', '', trajectory)
+
+            t_name = "Property: N/A"
+
+            property_type = "2"
         else:
             return error('Please provide a property file.')
 
+        if not property_type:
+            return error('Please provide a property file.')
         # Input-Altering Property (given as trajectory or transducer)
-        if property_type == "2":
+        elif property_type == "2":
             try:
                 prop = construct_input_alt_prop(t_str, aut.Sigma)
             except (IncorrectFormat, TypeError):
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
 
-        # Input-Preserving Property
+        # Error-Detection
         elif property_type == "3":
             try:
                 prop = IPTProp(readOneFromString(t_str))
@@ -264,42 +302,42 @@ def handle_satisfaction_maximality(
         return {'form':form, 'error_message':
                 'Sizes of the automaton and transducer exceed limit! (See "Technical Notes")',
                 'automaton':aut_name, 'transducer':t_name}
-    else:
-        if question == "1":
-            try:
-                witness = prop.notSatisfiesW(aut)
-            except TypeError:
-                decision = "The automaton file appears to be incorrectly formatted."
-                return {'form':form, 'error_message': decision,
-                        'automaton':aut_name, 'transducer':t_name}
 
-            if witness == (None, None) or witness == (None, None, None):
-                decision = "YES, the language satisfies the property"
-                proof = ''
-            else:
-                decision = "NO, the language does not satisfy the property"
-                proof = format_counter_example(witness)
-            return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-                    'result':decision, 'proof': proof}
-        elif question == "2":
-            err = ''
-            try:
-                witness = prop.notMaximalW(aut)
-            except PropertyNotSatisfied:
-                err = "ERROR: the language does not satisfy the property."
-            except TypeError:
-                err = "The automaton file appears to be incorrectly formatted."
+    if question == "1":
+        try:
+            witness = prop.notSatisfiesW(aut)
+        except TypeError:
+            decision = "The automaton file appears to be incorrectly formatted."
+            return {'form':form, 'error_message': decision,
+                    'automaton':aut_name, 'transducer':t_name}
 
-            if err:
-                return {'form':form, 'error_message': err,
-                        'automaton':aut_name, 'transducer':t_name}
+        if witness == (None, None) or witness == (None, None, None):
+            decision = "YES, the language satisfies the property"
+            proof = ''
+        else:
+            decision = "NO, the language does not satisfy the property"
+            proof = format_counter_example(witness)
+        return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+                'result':decision, 'proof': proof}
+    elif question == "2":
+        err = ''
+        try:
+            witness = prop.notMaximalW(aut)
+        except PropertyNotSatisfied:
+            err = "ERROR: the language does not satisfy the property."
+        except TypeError:
+            err = "The automaton file appears to be incorrectly formatted."
 
-            if witness is None:
-                decision = "YES, the language is maximal with respect to the property."
-                proof = ''
-            else:
-                decision = "NO, the language is not maximal with respect to the property."
-                proof = format_counter_example(witness)
+        if err:
+            return {'form':form, 'error_message': err,
+                    'automaton':aut_name, 'transducer':t_name}
 
-            return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-                    'result':decision, 'proof': proof}
+        if witness is None:
+            decision = "YES, the language is maximal with respect to the property."
+            proof = ''
+        else:
+            decision = "NO, the language is not maximal with respect to the property."
+            proof = format_counter_example(witness)
+
+        return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+                'result':decision, 'proof': proof}

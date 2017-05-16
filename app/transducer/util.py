@@ -41,15 +41,68 @@ def write_witness(witness):
         string += line + '\n'
     return string
 
-def get_fixed_type(aut_str):
+def parse_aut_str(aut_str):
     """
-    Gets the fixed type of the automaton string, if it's there.
+    Parses the given string for extra information
     """
-    if aut_str.count('@') > 1:
-        res = re.search(r'(.+?)\n([\s\S]+)$', re.sub(r'\r', "", aut_str))
-        fixed_type = res.group(1).strip(' @')
 
-        aut_str = res.group(2)
+    aut_str = re.sub(r'\r', "", aut_str)
 
-        return aut_str, fixed_type
-    return aut_str, None
+    count = 0
+    for line in aut_str.splitlines():
+        if line.startswith('@'):
+            count += 1
+
+    result = {
+        'aut_str': None,
+        'fixed_type': None,
+        'trajectory': None,
+        'transducer': None,
+        'transducer_type': None
+    }
+
+    if count == 0:
+        res = re.search(r'(.+?)\n([\s\S]+)', aut_str)
+        if res:
+            result['trajectory'] = res.group(1)
+            result['aut_str'] = res.group(2)
+            return result
+    elif count == 1: # @DFA or @NFA, or Fixed type with regex
+        if not aut_str.startswith('@'):
+            res = re.search(r'(.+?)\n([\s\S]+)', aut_str)
+            result['trajectory'] = res.group(1)
+            result['aut_str'] = res.group(2)
+        else:
+            if aut_str.startswith(\
+                    ('@PREFIX', '@SUFFIX', '@INFIX', '@OUTFIX', '@HYPERCODE', '@CODE')):
+                res = re.search(r'@(.+)([\s\S]+)', aut_str)
+                result['fixed_type'] = res.group(1)
+                result['aut_str'] = res.group(2)
+            else:
+                result['aut_str'] = aut_str
+
+        return result
+    elif count == 2: # Two choices: Fixed Type, Transducer Without Type
+        res = re.search(r'(@[\s\S]+)\n(@[\s\S]+)$', aut_str)
+
+        if res.group(1).strip(' @') in ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']:
+            result['fixed_type'] = res.group(1).strip(' @')
+            result['aut_str'] = res.group(2)
+        elif res.group(1).strip().lower().startswith('@transducer'):
+            result['transducer'] = res.group(1)
+            result['aut_str'] = res.group(2)
+        else:
+            result['aut_str'] = aut_str
+
+        return result
+    elif count == 3: # Transducer with type
+        res = re.search(r'@(.+)\n(@[\s\S]+)\n(@[\s\S]+)$', aut_str)
+        result['transducer_type'] = res.group(1)
+        result['transducer'] = res.group(2)
+        result['aut_str'] = res.group(3)
+        return result
+
+    result['aut_str'] = aut_str
+    return result
+
+

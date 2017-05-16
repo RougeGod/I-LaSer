@@ -29,13 +29,17 @@ def construct_automaton(aut_str):
 
 def construct_input_alt_prop(t_str, sigma):
     """Construct an input-altering property"""
+
+    t_str.strip()
+    t_str += "\n"
+
     try:
         result = readOneFromString(t_str)
-        if isinstance(result, NFA) or isinstance(result, DFA):
-            return TrajProp(result, sigma)
-        else:
+        if isinstance(result, (NFA, DFA)):
             return IATProp(result)
-    except YappyError:
+        else:
+            return TrajProp(result, sigma)
+    except YappyError as e:
         try:
             return buildTrajPropS(t_str, sigma)
         except Exception:

@@ -20,7 +20,7 @@ from app.transducer.laser_shared import construct_automaton, IncorrectFormat
 from app.transducer.ILaser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
-from app.transducer.util import get_fixed_type
+from app.transducer.util import parse_aut_str
 
 try:
     LIMIT = settings.LIMIT
@@ -77,8 +77,8 @@ def get_response(post, files, form=True):
 
     if not question:
         return {'form': form, 'error_message': "Please select a question."}
-    elif not property_type:
-        return {'form': form, 'error_message': "Please select a property type."}
+    # elif not property_type:
+    #     return {'form': form, 'error_message': "Please select a property type."}
 
     if question in ['1', '2']:
         return handle_satisfaction_maximality(property_type, question, post, files, form)
@@ -126,7 +126,16 @@ def get_code(post, files, form=True, test_mode=None):
         else:
             return error('Please provide an automaton file.')
 
-        aut_str, fixed_type = get_fixed_type(aut_str)
+        parsed = parse_aut_str(aut_str)
+
+        aut_str = parsed['aut_str']
+        fixed_type = parsed['fixed_type']
+        transducer = parsed['transducer']
+        transducer_type = parsed['transducer_type']
+        trajectory = parsed['trajectory']
+
+        if fixed_type and not property_type:
+            property_type = "1"
 
         try:
             aut = construct_automaton(aut_str)
