@@ -186,6 +186,7 @@ def handle_satisfaction_maximality(
 
     parsed = parse_aut_str(aut_str)
 
+    # Unpack the parsing result
     aut_str = parsed['aut_str']
     fixed_type = parsed['fixed_type']
     transducer = parsed['transducer']
@@ -194,7 +195,6 @@ def handle_satisfaction_maximality(
 
     if fixed_type and not property_type:
         property_type = "1"
-
     try:
         aut = construct_automaton(aut_str)
     except (IncorrectFormat, TypeError):

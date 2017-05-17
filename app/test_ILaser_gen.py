@@ -1,4 +1,4 @@
-import unittest
+from django.test import TestCase
 from transducer.ILaser_gen import *
 #import FAdo.fio as fio
 
@@ -167,115 +167,131 @@ strb7 = '@NFA 7 * 0\n0 a 1\n0 b 1\n1 a 2\n1 b 2\n2 a 3\n2 b 3\n3 a 4\n3 b 4\n4 a
 ############################################################################
 #
 
-class MyTestCase(unittest.TestCase):
+LN_ANS = 6
+LN_REQ = 8
+EXP_EDIT_LINE = 2
+FIXED_LINE = 4
+
+class MyTestCase(TestCase):
     def test_CORRsatNO(self):
-        lines = program(ptype="ERRCORR", test="SATW", aname=a_bstar_a,
-                        strexp=None, sigma=None, tname=s1ts, s_num=None,
-                        l_num=None, n_num=None)
-        should_be = (lines[LN_ANS-1] == 'p = buildErrorCorrectPropS(t)\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="ERRCORR", test="SATW", aname=a_bstar_a,
+                                strexp=None, sigma=None, tname=s1ts, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[LN_ANS-1] == 'p = buildErrorCorrectPropS(t)') and \
+                    (lines[LN_ANS] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
         request = 'decide error corection.'
         plines = generate_program(lines, None, request).split("\n")
-        self.assertTrue(plines[LN_REQ] == "print \"\\nREQUEST: "+request+"\"")
+        self.assertTrue(plines[LN_REQ] == 'print "\\nREQUEST:\\n'+request+'"')
         # stand_alone('1502161240', lines, None, None, request)
 
 
     def test_DETmaxNO(self):
-        lines = program(ptype="ERRDET", test="MAXW", aname=a_ab_bb,
-                        strexp=None, sigma=None, tname=t1ts, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildErrorDetectPropS(t)\n') and \
-                    (lines[LN_ANS] == 'print p.notMaximalW(a)\n')
+        lines = "".join(program(ptype="ERRDET", test="MAXW", aname=a_ab_bb,
+                                strexp=None, sigma=None, tname=t1ts, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[LN_ANS-1] == 'p = buildErrorDetectPropS(t)') and \
+                    (lines[LN_ANS] == 'answer = p.notMaximalW(a)')
         self.assertTrue(should_be)
         request = 'decide error detection.'
         plines = generate_program(lines, None, request).split("\n")
-        self.assertTrue(plines[LN_REQ] == "print \"\\nREQUEST: "+request+"\"")
+        self.assertTrue(plines[LN_REQ] == 'print "\\nREQUEST:\\n'+request+'"')
 
 
     def test_IPTmaxNO(self):
-        lines = program(ptype="INPRES", test="MAXW", aname=a_ab_bb,
-                        strexp=None, sigma=None, tname=t1ts, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildIPTPropS(t)\n') and \
-                    (lines[LN_ANS] == 'print p.notMaximalW(a)\n')
+        lines = "".join(program(ptype="INPRES", test="MAXW", aname=a_ab_bb,
+                                strexp=None, sigma=None, tname=t1ts, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[LN_ANS-1] == 'p = buildIPTPropS(t)') and \
+                    (lines[LN_ANS] == 'answer = p.notMaximalW(a)')
         self.assertTrue(should_be)
         request = 'decide maximality.'
         plines = generate_program(lines, None, request).split("\n")
-        self.assertTrue(plines[LN_REQ] == "print \"\\nREQUEST: "+request+"\"")
+        should_be = plines[LN_REQ] == 'print "\\nREQUEST:\\n'+request+'"'
+        self.assertTrue(should_be)
 
 
     def test_TRAJsatNO(self):
-        lines = program(ptype="TRAJECT", test="SATW", aname=a_ab_bb,
-                        strexp="1*0*1*", sigma={'a','b'}, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildTrajPropS(t, set([\'a\', \'b\']))\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="TRAJECT", test="SATW", aname=a_ab_bb,
+                                strexp="1*0*1*", sigma={'a', 'b'}, tname=None,
+                                s_num=None, l_num=None, n_num=None)).split("\n")
+        should_be = (lines[FIXED_LINE-1] == 'p = buildTrajPropS(t, set([\'a\', \'b\']))') and \
+                    (lines[FIXED_LINE] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
 
 
     def test_IATsatNO(self):
-        lines = program(ptype="INALT", test="SATW", aname=a_ab_bb,
-                        strexp=None, sigma=None, tname=s1ts, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildIATPropS(t)\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="INALT", test="SATW", aname=a_ab_bb,
+                                strexp=None, sigma=None, tname=s1ts, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[LN_ANS-1] == 'p = buildIATPropS(t)') and \
+                    (lines[LN_ANS] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
 
 
     def test_FIXED_CODEmaxNO(self):
-        lines = program(ptype="CODE", test="MAXP", aname=aa_ab_bb,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildUDCodeProperty(a.Sigma)\n') and \
-                    (lines[LN_ANS] == 'print p.maximalP(a)\n')
+        lines = "".join(program(ptype="CODE", test="MAXP", aname=aa_ab_bb,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[FIXED_LINE-1] == 'p = buildUDCodeProperty(ssigma)') and \
+                    (lines[FIXED_LINE] == 'answer = p.maximalP(a)')
         self.assertTrue(should_be)
 
 
     def test_FIXED_satNO(self):
-        lines = program(ptype="HYPER", test="SATW", aname=a_ab_ba,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildHypercodeProperty(a.Sigma)\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="HYPERCODE", test="SATW", aname=a_ab_ba,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[FIXED_LINE-1] == 'p = buildHypercodeProperty(ssigma)') and \
+                    (lines[FIXED_LINE] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
         #
-        lines = program(ptype="INFIX", test="SATW", aname=a_ab_ba,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildInfixProperty(a.Sigma)\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="INFIX", test="SATW", aname=a_ab_ba,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[FIXED_LINE-1] == 'p = buildInfixProperty(ssigma)') and \
+                    (lines[FIXED_LINE] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
         #
-        lines = program(ptype="OUTFIX", test="SATW", aname=a_ab_ba,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildOutfixProperty(a.Sigma)\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="OUTFIX", test="SATW", aname=a_ab_ba,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[FIXED_LINE-1] == 'p = buildOutfixProperty(ssigma)') and \
+                    (lines[FIXED_LINE] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
         #
-        lines = program(ptype="PREFIX", test="SATW", aname=a_ab_ba,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildPrefixProperty(a.Sigma)\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="PREFIX", test="SATW", aname=a_ab_ba,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[FIXED_LINE-1] == 'p = buildPrefixProperty(ssigma)') and \
+                    (lines[FIXED_LINE] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
         #
-        lines = program(ptype="SUFFIX", test="SATW", aname=a_ab_ba,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS-1] == 'p = buildSuffixProperty(a.Sigma)\n') and \
-                    (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
+        lines = "".join(program(ptype="SUFFIX", test="SATW", aname=a_ab_ba,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[FIXED_LINE-1] == 'p = buildSuffixProperty(ssigma)') and \
+                    (lines[FIXED_LINE] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
+
+
 
 
     def test_EXP_DENS_YES(self):
-        lines = program(ptype="EXPDENSITY", test=None, aname=a_bb_star,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS] == 'print exponentialDensityP(a)\n')
+        lines = "".join(program(ptype="EXPDENSITY", test=None, aname=a_bb_star,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[EXP_EDIT_LINE] == 'print exponentialDensityP(a)')
         self.assertTrue(should_be)
         request = 'decide exponential density.'
         plines = generate_program(lines, None, request).split("\n")
-        self.assertTrue(plines[LN_REQ] == "print \"\\nREQUEST: "+request+"\"")
-
-
-    def test_EDIT_DIST(self):
-        lines = program(ptype="EDITDIST", test=None, aname=a_ab_bb,
-                        strexp=None, sigma=None, tname=None, s_num= None, l_num= None, n_num= None)
-        should_be = (lines[LN_ANS] == 'print editDistanceW(a)\n')
+        should_be = plines[LN_REQ] == 'print "\\nREQUEST:\\n'+request+'"'
         self.assertTrue(should_be)
 
 
-
-if __name__ == '__main__':
-    unittest.main()
+    def test_EDIT_DIST(self):
+        lines = "".join(program(ptype="EDITDIST", test=None, aname=a_ab_bb,
+                                strexp=None, sigma=None, tname=None, s_num=None,
+                                l_num=None, n_num=None)).split("\n")
+        should_be = (lines[EXP_EDIT_LINE] == 'print editDistanceW(a)')
+        self.assertTrue(should_be)

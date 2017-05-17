@@ -39,7 +39,7 @@ def construct_input_alt_prop(t_str, sigma):
             return IATProp(result)
         else:
             return TrajProp(result, sigma)
-    except YappyError as e:
+    except YappyError:
         try:
             return buildTrajPropS(t_str, sigma)
         except Exception:

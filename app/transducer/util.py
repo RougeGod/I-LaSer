@@ -62,6 +62,10 @@ def parse_aut_str(aut_str):
         'transducer_type': None
     }
 
+    if aut_str.strip().startswith('(START)'):
+        result['aut_str'] = aut_str
+        return result
+
     if count == 0:
         res = re.search(r'(.+?)\n([\s\S]+)', aut_str)
         if res:
