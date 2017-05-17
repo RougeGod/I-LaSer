@@ -47,6 +47,7 @@ def parse_aut_str(aut_str):
     """
 
     aut_str = re.sub(r'\r', "", aut_str)
+    aut_str = re.sub(r'#.+', '', aut_str)
 
     count = 0
     for line in aut_str.splitlines():
