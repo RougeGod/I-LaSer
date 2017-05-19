@@ -1,0 +1,14 @@
+@Transducer 2 3
+1 a @epsilon 2
+1 b @epsilon 2
+2 a @epsilon 2
+2 b @epsilon 2
+2 a a 3
+2 b b 3
+3 a a 3
+3 b b 3
+@NFA 2
+0 a 0
+0 b 0
+0 a 1
+0 b 1
