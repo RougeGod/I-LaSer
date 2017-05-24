@@ -107,12 +107,14 @@ def get_code(post, files, form=True, test_mode=None):
 
     prop = None
     regexp = None
+    fixed_type = None
     name = str(int(time()*1000))
     sigma = None
     n_num = ''
     s_num = ''
     l_num = ''
     t_str = ''
+    aut_str = ''
 
     # Automaton String, or number generation
     if question in ['1', '2']: # Satisfaction, maximality

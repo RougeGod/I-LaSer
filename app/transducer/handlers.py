@@ -73,7 +73,8 @@ def handle_ipp(
     """Handle Input-preserving properties"""
     try:
         prop = codes.buildErrorDetectPropS(t_str)
-    except (YappyError, AttributeError):
+    except (YappyError, AttributeError) as e:
+        print e
         return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
 
@@ -139,18 +140,33 @@ def handle_construction(
                 'construct_text': '', 'result': result}
 
     file_ = files.get('transducer_file')
-    if not file_:
-        return error("Please provide a correct property file.")
+    if file_: # Get it from the file by default
+        # automaton string
+        t_str = file_.read()
+        #automaton name
+        t_name = "Property: " + file_.name
+        file_.close()
 
-    t_str = file_.read()
-    t_name = "Property: " + file_.name
-    file_.close()
+        t_str = re.sub(r'\r', '', t_str)
+    elif post.get('transducer_text1'):
+        # automaton string
+        t_str = re.sub(r'\r', '', str(post.get('transducer_text1')))
 
-    # Input-Altering Property (given as trajectory or transducer)
-    if property_type == "2":
+        #automaton name
+        t_name = "Property: N/A"
+    elif post.get('transducer_text2'):
+        # automaton string
+        t_str = re.sub(r'\r', '', str(post.get('transducer_text2')))
+
+        #automaton name
+        t_name = "Property: N/A"
+    else:
+        return error('Please provide a property file.')
+
+    if property_type == '2':
         result = handle_iap(n_num, l_num, s_num, t_name, t_str, form)
     # Input-Preserving Property
-    elif property_type == "3":
+    elif property_type == '3':
         result = handle_ipp(n_num, l_num, s_num, t_name, t_str, form)
 
     return result
