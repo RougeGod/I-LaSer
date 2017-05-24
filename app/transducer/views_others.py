@@ -16,8 +16,10 @@ def upload_file(request):
     """Handles the form uploading and parsing."""
     if request.method == 'POST':
         response = get_response(request.POST, request.FILES, UploadFileForm())
+    else:
+        response = {'form': UploadFileForm()}
 
-        return render(request, 'upload_others.html', response)
+    return render(request, 'upload_others.html', response)
 
 def get_response(post, files, form=None):
     """

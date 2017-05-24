@@ -289,7 +289,7 @@ def handle_satisfaction_maximality(
             return error('Please provide a property file.')
 
         if not property_type:
-            return error('Please provide a property file.')
+            return error('Please provide a property type.')
         # Input-Altering Property (given as trajectory or transducer)
         elif property_type == "2":
             try:

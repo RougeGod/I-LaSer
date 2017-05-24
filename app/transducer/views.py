@@ -3,7 +3,7 @@ The views.py program receives the requests of the user
 and creates the appropriate automata/transducers to
 test the decision question.
 """
-
+import re
 from time import time
 import django
 from django.shortcuts import render_to_response, render
@@ -39,6 +39,12 @@ FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'INFIX',
               '4': 'OUTFIX', '5': 'HYPERCODE', '6': 'CODE'}
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
+
+TRANSDUCER_TYPES = {
+    'InputAltering': '2',
+    'ErrorDetecting': '3',
+    'ErrorCorrecting': '4',
+}
 
 def upload_file(request):
     """This method handles the parsing of a file uploaded from the website."""
@@ -172,14 +178,32 @@ def get_code(post, files, form=True, test_mode=None):
             t_str = file_.read()
 
             file_.close()
-        elif post.get('transducer_text'):
+        elif post.get('transducer_text1'):
             # transducer string
-            t_str = str(post.get('transducer_text'))
+            t_str = str(post.get('transducer_text1'))
+        elif post.get('transducer_text2'):
+            # transducer string
+            t_str = str(post.get('transducer_text2'))
+        elif transducer:
+            t_str = re.sub(r'\r', '', transducer)
+
+            t_name = "Property: N/A"
+
+            if transducer_type:
+                property_type = TRANSDUCER_TYPES[transducer_type]
+        elif trajectory:
+            t_str = re.sub(r'\r', '', trajectory)
+
+            t_name = "Property: N/A"
+
+            property_type = "2"
         else:
             return error('Please provide a property file.')
 
     # Input-Altering Property (given as trajectory or transducer)
-    if property_type == "2":
+    if not property_type:
+        return error('Please provide a property type.')
+    elif property_type == "2":
         if question in ['1', '2']:
             sigma = aut.Sigma
         elif question == '3':
@@ -188,7 +212,7 @@ def get_code(post, files, form=True, test_mode=None):
                 sigma.add(str(i))
 
         try:
-            result = readOneFromString(t_str)
+            result = readOneFromString(t_str.strip()+'\n')
             if isinstance(result, (DFA, NFA)):
                 prop = 'TRAJECT' # Trajectory
             else:

@@ -9,9 +9,8 @@
     <link rel="stylesheet" href='{% static "css/style.css" %}' />
 
     <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
-    <script src="{% static 'js/jquery-1.12.0.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.js' %}"></script>
-    <script src="{% static 'js/bootstrap-select.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
     <script src="{% static 'js/general.js' %}"></script>
 </head>
 <body>
@@ -89,12 +88,13 @@
                 <div class="col-md-12 text-center">
                     <div class="col-md-4 text-right align-num" style="margin-top: 20px;">with</div>
                     <div class="col-md-4 align-left align-num">
-                        <select class="selectpicker selectC col-md-12 text-center align-num" name=NFAFormat>
-                            <OPTION value="" selected>-Please Select-</OPTION>
-                            <OPTION value=1>Grail</OPTION>
-                            <OPTION value=2>FAdo</OPTION>
+                        <select class="selectpicker selectC col-md-12 text-center align-num" name="NFAFormat">
+                            <option value="" selected>-Please Select-</option>
+                            <option value=1>Grail</option>
+                            <option value=2>FAdo</option>
                         </select>
-                    </div><div class="col-md-4 text-left align-num" style="margin-top: 20px;">format. <br><br></div>
+                    </div>
+                    <div class="col-md-4 text-left align-num" style="margin-top: 20px;">format. <br><br></div>
                 </div>
                 <div class="col-md-12 text-center">
                     Select what you wish to compute about the given <u>language</u>:

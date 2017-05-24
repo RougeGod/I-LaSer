@@ -561,7 +561,9 @@ class MyTestCase(TestCase):
         self.assertTrue(prog_vars_test['p'].satisfiesP(prog_vars_test['a']))
         aut.close()
 
-    # This is disabled beacause of an error in FAdo
+    #################################################
+    # This is disabled beacause of an error in FAdo #
+    #################################################
     # def test_CODE_CONSTRUCT_FIXED_CODE(self):
     #     post = {'que':'3', 'prv':'1', 'fixed_type':'6', 'n_int':self.words, 'l_int':self.word_length, 's_int':self.alphabet_size}
     #     aut = openfile(REGS[0])
@@ -692,6 +694,78 @@ class MyTestCase(TestCase):
         exec(prog, prog_vars_test, prog_vars_test)
         self.assertFalse(prog_vars_test['p'].satisfiesP(prog_vars_test['a']))
 
+
+        aut.close()
+        t_file.close()
+
+    def test_Code_CONSTRUCT_IPT(self):
+        post = {'que':'3', 'prv':'3', 'fixed_type':'0',
+                'n_int':self.words, 'l_int':self.word_length,
+                's_int':self.alphabet_size}
+        aut = openfile(REGS[0])
+        t_file = openfile(IP_TRANSDUCER_NAMES_CONS[0])
+        files = {'automata_file':aut, 'transducer_file':t_file}
+        result = get_response(post, files, False)
+        self.assertTrue(result.get('result'))
+        aut.close()
+        t_file.close()
+
+        aut = openfile(REGS[0])
+        t_file = openfile(IP_TRANSDUCER_NAMES_CONS[0])
+        files = {'automata_file':aut, 'transducer_file':t_file}
+        aut_str = files['automata_file'].read()
+        t_str = files['transducer_file'].read()
+        lines = program(ptype="INPRES", test="MKCO", aname=aut_str,
+                        strexp=None, sigma=None, tname=t_str,
+                        s_num=self.alphabet_size, n_num=self.words,
+                        l_num=self.word_length)
+        request = 'Construct Input-preserving Property.'
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog_vars, prog_vars_test = {}, {}
+        #Execute program twice and Generate two automaton from the code construction output
+        exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
+        self.assertTrue(prog_vars['p'].satisfiesP(prog_vars['a'])) #Test is automata satisfies property and return boolean value
+        # We know that automata would always varify output becuase automata is generated from output
+
+        # Same as above
+        exec(prog, prog_vars_test, prog_vars_test)
+        self.assertTrue(prog_vars_test['p'].satisfiesP(prog_vars_test['a']))
+
+        aut.close()
+        t_file.close()
+
+    def test_Code_CONSTRUCT_DET(self):
+        post = {'que':'3', 'prv':'3', 'fixed_type':'0',
+                'n_int':self.words, 'l_int':self.word_length,
+                's_int':self.alphabet_size}
+        aut = openfile(REGS[0])
+        t_file = openfile(IP_TRANSDUCER_NAMES_CONS[0])
+        files = {'automata_file':aut, 'transducer_file':t_file}
+        result = get_response(post, files, False)
+        self.assertTrue(result.get('result'))
+        aut.close()
+        t_file.close()
+
+        aut = openfile(REGS[0])
+        t_file = openfile(IP_TRANSDUCER_NAMES_CONS[0])
+        files = {'automata_file': aut, 'transducer_file': t_file}
+        aut_str = files['automata_file'].read()
+        t_str = files['transducer_file'].read()
+        lines = program(ptype="ERRDET", test="MKCO", aname=aut_str,
+                        strexp=None, sigma=None, tname=t_str,
+                        s_num=self.alphabet_size, n_num=self.words,
+                        l_num=self.word_length)
+        request = 'Construct error detection.'
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog_vars, prog_vars_test = {}, {}
+        #Execute program twice and Generate two automaton from the code construction output
+        exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
+        self.assertTrue(prog_vars['p'].satisfiesP(prog_vars['a'])) #Test is automata satisfies property and return boolean value
+        # We know that automata would always varify output becuase automata is generated from output
+
+        # Same as above
+        exec(prog, prog_vars_test, prog_vars_test)
+        self.assertTrue(prog_vars_test['p'].satisfiesP(prog_vars_test['a']))
 
         aut.close()
         t_file.close()
