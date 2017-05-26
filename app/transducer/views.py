@@ -49,27 +49,23 @@ TRANSDUCER_TYPES = {
 def upload_file(request):
     """This method handles the parsing of a file uploaded from the website."""
     form = UploadFileForm()
-    try:
-        post = request.POST
-        files = request.FILES
+    post = request.POST
+    files = request.FILES
 
-        if request.method == 'POST':
-            if post['que'] == "":
-                response = {'form':form, 'error_message':
-                            'You have to select a question and its options to perform a request'}
-            elif 'run_code' in post:
-                response = get_response(post, files)
-            elif 'gen_code' in post:
-                response = get_code(post, files)
-            elif 'clear_page' in post:
-                response = {'form': form}
-        else:
+    if request.method == 'POST': # POST Request, time to do some calculations
+        if 'clear_page' in post: # ...Unless we are clearing the page
             response = {'form': form}
+        elif not post.get('que'):
+            response = {'form':form, 'error_message':
+                        'You have to select a question and its options to perform a request'}
+        elif 'run_code' in post: # This will handle server-side calculation
+            response = get_response(post, files)
+        elif 'gen_code' in post: # This will handle generation of code for client-side calculation
+            response = get_code(post, files)
+    else: # GET Request, just render the page
+        response = {'form': form}
 
-        return render(request, 'upload.html', response)
-    except KeyError, k:
-        return render(request, 'upload.html', {'form': form, 'error_message': k.message+"\n You \
-        either have uploaded only a file or no file."})
+    return render(request, 'upload.html', response)
 
 def get_response(post, files, form=True):
     """

@@ -2,6 +2,7 @@
 """
 import os
 import logging
+from platform import system
 import django
 
 
@@ -131,7 +132,9 @@ TEMPLATES = [
     },
 ]
 
-MEDIA_ROOT = '/var/www/project/media/'
+MEDIA_ROOT = '/var/www/project/media/' if system() == 'Linux' \
+    else 'C:\\cygwin64\\home\\Matthew\\LaSer\\media'
+    # Change this to whateveryou need if developing on Windows
 MEDIA_URL = '/media/'
 
 

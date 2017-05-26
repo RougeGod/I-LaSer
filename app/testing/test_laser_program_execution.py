@@ -5,6 +5,7 @@ import os.path as path
 from django.test import TestCase
 from app.transducer.views import get_response
 from app.transducer.ILaser_gen import program, generate_program
+from app.testing.test_util import openfile, readfile
 
 REGS = ['test_files/DFA-a+ab+bb.fa', 'test_files/NFA-aa+ab+bb.fa', 'test_files/NFA-aa+ab+ba+bb.fa',
         'test_files/NFA-abx.fa', 'test_files/DFA-a+ab+bb.fa', 'test_files/NFA-ab#a.fa',
@@ -19,17 +20,6 @@ IA_TRANSDUCER_NAMES_CONS = ['test_files/construction/P-infix.fa',
                             'test_files/construction/P-suffix.fa']
 IP_TRANSDUCER_NAMES_CONS = ['test_files/construction/P-transpose-1.ipt.fa',
                             'test_files/construction/TR-sub1.01.fa']
-
-def readfile(file_):
-    """Return the contents of a file"""
-    aut_file = open(path.join(path.dirname(__file__), file_))
-    aut_text = aut_file.read()
-    aut_file.close()
-    return aut_text
-
-def openfile(file_):
-    """Return an opened file"""
-    return open(path.join(path.dirname(__file__), file_))
 
 #pylint:disable=C0111,C0301,C0103,W0122
 class MyTestCase(TestCase):

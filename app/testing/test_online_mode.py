@@ -3,6 +3,7 @@
 import os.path as path
 
 from app.transducer.views import get_response
+from app.testing.test_util import hamm_dist, hamm_dist_list, readfile, openfile
 import FAdo.fl as fl
 
 from django.test import TestCase
@@ -23,44 +24,6 @@ COMBINED_NAMES = ['test_files/combined/test1.fa', 'test_files/combined/test2.fa'
                   'test_files/combined/test3.fa', 'test_files/combined/test4.fa',
                   'test_files/combined/test5.fa', 'test_files/combined/test6.fa',
                   'test_files/combined/test7.fa', 'test_files/combined/test8.fa']
-
-def hamm_dist(str1, str2):
-    """Return the hamming distance of two strings"""
-    length = len(str1)
-    if len(str1) != len(str2):
-        return None
-    dist = 0
-    for i in range(length):
-        if str1[i] != str2[i]:
-            dist += 1
-    return dist
-
-
-def hamm_dist_list(list_):
-    """returns the hamming distance of a list or strings"""
-    min_dist = None
-    for str1 in list_:
-        for str2 in list_:
-            if str1 == str2:
-                continue
-            dist = hamm_dist(str1, str2)
-            if dist is not None:
-                if min_dist is None:
-                    min_dist = dist
-                else:
-                    min_dist = min(min_dist, dist)
-    return min_dist
-
-def readfile(file_):
-    """Return the contents of a file"""
-    aut_file = open(path.join(path.dirname(__file__), file_))
-    aut_text = aut_file.read()
-    aut_file.close()
-    return aut_text
-
-def openfile(file_):
-    """Return an opened file"""
-    return open(path.join(path.dirname(__file__), file_))
 
 #pylint:disable=C0111,C0301,C0103
 class MyTestCase(TestCase):
