@@ -58,3 +58,8 @@ this method, as expected, handles language construction. It can handle fixed pro
 
 `handle_satifaction_maximality` handles, jointly (due to their similarity) questions of satisfaction and maximality of languages with repsect to a given property. This method is very large, but is difficult to split up due to its reliance on many local variables. a refactor of this method will eventually be necessary.
 
+### `app/transducer/ILaser_gen.py`
+
+This file handles code generation for when the user wants to run the python program on their local machine instead of through the website. this is required if the question that is being asked is too computationally expensive to run.
+
+It contains methods that are used to generate the code for the local running of a question.
