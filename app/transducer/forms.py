@@ -2,7 +2,6 @@
 from django import forms
 import django.forms.widgets as widgets
 
-# Meng
 PROPERTY_TYPE_CHOICE = [['1', 'Fixed (TODO)'],
                         ['2', 'Trajectory (TODO)'],
                         ['3', 'Error_Detecting'],
@@ -43,9 +42,7 @@ class UploadFileForm(forms.Form):
     integer_k = forms.IntegerField(min_value=0)
     integer_N = forms.IntegerField(min_value=1)
 
-
 class ContactForm(forms.Form):
     """This class is used to specify the contact form used in the website."""
     subjects = forms.CharField(max_length=80)
     message = forms.CharField()
-

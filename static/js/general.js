@@ -5,102 +5,7 @@ $(function() {
     $('#reset').click(function() {
         location.reload();
     });
-
-    $('#automata_text').on('change keyup paste', function() {
-        var this_ = $(this);
-
-        if(this_.val() !== '') {
-            if(validate(this_.val())) {
-                this_.removeClass('border-failure').addClass('border-success');
-            } else {
-                this_.removeClass('border-success').addClass('border-failure');
-            }
-        } else {
-            this_.removeClass('border-success border-failure');
-        }
-    });
-
-    $('#transducer_text1').on('change keyup paste', function() {
-        var this_ = $(this);
-
-        if(this_.val() !== '') {
-            if(validate(this_.val(), true)) {
-                this_.removeClass('border-failure').addClass('border-success');
-            } else {
-                this_.removeClass('border-success').addClass('border-failure');
-            }
-        } else {
-            this_.removeClass('border-success border-failure');
-        }
-    })
-
-    $('#transducer_text2').on('change keyup paste', function() {
-        var this_ = $(this);
-
-        if(this_.val() !== '') {
-            if(validate(this_.val(), true)) {
-                this_.removeClass('border-failure').addClass('border-success');
-            } else {
-                this_.removeClass('border-success').addClass('border-failure');
-            }
-        } else {
-            this_.removeClass('border-success border-failure');
-        }
-    })
 });
-
-function validate(str, acceptTraj) {
-    var type,
-        header,
-        remainder;
-
-    str = str.replace(/\r/g, "").replace(/\n$/, "");
-
-    header = str.replace(/^(.+?)\n[\s\S]+/, "$1");
-    remainder = str.replace(/^.+?\n([\s\S]+)$/, "$1");
-
-    if(acceptTraj && /[01*+() ]+/.test(header)) {
-        return true;
-    }
-
-    if(header.startsWith('@')) {
-        if(remainder.startsWith('@')) {
-            type = 'fa-fixed'
-        } else {
-            type = 'fa'
-        }
-    } else if(header.startsWith('(')) {
-        type = 'other'
-    }
-
-    if(type === 'fa' || type === 'fa-fixed') {
-        var safe = true;
-
-        if(type == 'fa-fixed') {
-            remainder = remainder.replace(/^.+?\n([\s\S]+)$/, "$1");
-        }
-
-        remainder.split('\n').forEach(function(line) {
-            if(!/^\d+ +\S+? +\d+$/.test(line.trim()) && !/^\d+ +\S+? +\S+? +\d+$/.test(line.trim())) {
-                safe = false;
-            }
-        });
-
-        return safe;
-    } else if(type === 'fa-fixed') {
-
-    } else {
-        var safe = true;
-
-        remainder.split('\n').forEach(function(line) {
-            if(!/^\d+ +\S+? +\d+ *$/.test(line) && !/\d+ -\| \(FINAL\) *$/.test(line)) {
-                safe = false;
-            }
-        });
-
-        return safe;
-    }
-}
 
 function setRadio() {
     var radios = document.getElementsByName('choice');
@@ -117,14 +22,13 @@ function setRadio() {
     }
 }
 
-
 function setMaximality() {
     switch (document.form1.que.value) {
         case "":
             hide('divsat');
             hide('automata_load')
             hide('integers_input')
-        break;
+            break;
         case "1":
         case "2":
             show('divsat');
@@ -132,14 +36,14 @@ function setMaximality() {
             hide('integers_input');
             $('#divsat_select').find('[value=4]').show();
             $('#divsat_select').selectpicker('refresh');
-        break;
+            break;
         case "3":
             show('divsat');
             hide('automata_load')
             $('#divsat_select').find('[value=4]').hide();
             $('#divsat_select').selectpicker('refresh');
             show('integers_input')
-        break;
+            break;
     }
 }
 
@@ -184,5 +88,3 @@ function hide(id) {
 function show(id) {
     document.getElementById(id).style.display="";
 }
-
-

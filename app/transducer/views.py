@@ -102,21 +102,13 @@ def get_code(post, files, form=True, test_mode=None):
 
     question = post.get('que')
     property_type = post.get('prv')
-    if question is None:
-        return error("Please select a question.")
-    elif property_type is None:
-        return error("Please select a property type.")
+    if not question:
+        return error('Please select a question.')
 
-    prop = None
-    regexp = None
-    fixed_type = None
+    prop = regexp = fixed_type = sigma = None
     name = str(int(time()*1000))
-    sigma = None
-    n_num = ''
-    s_num = ''
-    l_num = ''
-    t_str = ''
-    aut_str = ''
+    n_num = s_num = l_num = 0
+    aut_str = t_str = ''
 
     # Automaton String, or number generation
     if question in ['1', '2']: # Satisfaction, maximality
@@ -132,14 +124,14 @@ def get_code(post, files, form=True, test_mode=None):
 
         parsed = parse_aut_str(aut_str)
 
-        aut_str = parsed['aut_str']
-        fixed_type = parsed['fixed_type']
-        transducer = parsed['transducer']
-        transducer_type = parsed['transducer_type']
-        trajectory = parsed['trajectory']
+        aut_str = parsed.get('aut_str')
+        fixed_type = parsed.get('fixed_type')
+        transducer = parsed.get('transducer')
+        transducer_type = parsed.get('transducer_type')
+        trajectory = parsed.get('trajectory')
 
         if fixed_type and not property_type:
-            property_type = "1"
+            property_type = '1'
 
         try:
             aut = construct_automaton(aut_str)
@@ -147,9 +139,9 @@ def get_code(post, files, form=True, test_mode=None):
             return {'form': form, 'error_message':
                     'The automaton appears to be incorrectly formatted'}
     elif question == '3': # Construction
-        n_num = int(post.get("n_int", -1))
-        s_num = int(post.get("s_int", -1))
-        l_num = int(post.get("l_int", -1))
+        n_num = int(post.get('n_int', -1))
+        s_num = int(post.get('s_int', -1))
+        l_num = int(post.get('l_int', -1))
 
         if n_num <= 0 or s_num <= 0 or l_num <= 0:
             return error('Please enter three positive integers S, N, L.')
@@ -183,28 +175,24 @@ def get_code(post, files, form=True, test_mode=None):
         elif transducer:
             t_str = re.sub(r'\r', '', transducer)
 
-            t_name = "Property: N/A"
-
             if transducer_type:
                 property_type = TRANSDUCER_TYPES[transducer_type]
         elif trajectory:
             t_str = re.sub(r'\r', '', trajectory)
 
-            t_name = "Property: N/A"
-
-            property_type = "2"
+            property_type = '2'
         else:
             return error('Please provide a property file.')
 
     # Input-Altering Property (given as trajectory or transducer)
     if not property_type:
         return error('Please provide a property type.')
-    elif property_type == "2":
+    elif property_type == '2':
         if question in ['1', '2']:
             sigma = aut.Sigma
         elif question == '3':
             sigma = set()
-            for i in range(int(s_num)):
+            for i in range(s_num):
                 sigma.add(str(i))
 
         try:
@@ -218,44 +206,43 @@ def get_code(post, files, form=True, test_mode=None):
             try:
                 codes.buildTrajPropS(t_str, sigma)
             except regexpInvalid:
-                return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT}
+                return error(PROPERTY_INCORRECT_FORMAT)
             prop = 'TRAJECT' # Also Trajectory
             regexp = 'tStr'
 
     # Input-Preserving Property
-    elif property_type == "3":
+    elif property_type == '3':
         try:
             IPTProp(readOneFromString(t_str)) # Input Preserving Transducer Property
         except (YappyError, AttributeError):
             return error(PROPERTY_INCORRECT_FORMAT)
 
-        prop = "INPRES" # Input Preserving
+        prop = 'INPRES' # Input Preserving
 
     # Error-Correction
-    elif property_type == "4":
+    elif property_type == '4':
         try:
             ErrCorrectProp(readOneFromString(t_str))
         except YappyError:
             return error(PROPERTY_INCORRECT_FORMAT)
-        prop = "ERRCORR"
+        prop = 'ERRCORR'
 
     description = DESCRIBE[question]
     test = TEST_DICT[question]
     if question == '2' and property_type == '1' and fixed_type == '6':
         # This is a special case - code does not return a witness
-        description = DECIDE_REQUEST+'is maximal.'
+        description = DECIDE_REQUEST + 'is maximal.'
         test = 'MAXP'
-
 
     prog_lines = gen_program(name, prop, test, aut_str, t_str, sigma, regexp,
                              description, test_mode, s_num, l_num, n_num)
 
     if test_mode is not None:
         return prog_lines
-    else:
-        decision = '<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")'\
-             % (settings.MEDIA_URL, name)
-        return {'form': form, 'result': decision}
+
+    decision = '<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")'\
+         % (settings.MEDIA_URL, name)
+    return {'form': form, 'result': decision}
 
 def index(_):
     """returns the rendered index.html files"""
