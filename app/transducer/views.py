@@ -10,13 +10,11 @@ from django.shortcuts import render_to_response, render
 from django.conf import settings
 
 from FAdo.fio import readOneFromString, NFA, DFA
-
 import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 from FAdo.yappy_parser import YappyError
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat
-
 from app.transducer.ILaser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
@@ -240,6 +238,7 @@ def get_code(post, files, form=True, test_mode=None):
     if test_mode is not None:
         return prog_lines
 
+    # The code has now been placed in the media folder, to download.
     decision = '<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")'\
          % (settings.MEDIA_URL, name)
     return {'form': form, 'result': decision}

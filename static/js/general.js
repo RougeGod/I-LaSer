@@ -7,6 +7,10 @@ $(function() {
     });
 });
 
+function validate(str) {
+    var 
+}
+
 function setRadio() {
     var radios = document.getElementsByName('choice');
     for (var i = 0, length = radios.length; i < length; i++) {

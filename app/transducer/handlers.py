@@ -39,26 +39,31 @@ def handle_iap(
         t_name, t_str, form=True
     ):
     """Handle Input-altering properties"""
+    # Creating an alphabet of the given size
     alphabet = set()
     for i in range(int(s_num)):
         alphabet.add(str(i))
 
+    # Create the Input Altering Property
     try:
         prop = construct_input_alt_prop(t_str, alphabet)
     except (IncorrectFormat, TypeError):
         return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
 
+    # Check to see if the computation would be too computationally expensive
     if limit_tran_prop({}, prop.Aut.delta, LIMIT, int(n_num)):
         return {'form':form, 'error_message':
                 "Size of request exceeds limit! (See 'Technical Notes')"}
 
+    # Attempt to create the code, that satisfies the given property.
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
         return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
 
+    # If successful, return the given words that satisfy it.
     words = write_witness(witness)
     result = '<div class="text-center" style="font-size: 14px; color: #999999; \
     margin-bottom: 10px;"> Your Output</div><div><textarea class="text-center" \
@@ -73,16 +78,17 @@ def handle_ipp(
     """Handle Input-preserving properties"""
     try:
         prop = codes.buildErrorDetectPropS(t_str)
-    except (YappyError, AttributeError) as e:
-        print e
+    except (YappyError, AttributeError):
         return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
 
+    # Check to see if the computation would be too computationally expensive
     if limit_tran_prop({}, prop.Aut.delta, LIMIT, int(n_num)):
         return {'form':form, 'error_message':
                 'Size of request exceeds limit! (See "Technical Notes")'}
 
     try:
+        # Create a language that satisfies the property - witness is the list of words in L
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
     except DFAsymbolUnknown:
         return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
@@ -108,11 +114,15 @@ def handle_construction(
         """Formats an error using the given string"""
         return {'form': form, 'error_message': err}
 
+    # The post passes the sizes as string, so we need to parse them.
+    # This has the added benefit of that if no numbers are given, it defaults to -1,
+    # Which will fail!
     n_num = int(post.get("n_int", -1))
     s_num = int(post.get("s_int", -1))
     l_num = int(post.get("l_int", -1))
 
     err = ''
+    # Checking number's validity
     if n_num <= 0 or s_num <= 0 or l_num <= 0:
         err = "Please enter three positive integers S, N, L."
     elif s_num < 2 or s_num > 10:
@@ -124,10 +134,11 @@ def handle_construction(
         return error(err)
 
     if property_type == "1":
+        # Check to see if the computation will be too expensive
         if (n_num * l_num) > LIMIT:
             return error("Size of request exceeds limit! (See 'Technical Notes')")
         try:
-            _, witness = make_block_code(int(n_num), int(l_num), int(s_num))
+            _, witness = make_block_code(n_num, l_num, s_num)
         except DFAsymbolUnknown:
             return error("Something went wrong (views.py: construction, fixed property).")
         #text_path, text_title = write_witness(witness, filename)
@@ -148,6 +159,9 @@ def handle_construction(
         file_.close()
 
         t_str = re.sub(r'\r', '', t_str)
+    # There are two text fields, so check both of them for a transducer. This helps quash any
+    # weirdness where the user uses the wrong text field by accident. Probably better
+    # to check only the correct text field
     elif post.get('transducer_text1'):
         # automaton string
         t_str = re.sub(r'\r', '', str(post.get('transducer_text1')))
@@ -163,6 +177,7 @@ def handle_construction(
     else:
         return error('Please provide a property file.')
 
+    # Input Altering Property
     if property_type == '2':
         result = handle_iap(n_num, l_num, s_num, t_name, t_str, form)
     # Input-Preserving Property
@@ -181,6 +196,7 @@ def handle_satisfaction_maximality(
         """Formats an error using the given string"""
         return {'form': form, 'error_message': err}
 
+    # Try and get an automata file from the fiels uploaded.
     file_ = files.get('automata_file')
 
     if file_: # Get it from the file by default
@@ -191,7 +207,7 @@ def handle_satisfaction_maximality(
         aut_name = "Language: " + file_.name
 
         file_.close()
-    elif post.get('automata_text'):
+    elif post.get('automata_text'): # Try to get the text field instead
         # automaton string
         aut_str = str(post.get('automata_text'))
 
@@ -209,14 +225,17 @@ def handle_satisfaction_maximality(
     transducer_type = parsed['transducer_type']
     trajectory = parsed['trajectory']
 
+    # Updates the property type if the fixed type was given
     if fixed_type and not property_type:
         property_type = "1"
+
     try:
         aut = construct_automaton(aut_str)
-    except (IncorrectFormat, TypeError):
+    except (IncorrectFormat, TypeError): # Automata syntax error
         return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'automaton': aut_name}
 
+    # Check to see if the computation would be too computationally expensive
     if limit_aut_prop(aut, LIMIT_AUTOMATON):
         return {'form':form, 'error_message':
                 'Size of the automaton exceeds limit! (See "Technical Notes")',
@@ -226,11 +245,14 @@ def handle_satisfaction_maximality(
         if fixed_type is None:
             fixed_type = post.get('fixed_type')
 
+        # This method will return a fixed property, or None if it's a UD Code.
         prop = create_fixed_property(aut.Sigma, fixed_type)
         if prop is None:
+            # Create the UD Code Property
             prop = UDCodeProp(aut.Sigma)
             proof = ''
             if question == '1':
+                # Satisfaction
                 witness = prop.notSatisfiesW(aut)
                 if witness == (None, None):
                     decision = "YES, the language satisfies the code property"
@@ -238,6 +260,7 @@ def handle_satisfaction_maximality(
                     decision = "NO, the language does not satisfy the code property"
                     proof = format_counter_example(witness)
             else:
+                # Maximality
                 try:
                     if prop.maximalP(aut):
                         decision = "YES, the language is a maximal code"
@@ -250,6 +273,7 @@ def handle_satisfaction_maximality(
 
     # User-Input Property
     else:
+        # Check for a transducer file
         file_ = files.get('transducer_file')
 
         if file_: # Get it from the file by default
@@ -260,6 +284,9 @@ def handle_satisfaction_maximality(
             file_.close()
 
             t_str = re.sub(r'\r', '', t_str)
+        # There are two text fields, so check both of them for a transducer. This helps quash any
+        # weirdness where the user uses the wrong text field by accident. Probably better
+        # to check only the correct text field
         elif post.get('transducer_text1'):
             # automaton string
             t_str = re.sub(r'\r', '', str(post.get('transducer_text1')))
@@ -272,13 +299,17 @@ def handle_satisfaction_maximality(
 
             #automaton name
             t_name = "Property: N/A"
+        # If the parsed automaton string also contained a transducer.
         elif transducer:
             t_str = re.sub(r'\r', '', transducer)
 
             t_name = "Property: N/A"
 
+            # transducer_type is a string identifier for the type of transducer.
+            # Here we turn that into a number id.
             if transducer_type:
                 property_type = TRANSDUCER_TYPES[transducer_type]
+        # If the parsed automaton string also contained a trajectory.
         elif trajectory:
             t_str = re.sub(r'\r', '', trajectory)
 
@@ -314,11 +345,13 @@ def handle_satisfaction_maximality(
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
 
+    # Check to see if the computation would be too computationally expensive
     if limit_tran_prop(aut.delta, prop.Aut.delta, LIMIT):
         return {'form':form, 'error_message':
                 'Sizes of the automaton and transducer exceed limit! (See "Technical Notes")',
                 'automaton':aut_name, 'transducer':t_name}
 
+    # Check Satisfaction
     if question == "1":
         try:
             witness = prop.notSatisfiesW(aut)
@@ -335,6 +368,7 @@ def handle_satisfaction_maximality(
             proof = format_counter_example(witness)
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                 'result':decision, 'proof': proof}
+    # Check Maximality
     elif question == "2":
         err = ''
         try:

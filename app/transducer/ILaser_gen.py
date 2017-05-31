@@ -12,6 +12,26 @@ from django.conf import settings
 ZIP_PROG = "zip"
 UNZIP_PROG = "unzip"
 
+BUILD_NAME = {"CODE": ("buildUDCodeProperty", ["ssigma"], 1),
+              "EDITDIST": ("editDistanceW", ["a"], 0),
+              "ERRCORR": ("buildErrorCorrectPropS", ["t"], 1),
+              "ERRDET": ("buildErrorDetectPropS", ["t"], 1),
+              "EXPDENSITY": ("exponentialDensityP", ["a"], 0),
+              "HYPERCODE": ("buildHypercodeProperty", ["ssigma"], 1),
+              "INALT": ("buildIATPropS", ["t"], 1),
+              "INFIX": ("buildInfixProperty", ["ssigma"], 1),
+              "INPRES": ("buildIPTPropS", ["t"], 1),
+              "OUTFIX": ("buildOutfixProperty", ["ssigma"], 1),
+              "PREFIX": ("buildPrefixProperty", ["ssigma"], 1),
+              "SUFFIX": ("buildSuffixProperty", ["ssigma"], 1),
+              "TRAJECT": ("buildTrajPropS", ["$strexp", "$sigma"], 1)}
+
+TESTS = {"MAXP": "maximalP",
+         "MAXW": "notMaximalW",
+         "SATP": "satisfiesP",
+         "SATW": "notSatisfiesW",
+         "MKCO": "makeCode"}
+
 #for running unittest
 #PATH='/Users/Stavros/Dropbox/Documents/\
 # my_documents/RESEARCH/myHQP/abisola/laser_update/laser/media/'
@@ -38,14 +58,14 @@ def stand_alone(name, lines, request=None):
     os.system("find %s -regextype sed -regex '.*[0-9]\{13\}.zip' \
     -mtime +1 -exec rm -rf {} \;" % PATH)
 
-
 def generate_program(lines, name=None, request=None):
-    """Generation of the stand alone program
-
+    """
+    Generation of the stand alone program
     :param list lines: list of the commands to include
     :param str name: name of the file
     :param str request: the description of the request for which to generate program
-    :rtype: str"""
+    :rtype: str
+    """
     prog = the_prologue(request)
     for line in lines:
         prog += line
@@ -56,9 +76,9 @@ def generate_program(lines, name=None, request=None):
         file_.close()
     return prog
 
-
 def the_prologue(request=None):
     """
+    Returns the import statements for the program
     :param str request: the description of the request for which to generate program
     :rtype: str"""
     pro = """
@@ -75,32 +95,10 @@ except:
     pro += "print \"\\nANSWER:\\n\",\n"
     return pro
 
-
 def the_epilogue():
     """
     :rtype: str"""
     return "raw_input('\\nPress <enter> to quit.')\n"
-
-
-BUILD_NAME = {"CODE": ("buildUDCodeProperty", ["ssigma"], 1),
-              "EDITDIST": ("editDistanceW", ["a"], 0),
-              "ERRCORR": ("buildErrorCorrectPropS", ["t"], 1),
-              "ERRDET": ("buildErrorDetectPropS", ["t"], 1),
-              "EXPDENSITY": ("exponentialDensityP", ["a"], 0),
-              "HYPERCODE": ("buildHypercodeProperty", ["ssigma"], 1),
-              "INALT": ("buildIATPropS", ["t"], 1),
-              "INFIX": ("buildInfixProperty", ["ssigma"], 1),
-              "INPRES": ("buildIPTPropS", ["t"], 1),
-              "OUTFIX": ("buildOutfixProperty", ["ssigma"], 1),
-              "PREFIX": ("buildPrefixProperty", ["ssigma"], 1),
-              "SUFFIX": ("buildSuffixProperty", ["ssigma"], 1),
-              "TRAJECT": ("buildTrajPropS", ["$strexp", "$sigma"], 1)}
-
-TESTS = {"MAXP": "maximalP",
-         "MAXW": "notMaximalW",
-         "SATP": "satisfiesP",
-         "SATW": "notSatisfiesW",
-         "MKCO": "makeCode"}
 
 def program(
         ptype, test=None, aname=None,

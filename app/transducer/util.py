@@ -72,7 +72,7 @@ def parse_aut_str(aut_str):
             result['trajectory'] = res.group(1)
             result['aut_str'] = res.group(2)
             return result
-    elif count == 1: # @DFA or @NFA, or Fixed type with regex
+    elif count == 1: # @DFA or @NFA, or Fixed type with regex, or transducer with regex
         if not aut_str.startswith('@'):
             res = re.search(r'(.+?)\n([\s\S]+)', aut_str)
             result['trajectory'] = res.group(1)
@@ -83,11 +83,18 @@ def parse_aut_str(aut_str):
                 res = re.search(r'@(.+)([\s\S]+)', aut_str)
                 result['fixed_type'] = res.group(1)
                 result['aut_str'] = res.group(2)
+            elif aut_str.startswith('@Transducer'):
+                res = re.search(r'(@Transducer.+\n(\d+ ([\w\d]|@epsilon) ([\w\d]|@epsilon) \d+\n)+)(.+)', aut_str)
+                result['transducer'] = res.group(1)
+                result['aut_str'] = res.group(5)
             else:
                 result['aut_str'] = aut_str
 
         return result
-    elif count == 2: # Two choices: Fixed Type, Transducer Without Type
+    # Three choices: Fixed Type, Transducer Without Type, Transducer with type with regex
+    elif count == 2:
+        reg = r'@(\w+)\n(@Transducer.+\n(\d+ ([\w\d]|@epsilon) ([\w\d]|@epsilon) \d+\n)+)(.+)'
+
         res = re.search(r'(@[\s\S]+)\n(@[\s\S]+)$', aut_str)
 
         if res.group(1).strip(' @') in ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']:
@@ -96,6 +103,11 @@ def parse_aut_str(aut_str):
         elif res.group(1).strip().lower().startswith('@transducer'):
             result['transducer'] = res.group(1)
             result['aut_str'] = res.group(2)
+        elif res.group(1).strip(' @') in ['InputAltering', 'ErrorDetecting', 'ErrorCorrecting']:
+            res = re.search(reg, aut_str)
+            result['transducer_type'] = res.group(1)
+            result['transducer'] = res.group(2)
+            result['aut_str'] = res.group(6)
         else:
             result['aut_str'] = aut_str
 
