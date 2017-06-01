@@ -22,15 +22,15 @@ def create_fixed_property(alphabet, fixed_type):
     Create a property of a fixed variety such as prefix or suffix codes
     """
     result = None
-    if fixed_type == "1" or fixed_type == "PREFIX":
+    if fixed_type in ["1", "PREFIX"]:
         result = codes.buildPrefixProperty(alphabet)
-    elif fixed_type == "2" or fixed_type == "SUFFIX":
+    elif fixed_type in ["2", "SUFFIX"]:
         result = codes.buildSuffixProperty(alphabet)
-    elif fixed_type == "3" or fixed_type == "INFIX":
+    elif fixed_type in ["3", "INFIX"]:
         result = IATProp(codes.infixTransducer(alphabet))
-    elif fixed_type == "4" or fixed_type == "OUTFIX":
+    elif fixed_type in ["4", "OUTFIX"]:
         result = codes.buildOutfixProperty(alphabet)
-    elif fixed_type == "5" or fixed_type == "HYPERCODE":
+    elif fixed_type in ["5", "HYPERCODE"]:
         result = codes.buildHypercodeProperty(alphabet)
     return result
 
@@ -66,7 +66,7 @@ def parse_aut_str(aut_str):
         result['aut_str'] = aut_str
         return result
 
-    if count == 0:
+    if count == 0: # Trajectory and Regex
         res = re.search(r'(.+?)\n([\s\S]+)', aut_str)
         if res:
             result['trajectory'] = res.group(1)
