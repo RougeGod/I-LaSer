@@ -1,0 +1,11 @@
+@Transducer 2 3
+1 a     @epsilon 2
+1 b @epsilon 2
+2     a @epsilon 2
+2 b @epsilon 2
+2 a a 3 # More comment testing
+2 b     b 3
+3 a a 3               # testing  bad    amounts of spacing
+# test test
+3 b b 3
+a*b # test

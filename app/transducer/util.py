@@ -46,7 +46,8 @@ def parse_aut_str(aut_str):
     Parses the given string for extra information
     """
 
-    aut_str = re.sub(r'\r', "", aut_str)
+    aut_str = re.sub(r'\r', '', aut_str)
+    aut_str = re.sub(r'\n#.+\n', '\n', aut_str)
     aut_str = re.sub(r'#.+', '', aut_str)
 
     count = 0
@@ -84,7 +85,7 @@ def parse_aut_str(aut_str):
                 result['fixed_type'] = res.group(1)
                 result['aut_str'] = res.group(2)
             elif aut_str.startswith('@Transducer'):
-                res = re.search(r'(@Transducer.+\n(\d+ ([\w\d]|@epsilon) ([\w\d]|@epsilon) \d+\n)+)(.+)', aut_str)
+                res = re.search(r'(@Transducer.+\n(\d+ *([\w\d]|@epsilon) *([\w\d]|@epsilon) *\d+ *\n)+)(.+)', aut_str)
                 result['transducer'] = res.group(1)
                 result['aut_str'] = res.group(5)
             else:

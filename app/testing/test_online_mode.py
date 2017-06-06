@@ -93,6 +93,21 @@ class MyTestCase(TestCase):
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+        aut_text = readfile(COMBINED_NAMES[10])
+        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        result = get_response(post, files, False)
+        self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
+
+        aut_text = readfile(COMBINED_NAMES[11])
+        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
+        result = get_response(post, files, False)
+        self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
+
+        aut_text = readfile(COMBINED_NAMES[12])
+        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
+        result = get_response(post, files, False)
+        self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
+
     def test_mixed(self):
         aut_file = openfile(REGS[3])
         t_text = readfile(TRAJ_NAMES[1])

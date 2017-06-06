@@ -1,0 +1,5 @@
+0*1*
+# testing comments on different line
+@DFA 1 # testing comments on same line
+0 a 1
+1 b 1 # testing comments on same line
