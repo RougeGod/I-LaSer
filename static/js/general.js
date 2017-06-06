@@ -6,6 +6,18 @@ $(function() {
         location.reload();
     });
 
+    for(var i = 0; i < document.form1.prv.options.length; i++) {
+        if(document.form1.prv.options[i].value=="")
+            document.form1.prv.selectedIndex = i;
+    }
+
+    for(var i = 0; i < document.form1.que.options.length; i++) {
+        if(document.form1.que.options[i].value=="")
+            document.form1.que.selectedIndex = i;
+    }
+
+    setFixedProperty();
+
     $('#automata_text').on('change keyup paste', function() {
         var this_ = $(this);
 
@@ -179,18 +191,7 @@ function setFixedProperty() {
 }
 
 window.onload = function() {
-    for(var i = 0; i < document.form1.prv.options.length; i++)
-    {
-        if (document.form1.prv.options[i].value=="")
-            document.form1.prv.selectedIndex = i;
-    }
-    for(var i = 0; i < document.form1.que.options.length; i++)
-    {
-        if (document.form1.que.options[i].value=="")
-            document.form1.que.selectedIndex = i;
-    }
 
-    setFixedProperty();
 };
 
 function hide(id) {

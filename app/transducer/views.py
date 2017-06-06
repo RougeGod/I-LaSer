@@ -15,7 +15,7 @@ from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 from FAdo.yappy_parser import YappyError
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat
-from app.transducer.ILaser_gen import gen_program
+from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
 from app.transducer.util import parse_aut_str

@@ -4,7 +4,7 @@ from django.test import TestCase
 import FAdo.fl as fl
 
 from app.transducer.views import get_response
-from app.transducer.ILaser_gen import program
+from app.transducer.laser_gen import program
 from app.testing.test_util import hamm_dist, hamm_dist_list, openfile, make_prog
 from app.testing.test_data import a_ab_bb, a_bstar_a, str1sd, t1ts, t1t01s
 

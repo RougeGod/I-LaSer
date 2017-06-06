@@ -1,4 +1,4 @@
-# LaSer - Language Server
+v# LaSer - Language Server
 
 ## Introduction
 
@@ -8,23 +8,25 @@ It can compute the edit distance of L, as well as some other examples.
 
 ## File Structure
 
-    app/
-      templates/ - contains html templates for the given pages of LaSer
-      testing/ - contains tests and test files for LaSer Unit Testing
-      transducer/ - contains the bulk of the site, including the views and handlers that integrate with FAdo.
-    laser/ - contains configuration files for the server.
-      apache_settings/ - contains configuration files
-    media/ - contains the output when programs are generated using LaSer - more on this later
-    static/ - contains the static css/js files that help run the webpage
-      css/ - css files
-      js/ - js files
+```
+app/
+  templates/ - contains html templates for the given pages of LaSer
+  testing/ - contains tests and test files for LaSer Unit Testing
+  transducer/ - contains the bulk of the site, including the views and handlers that integrate with FAdo.
+laser/ - contains configuration files for the server.
+  apache_settings/ - contains configuration files
+media/ - contains the output when programs are generated using LaSer - more on this later
+static/ - contains the static css/js files that help run the webpage
+  css/ - css files
+  js/ - js files
+```
 
 ## Important Files
 
 ### `app/transducer/views.py`
 
 Contains the interface between the django frontend and the actual logic behind LaSer. It also currently contains the get_code method, which handles code generation.
-
+`
 ### `app/transducer/handlers.py`
 
 Contains the methods that handle `get_response` - that is, the code that parses the user's input into automata, both the language and the property (Unless it's a fixed property). The methods are:
@@ -58,8 +60,31 @@ this method, as expected, handles language construction. It can handle fixed pro
 
 `handle_satifaction_maximality` handles, jointly (due to their similarity) questions of satisfaction and maximality of languages with repsect to a given property. This method is very large, but is difficult to split up due to its reliance on many local variables. a refactor of this method will eventually be necessary.
 
-### `app/transducer/ILaser_gen.py`
+### `app/transducer/laser_gen.py`
 
 This file handles code generation for when the user wants to run the python program on their local machine instead of through the website. this is required if the question that is being asked is too computationally expensive to run.
 
 It contains methods that are used to generate the code for the local running of a question.
+
+## Single File Format
+
+This format can be followed in either an uploaded file, or the first textarea.
+
+```
+# I = Input
+# P = Property
+# L = Language
+# F = Fixed
+# T = Type
+# D = Description
+# L = Language
+
+I -> PL|P
+P -> F|TD
+F -> @PREFIX|@SUFFIX|...
+T -> @ErrorDetection|@InputAltering|.....
+D -> @Transducer....|Trajectory
+L -> @DFA|@NFA|@REGEX
+
+Add language and property below result
+```

@@ -4,7 +4,7 @@ import os.path as path
 
 from django.test import TestCase
 from app.transducer.views import get_response
-from app.transducer.ILaser_gen import program, generate_program
+from app.transducer.laser_gen import program, generate_program
 from app.testing.test_util import openfile, readfile
 
 REGS = ['test_files/DFA-a+ab+bb.fa', 'test_files/NFA-aa+ab+bb.fa', 'test_files/NFA-aa+ab+ba+bb.fa',

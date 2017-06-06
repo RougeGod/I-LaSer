@@ -3,7 +3,7 @@
 from os import path
 import string
 
-from app.transducer.ILaser_gen import generate_program
+from app.transducer.laser_gen import generate_program
 
 def hamm_dist(str1, str2):
     """Return the hamming distance of two strings"""

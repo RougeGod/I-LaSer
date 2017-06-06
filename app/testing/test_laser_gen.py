@@ -1,13 +1,13 @@
 """Laser Program Generation Tests"""
 
 from django.test import TestCase
-from app.transducer.ILaser_gen import program, generate_program
+from app.transducer.laser_gen import program, generate_program
 from app.testing.test_data import a_bstar_a, s1ts, a_ab_bb, t1ts, aa_ab_bb, a_ab_ba, a_bb_star
 
-#  This program tests methods in the module "ILaser_gen.py". The
+#  This program tests methods in the module "laser_gen.py". The
 #  current directory should contain a directory "transducer"
-#  which in turn should contain "ILaser_gen.py" (if not then change
-#  the above line "from transducer.ILaser_gen...." appropriately)
+#  which in turn should contain "laser_gen.py" (if not then change
+#  the above line "from transducer.laser_gen...." appropriately)
 
 LN_ANS = 6
 LN_REQ = 8
