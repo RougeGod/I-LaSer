@@ -1,5 +1,9 @@
 //perform certain tasks based on users click and changes
 $(function() {
+    $('.selectpicker').on('loaded.bs.select', function() {
+        setMaximality(); // I dunno why this is needed, but it is *shrugs*
+    })
+
     $('#automata_load').hide()
     $('#integers_input').hide()
     $('#reset').click(function() {
@@ -148,7 +152,7 @@ function setRadio() {
 
 function setMaximality() {
     switch (document.form1.question.value) {
-        case "":
+        case "0":
             hide('divsat');
             hide('automata_load');
             hide('integers_input');

@@ -4,16 +4,11 @@ import django.forms.widgets as widgets
 
 from app.transducer.util import parse_aut_str
 
-PROPERTY_TYPE_CHOICE = (('', '-Please Select-'),
+PROPERTY_TYPE_CHOICE = (('0', '-Please Select-'),
                         ('1', 'Fixed (UD code, prefix code, suffix code,...)'),
                         ('2', 'Trajectory or Input-Altering Transducer '),
                         ('3', 'Error-Detection (via input-preserving transducer)'),
                         ('4', 'Error-Correction (via input-preserving transducer)'))
-
-PROPERTY_TYPE_MAXIMALITY = (('', '-Please Select-'),
-                            ('1', 'Fixed(Prefix, Suffix, etc)'),
-                            ('3', 'Transducer: input-altering'),
-                            ('4', 'Transducer: input-preserving'))
 
 FIXED_TYPE_CHOICE = (('1', 'Prefix'),
                      ('2', 'Suffix'),
@@ -22,7 +17,7 @@ FIXED_TYPE_CHOICE = (('1', 'Prefix'),
                      ('5', 'HyperCode'),
                      ('6', 'Code'))
 
-QUESTION_CHOICE = (('', '-Please Select-'),
+QUESTION_CHOICE = (('0', '-Please Select-'),
                    ('1', 'Satisfaction'),
                    ('2', 'Maximality'),
                    ('3', 'Construction'))
