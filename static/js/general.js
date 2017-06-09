@@ -6,14 +6,14 @@ $(function() {
         location.reload();
     });
 
-    for(var i = 0; i < document.form1.prv.options.length; i++) {
-        if(document.form1.prv.options[i].value=="")
-            document.form1.prv.selectedIndex = i;
+    for(var i = 0; i < document.form1.property_type.options.length; i++) {
+        if(document.form1.property_type.options[i].value=="")
+            document.form1.property_type.selectedIndex = i;
     }
 
-    for(var i = 0; i < document.form1.que.options.length; i++) {
-        if(document.form1.que.options[i].value=="")
-            document.form1.que.selectedIndex = i;
+    for(var i = 0; i < document.form1.question.options.length; i++) {
+        if(document.form1.question.options[i].value=="")
+            document.form1.question.selectedIndex = i;
     }
 
     setFixedProperty();
@@ -147,11 +147,11 @@ function setRadio() {
 }
 
 function setMaximality() {
-    switch (document.form1.que.value) {
+    switch (document.form1.question.value) {
         case "":
             hide('divsat');
-            hide('automata_load')
-            hide('integers_input')
+            hide('automata_load');
+            hide('integers_input');
             break;
         case "1":
         case "2":
@@ -163,10 +163,10 @@ function setMaximality() {
             break;
         case "3":
             show('divsat');
-            hide('automata_load')
+            hide('automata_load');
             $('#divsat_select').find('[value=4]').hide();
             $('#divsat_select').selectpicker('refresh');
-            show('integers_input')
+            show('integers_input');
             break;
     }
 }
@@ -176,14 +176,14 @@ function setFixedProperty() {
     hide('div2');
     hide('div3');
     switch (document.getElementById('divsat_select').value) {
-        case "1" :
+        case "1":
             show('div1');
             break;
-        case "2" :
+        case "2":
             show('div3');
             break;
-        case "3" :
-        case "4" :
+        case "3":
+        case "4":
             show('div2');
             break;
         default: break;

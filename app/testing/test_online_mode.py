@@ -7,7 +7,7 @@ from app.testing.test_util import hamm_dist, hamm_dist_list, readfile, openfile
 import FAdo.fl as fl
 
 from django.test import TestCase
-
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 REGS = ['test_files/DFA-a+ab+bb.fa', 'test_files/NFA-aa+ab+bb.fa', 'test_files/NFA-aa+ab+ba+bb.fa',
         'test_files/NFA-abx.fa', 'test_files/DFA-a+ab+bb.txt', 'test_files/NFA-ab#a.fa',
@@ -44,186 +44,186 @@ class MyTestCase(TestCase):
         files = {}
 
         aut_text = readfile(COMBINED_NAMES[0])
-        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_text = readfile(COMBINED_NAMES[1])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_text = readfile(COMBINED_NAMES[2])
-        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_text = readfile(COMBINED_NAMES[3])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[4])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_text = readfile(COMBINED_NAMES[5])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[6])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[7])
-        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[8])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[9])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[10])
-        post = {'que': '1', 'prv': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[11])
-        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(COMBINED_NAMES[12])
-        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
     def test_mixed(self):
         aut_file = openfile(REGS[3])
         t_text = readfile(TRAJ_NAMES[1])
-        post = {'que': '1', 'prv': '2', 'transducer_text1': t_text}
-        files = {'automata_file': aut_file}
+        post = {'question': '1', 'property_type': '2', 'transducer_text1': t_text}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_file = openfile(REGS[0])
         t_text = readfile(TRAJ_NAMES[0])
-        post = {'que': '1', 'prv': '2', 'transducer_text1': t_text}
-        files = {'automata_file': aut_file}
+        post = {'question': '1', 'property_type': '2', 'transducer_text1': t_text}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(REGS[0])
         t_file = openfile(TRAJ_NAMES[1])
-        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
-        files = {'transducer_file': t_file}
+        post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
+        files = {'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_text = readfile(REGS[2])
         t_file = openfile(TRAJ_NAMES[0])
-        post = {'que': '1', 'prv': '2', 'automata_text': aut_text}
-        files = {'transducer_file': t_file}
+        post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
+        files = {'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
     def test_TRAJsatNO(self):
-        post = {'que': '1', 'prv': '2'}
+        post = {'question': '1', 'property_type': '2'}
         aut_file = openfile(REGS[3])
         t_file = openfile(TRAJ_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
         aut_file = openfile(REGS[0])
         t_file = openfile(TRAJ_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
     def test_TRAJTsatYES(self):
-        post = {'que': '1', 'prv': '2'}
+        post = {'question': '1', 'property_type': '2'}
         aut_file = openfile(REGS[0])
         t_file = openfile(TRAJ_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
         aut_file = openfile(REGS[2])
         t_file = openfile(TRAJ_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
     def test_IATsatNO(self):
-        post = {'que': '1', 'prv': '2'}
+        post = {'question': '1', 'property_type': '2'}
         aut_file = openfile(REGS[0])
         t_file = openfile(IATRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
         aut_file = openfile(REGS[3])
         t_file = openfile(IATRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
     def test_IATsatYES(self):
-        post = {'que': '1', 'prv': '2'}
+        post = {'question': '1', 'property_type': '2'}
         aut_file = openfile(REGS[0])
         t_file = openfile(IATRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
         aut_file = openfile(REGS[2])
         t_file = openfile(IATRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
     def test_IPTsatNO(self):
-        post = {'que': '1', 'prv': '3'}
+        post = {'question': '1', 'property_type': '3'}
         aut_file = openfile(REGS[2])
         t_file = openfile(IPTRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
         aut_file = openfile(REGS[3])
         t_file = openfile(IATRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
         aut_file = openfile(REGS[1])
         t_file = openfile(IPTRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
 
     def test_IPTsatYES(self):
-        post = {'que': '1', 'prv': '3'}
+        post = {'question': '1', 'property_type': '3'}
         aut_file = openfile(REGS[4])
         t_file = openfile(IPTRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
         aut_file = openfile(REGS[5])
         t_file = openfile(IPTRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
     def test_CORRsatNO(self):
-        post = {'que': '1', 'prv': '4'}
+        post = {'question': '1', 'property_type': '4'}
         aut_file = openfile(REGS[9])
         t_file = openfile(IPTRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
         aut_file.close()
@@ -231,75 +231,75 @@ class MyTestCase(TestCase):
         # next test program generation
         # aut_file = openfile(REGS[9])
         # t_file = openfile(IPTRANSDUCER_NAMES[1])
-        # files = {'automata_file': aut_file, 'transducer_file': t_file}
+        # files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         # lines = getCode(post, files, False, True)
         # should_be = (lines[LN_ANS-1] == 'p = buildErrorCorrectPropS(t)\n') and \
         #             (lines[LN_ANS] == 'print p.notSatisfiesW(a)\n')
         # self.assertTrue(should_be)
 
     def test_TRAJmaxNO(self):
-        post = {'que': '2', 'prv': '2'}
+        post = {'question': '2', 'property_type': '2'}
         aut_file = openfile(REGS[1])
         t_file = openfile(TRAJ_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
         aut_file = openfile(REGS[5])
         t_file = openfile(TRAJ_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
 
     def test_TRAJTmaxYES(self):
-        post = {'que': '2', 'prv': '2'}
+        post = {'question': '2', 'property_type': '2'}
         aut_file = openfile(REGS[0])
         t_file = openfile(TRAJ_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "YES, the language is maximal with respect to the property.")
         aut_file = openfile(REGS[2])
         t_file = openfile(TRAJ_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "YES, the language is maximal with respect to the property.")
 
     def test_IATmaxNO(self):
-        post = {'que': '2', 'prv': '2'}
+        post = {'question': '2', 'property_type': '2'}
         aut_file = openfile(REGS[1])
         t_file = openfile(IATRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
         aut_file = openfile(REGS[5])
         t_file = openfile(IATRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
 
 
     def test_IATmaxYES(self):
-        post = {'que': '2', 'prv': '2'}
+        post = {'question': '2', 'property_type': '2'}
         aut_file = openfile(REGS[0])
         t_file = openfile(IATRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "YES, the language is maximal with respect to the property.")
         aut_file = openfile(REGS[2])
         t_file = openfile(IATRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "YES, the language is maximal with respect to the property.")
 
     def test_IPTmaxNO(self):
-        post = {'que': '2', 'prv': '3'}
+        post = {'question': '2', 'property_type': '3'}
         aut_file = openfile(REGS[5])
         t_file = openfile(IPTRANSDUCER_NAMES[2])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
         aut_file = openfile(REGS[0])
         t_file = openfile(IPTRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
         aut_file.close()
@@ -307,171 +307,171 @@ class MyTestCase(TestCase):
         # next test program generation
         # aut_file = openfile(REGS[0])
         # t_file = openfile(IPTRANSDUCER_NAMES[0])
-        # files = {'automata_file': aut_file, 'transducer_file': t_file}
+        # files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         # lines = getCode(post, files, False, True)
         # should_be = (lines[LN_ANS-1] == 'p = buildIPTPropS(t)\n') and \
         #             (lines[LN_ANS] == 'print p.notMaximalW(a)\n')
         # self.assertTrue(should_be)
 
     def test_IPTmaxYES(self):
-        post = {'que': '2', 'prv': '3'}
+        post = {'question': '2', 'property_type': '3'}
         aut_file = openfile(REGS[2])
         t_file = openfile(IPTRANSDUCER_NAMES[2])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "YES, the language is maximal with respect to the property.")
         aut_file = openfile(REGS[6])
         t_file = openfile(IPTRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "YES, the language is maximal with respect to the property.")
 
     def test_CORRmaxNO(self):
-        post = {'que': '2', 'prv': '4'}
+        post = {'question': '2', 'property_type': '4'}
         aut_file = openfile(REGS[7])
         t_file = openfile(IPTRANSDUCER_NAMES[1])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
         aut_file = openfile(REGS[0])
         t_file = openfile(IPTRANSDUCER_NAMES[0])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "NO, the language is not maximal with respect to the property.")
 
     def test_CORRmaxYES(self):
-        post = {'que': '2', 'prv': '4'}
+        post = {'question': '2', 'property_type': '4'}
         aut_file = openfile(REGS[8])
         t_file = openfile(IPTRANSDUCER_NAMES[3])
-        files = {'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL'), "YES, the language is maximal with respect to the property.")
 
 
     def test_FIXED_IATsatNO(self):
-        post = {'que': '1', 'prv': '1', 'fixed_type': '1'}  # PREFIX
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '1'}  # PREFIX
         aut_file = openfile(REGS[0])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:26], "NO, the language does not")
-        post = {'que': '1', 'prv': '1', 'fixed_type': '3'}  # INFIX
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}  # INFIX
         aut_file = openfile(REGS[3])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:26], "NO, the language does not")
 
     def test_FIXED_IATsatYES(self):
-        post = {'que': '1', 'prv': '1', 'fixed_type': '2'}  # SUFFIX
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '2'}  # SUFFIX
         aut_file = openfile(REGS[0])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:27], "YES, the language satisfies")
-        post = {'que': '1', 'prv': '1', 'fixed_type': '4'}  # OUTFIX
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '4'}  # OUTFIX
         aut_file = openfile(REGS[2])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:27], "YES, the language satisfies")
 
     def test_FIXED_IATmaxNO(self):
-        post = {'que': '2', 'prv': '1', 'fixed_type': '2'}  # SUFFIX
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '2'}  # SUFFIX
         aut_file = openfile(REGS[1])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:23], "NO, the language is not")
-        post = {'que': '2', 'prv': '1', 'fixed_type': '5'}  # HYPERCODE
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '5'}  # HYPERCODE
         aut_file = openfile(REGS[7])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:23], "NO, the language is not")
 
     def test_FIXED_IATmaxYES(self):
-        post = {'que': '2', 'prv': '1', 'fixed_type': '2'}  # SUFFIX
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '2'}  # SUFFIX
         aut_file = openfile(REGS[0])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:20], "YES, the language is")
-        post = {'que': '2', 'prv': '1', 'fixed_type': '1'}  # PREFIX
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '1'}  # PREFIX
         aut_file = openfile(REGS[2])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:20], "YES, the language is")
 
     def test_FIXED_CODEsatNO(self):
-        post = {'que': '1', 'prv': '1', 'fixed_type': '6'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '6'}
         aut_file = openfile(REGS[6])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:26], "NO, the language does not")
-        post = {'que': '1', 'prv': '1', 'fixed_type': '3'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}
         aut_file = openfile(REGS[3])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:26], "NO, the language does not")
 
     def test_FIXED_CODEsatYES(self):
-        post = {'que': '1', 'prv': '1', 'fixed_type': '6'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '6'}
         aut_file = openfile(REGS[0])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:27], "YES, the language satisfies")
-        post = {'que': '1', 'prv': '1', 'fixed_type': '4'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '4'}
         aut_file = openfile(REGS[2])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:27], "YES, the language satisfies")
 
     def test_FIXED_CODEmaxNO(self):
-        post = {'que': '2', 'prv': '1', 'fixed_type': '6'}
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '6'}
         aut_file = openfile(REGS[1])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:23], "NO, the language is not")
-        post = {'que': '2', 'prv': '1', 'fixed_type': '3'}
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '3'}
         aut_file = openfile(REGS[5])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL')[:23], "NO, the language is not")
 
     def test_FIXED_CODEmaxYES(self):
-        post = {'que': '2', 'prv': '1', 'fixed_type': '6'}
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '6'}
         aut_file = openfile(REGS[0])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:20], "YES, the language is")
-        post = {'que': '2', 'prv': '1', 'fixed_type': '4'}
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '4'}
         aut_file = openfile(REGS[2])
-        files = {'automata_file': aut_file}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read())}
         result = get_response(post, files, False)
         self.assertEquals(result.get('result', 'FAIL')[:20], "YES, the language is")
 
     def test_IPTconstr(self):
-        post = {'que': '3', 'prv': '3', 'n_int': 5, 'l_int': 8, 's_int': 2}
+        post = {'question': '3', 'property_type': '3', 'n_int': 5, 'l_int': 8, 's_int': 2}
         #aut = openfile(REGS[4])
         t_file = openfile(IPTRANSDUCER_NAMES[4])
-        files = {'transducer_file': t_file} #{'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())} #{'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         #print 'hdist = ', hamm_dist_list(result['witness'])
         self.assertTrue(hamm_dist_list(result['witness']) > 1)
-        post = {'que': '3', 'prv': '3', 'n_int': 5, 'l_int': 8, 's_int': 2}
+        post = {'question': '3', 'property_type': '3', 'n_int': 5, 'l_int': 8, 's_int': 2}
         #aut = openfile(REGS[4])
         t_file = openfile(IPTRANSDUCER_NAMES[5])
-        files = {'transducer_file': t_file} #{'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())} #{'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         witness = result['witness']
         self.assertTrue(hamm_dist_list(witness) > 2)
         self.assertTrue(result['prop'].satisfiesP(fl.FL(witness).trieFA().toNFA()))
         t_file = openfile(IPTRANSDUCER_NAMES[6])
-        files = {'transducer_file': t_file} #{'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())} #{'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         witness = result['witness']
         self.assertTrue(result['prop'].satisfiesP(fl.FL(witness).trieFA().toNFA()))
         t_file = openfile(IPTRANSDUCER_NAMES[5])
-        files = {'transducer_file': t_file} #{'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())} #{'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         witness = result['witness']
         self.assertTrue(result['prop'].satisfiesP(fl.FL(witness).trieFA().toNFA()))
         t_file = openfile(IPTRANSDUCER_NAMES[5])
-        files = {'transducer_file': t_file} #{'automata_file': aut_file, 'transducer_file': t_file}
+        files = {'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())} #{'automata_file': SimpleUploadedFile(aut_file.name, aut_file.read()), 'transducer_file': SimpleUploadedFile(t_file.name, t_file.read())}
         result = get_response(post, files, False)
         witness = result['witness']
         self.assertTrue(result['prop'].satisfiesP(fl.FL(witness).trieFA().toNFA()))

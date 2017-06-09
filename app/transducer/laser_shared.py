@@ -13,11 +13,14 @@ FIXED = ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']
 
 def construct_automaton(aut_str):
     """construct an automaton from a string"""
+
+    aut_str = str(aut_str)
+
     aut_str.strip()
     aut_str += "\n"
     try:
         return readOneFromString(aut_str)
-    except YappyError:
+    except YappyError as e:
         try:
             return importFromGrailString(aut_str)
         except YappyError:

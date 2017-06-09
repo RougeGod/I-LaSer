@@ -103,8 +103,7 @@ def handle_ipp(
             'construct_path': '', 'construct_text': '', 'result': result}
 
 def handle_construction(
-        property_type, post,
-        files, form=True
+        property_type, data, files, form
     ):
     """
     Handle the construction choice of the website.
@@ -117,9 +116,9 @@ def handle_construction(
     # The post passes the sizes as string, so we need to parse them.
     # This has the added benefit of that if no numbers are given, it defaults to -1,
     # Which will fail!
-    n_num = int(post.get("n_int", -1))
-    s_num = int(post.get("s_int", -1))
-    l_num = int(post.get("l_int", -1))
+    n_num = data.get("n_int", -1)
+    s_num = data.get("s_int", -1)
+    l_num = data.get("l_int", -1)
 
     err = ''
     # Checking number's validity
@@ -150,31 +149,10 @@ def handle_construction(
         return {'form': form, 'construct_path': '',
                 'construct_text': '', 'result': result}
 
-    file_ = files.get('transducer_file')
-    if file_: # Get it from the file by default
-        # automaton string
-        t_str = file_.read()
-        #automaton name
-        t_name = "Property: " + file_.name
-        file_.close()
+    t_str = data.get('transducer_text')
+    t_name = data.get('trans_name', 'N/A')
 
-        t_str = re.sub(r'\r', '', t_str)
-    # There are two text fields, so check both of them for a transducer. This helps quash any
-    # weirdness where the user uses the wrong text field by accident. Probably better
-    # to check only the correct text field
-    elif post.get('transducer_text1'):
-        # automaton string
-        t_str = re.sub(r'\r', '', str(post.get('transducer_text1')))
-
-        #automaton name
-        t_name = "Property: N/A"
-    elif post.get('transducer_text2'):
-        # automaton string
-        t_str = re.sub(r'\r', '', str(post.get('transducer_text2')))
-
-        #automaton name
-        t_name = "Property: N/A"
-    else:
+    if not t_str:
         return error('Please provide a property file.')
 
     # Input Altering Property
@@ -187,8 +165,7 @@ def handle_construction(
     return result
 
 def handle_satisfaction_maximality(
-        property_type, question, post,
-        files, form=True
+        property_type, question, data, files, form
     ):
     """This method handles satisfaction and maximality choices."""
 
@@ -197,23 +174,10 @@ def handle_satisfaction_maximality(
         return {'form': form, 'error_message': err}
 
     # Try and get an automata file from the fiels uploaded.
-    file_ = files.get('automata_file')
+    aut_str = data.get('automata_text')
+    aut_name = "Language: " + data.get('aut_name', 'N/A')
 
-    if file_: # Get it from the file by default
-        # automaton string
-        aut_str = file_.read()
-
-        #automaton name
-        aut_name = "Language: " + file_.name
-
-        file_.close()
-    elif post.get('automata_text'): # Try to get the text field instead
-        # automaton string
-        aut_str = str(post.get('automata_text'))
-
-        #automaton name
-        aut_name = "Language: N/A"
-    else:
+    if not aut_str:
         return error('Please provide an automaton file.')
 
     parsed = parse_aut_str(aut_str)
@@ -243,7 +207,7 @@ def handle_satisfaction_maximality(
     if property_type == "1": # Fixed type
         t_name = ""
         if fixed_type is None:
-            fixed_type = post.get('fixed_type')
+            fixed_type = data.get('fixed_type')
 
         # This method will return a fixed property, or None if it's a UD Code.
         prop = create_fixed_property(aut.Sigma, fixed_type)
@@ -274,36 +238,11 @@ def handle_satisfaction_maximality(
     # User-Input Property
     else:
         # Check for a transducer file
-        file_ = files.get('transducer_file')
+        t_str = data.get('transducer_text')
+        t_name = 'Property: ' + data.get('trans_name', 'N/A')
 
-        if file_: # Get it from the file by default
-            # automaton string
-            t_str = file_.read()
-            #automaton name
-            t_name = "Property: " + file_.name
-            file_.close()
-
-            t_str = re.sub(r'\r', '', t_str)
-        # There are two text fields, so check both of them for a transducer. This helps quash any
-        # weirdness where the user uses the wrong text field by accident. Probably better
-        # to check only the correct text field
-        elif post.get('transducer_text1'):
-            # automaton string
-            t_str = re.sub(r'\r', '', str(post.get('transducer_text1')))
-
-            #automaton name
-            t_name = "Property: N/A"
-        elif post.get('transducer_text2'):
-            # automaton string
-            t_str = re.sub(r'\r', '', str(post.get('transducer_text2')))
-
-            #automaton name
-            t_name = "Property: N/A"
-        # If the parsed automaton string also contained a transducer.
-        elif transducer:
+        if transducer:
             t_str = re.sub(r'\r', '', transducer)
-
-            t_name = "Property: N/A"
 
             # transducer_type is a string identifier for the type of transducer.
             # Here we turn that into a number id.
@@ -313,10 +252,9 @@ def handle_satisfaction_maximality(
         elif trajectory:
             t_str = re.sub(r'\r', '', trajectory)
 
-            t_name = "Property: N/A"
-
             property_type = "2"
-        else:
+
+        if not t_str:
             return error('Please provide a property file.')
 
         if not property_type:

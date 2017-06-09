@@ -46,34 +46,37 @@ TRANSDUCER_TYPES = {
 
 def upload_file(request):
     """This method handles the parsing of a file uploaded from the website."""
-    form = UploadFileForm()
     post = request.POST
     files = request.FILES
 
     if request.method == 'POST': # POST Request, time to do some calculations
+        form = UploadFileForm(post, files)
+
         if 'clear_page' in post: # ...Unless we are clearing the page
+            response = {'form': UploadFileForm()}
+        elif not form.is_valid():
             response = {'form': form}
-        elif not post.get('que'):
-            response = {'form':form, 'error_message':
-                        'You have to select a question and its options to perform a request'}
         elif 'run_code' in post: # This will handle server-side calculation
-            response = get_response(post, files)
+            response = get_response(form.cleaned_data, files, form)
         elif 'gen_code' in post: # This will handle generation of code for client-side calculation
-            response = get_code(post, files)
+            response = get_code(form.cleaned_data, files, form)
     else: # GET Request, just render the page
-        response = {'form': form}
+        response = {'form': UploadFileForm()}
 
     return render(request, 'upload.html', response)
 
-def get_response(post, files, form=True):
+def get_response(data, files, form):
     """
     This handles lighter tasks that can be safely computed on the server.
     It gives the response to the user via the webpage
     """
-    form = UploadFileForm(post, files) if form else None
+    if not form: # Test mode
+        form = UploadFileForm(data, files)
+        form.is_valid()
+        data = form.cleaned_data
 
-    question = post.get('que')
-    property_type = post.get('prv')
+    question = data.get('question')
+    property_type = data.get('property_type')
 
     if not question:
         return {'form': form, 'error_message': "Please select a question."}
@@ -81,25 +84,27 @@ def get_response(post, files, form=True):
     #     return {'form': form, 'error_message': "Please select a property type."}
 
     if question in ['1', '2']:
-        return handle_satisfaction_maximality(property_type, question, post, files, form)
+        return handle_satisfaction_maximality(property_type, question, data, files, form)
     elif question == '3':
-        return handle_construction(property_type, post, files, form)
+        return handle_construction(property_type, data, files, form)
 
-def get_code(post, files, form=True, test_mode=None):
+def get_code(data, files, form=True, test_mode=None):
     """
     If a computation is too expensive to be run in due time on the server,
     the user can generate code and allow the download of that. This method
     handles that route.
     """
-
-    form = UploadFileForm(post, files) if form else None
+    if not form: # Test Mode
+        form = UploadFileForm(data, files)
+        form.is_valid()
+        data = form.cleaned_data
 
     def error(err):
         """Formats an error using the given string"""
         return {'form': form, 'error_message': err}
 
-    question = post.get('que')
-    property_type = post.get('prv')
+    question = data.get('question')
+    property_type = data.get('property_type')
     if not question:
         return error('Please select a question.')
 
@@ -110,14 +115,9 @@ def get_code(post, files, form=True, test_mode=None):
 
     # Automaton String, or number generation
     if question in ['1', '2']: # Satisfaction, maximality
-        file_ = files.get('automata_file')
+        aut_str = data.get('automata_text')
 
-        if file_: # Get it from the file by default
-            aut_str = file_.read()
-            file_.close()
-        elif post.get('automata_text'): # Else the text box
-            aut_str = str(post.get('automata_text'))
-        else:
+        if not aut_str:
             return error('Please provide an automaton file.')
 
         parsed = parse_aut_str(aut_str)
@@ -137,9 +137,9 @@ def get_code(post, files, form=True, test_mode=None):
             return {'form': form, 'error_message':
                     'The automaton appears to be incorrectly formatted'}
     elif question == '3': # Construction
-        n_num = int(post.get('n_int', -1))
-        s_num = int(post.get('s_int', -1))
-        l_num = int(post.get('l_int', -1))
+        n_num = data.get('n_int', -1)
+        s_num = data.get('s_int', -1)
+        l_num = data.get('l_int', -1)
 
         if n_num <= 0 or s_num <= 0 or l_num <= 0:
             return error('Please enter three positive integers S, N, L.')
@@ -152,25 +152,14 @@ def get_code(post, files, form=True, test_mode=None):
     if property_type == "1":
         t_str = None
         if fixed_type is None:
-            fixed_type = post.get('fixed_type')
+            fixed_type = data.get('fixed_type')
             prop = FIXED_DICT[fixed_type]
         else:
             prop = fixed_type
     else:
-        file_ = files.get('transducer_file')
+        t_str = data.get('transducer_text')
 
-        if file_: # Get it from the file by default
-            # transducer string
-            t_str = file_.read()
-
-            file_.close()
-        elif post.get('transducer_text1'):
-            # transducer string
-            t_str = str(post.get('transducer_text1'))
-        elif post.get('transducer_text2'):
-            # transducer string
-            t_str = str(post.get('transducer_text2'))
-        elif transducer:
+        if transducer:
             t_str = re.sub(r'\r', '', transducer)
 
             if transducer_type:
@@ -179,7 +168,8 @@ def get_code(post, files, form=True, test_mode=None):
             t_str = re.sub(r'\r', '', trajectory)
 
             property_type = '2'
-        else:
+
+        if not t_str:
             return error('Please provide a property file.')
 
     # Input-Altering Property (given as trajectory or transducer)
