@@ -100,6 +100,8 @@ function validate(str) {
             return str.replace(/^.+\n([\s\S]+)/, "$1").split(/\n/).length == 1;
         } else if(str.startsWith('@Transducer')) {
             return testTrans(str);
+        } else {
+            return testFA(str);
         }
     } else if(count === 2) {
         var match = str.match(/(@[\s\S]+)(@[\s\S]+)/);
@@ -190,13 +192,10 @@ function setFixedProperty() {
         case "4":
             show('div2');
             break;
-        default: break;
+        default:
+            break;
     }
 }
-
-window.onload = function() {
-
-};
 
 function hide(id) {
     document.getElementById(id).style.display="none";
