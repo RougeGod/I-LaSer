@@ -1,79 +1,32 @@
 //perform certain tasks based on users click and changes
 $(function() {
     $('.selectpicker').on('loaded.bs.select', function() {
-        setMaximality(); // I dunno why this is needed, but it is *shrugs*
+        setFields(); // I dunno why this is needed, but it is *shrugs*
     })
 
     $('#automata_load').hide()
     $('#integers_input').hide()
-    $('#reset').click(function() {
-        location.reload();
-    });
-
-    for(var i = 0; i < document.form1.property_type.options.length; i++) {
-        if(document.form1.property_type.options[i].value=="")
-            document.form1.property_type.selectedIndex = i;
-    }
-
-    for(var i = 0; i < document.form1.question.options.length; i++) {
-        if(document.form1.question.options[i].value=="")
-            document.form1.question.selectedIndex = i;
-    }
 
     setFixedProperty();
 
-    $('#automata_text').on('change keyup paste', function() {
-        var this_ = $(this);
-
-        if(this_.val() !== '') {
-            if(validate(this_.val())) {
-                this_.removeClass('border-failure').addClass('border-success');
-            } else {
-                this_.removeClass('border-success').addClass('border-failure');
-            }
-        } else {
-            this_.removeClass('border-success border-failure');
-        }
-    });
-
-    $('#transducer_text1').on('change keyup paste', function() {
-        var this_ = $(this);
-
-        if(this_.val() !== '') {
-            if(validate(this_.val(), true)) {
-                this_.removeClass('border-failure').addClass('border-success');
-            } else {
-                this_.removeClass('border-success').addClass('border-failure');
-            }
-        } else {
-            this_.removeClass('border-success border-failure');
-        }
-    })
-
-    $('#transducer_text2').on('change keyup paste', function() {
-        var this_ = $(this);
-
-        if(this_.val() !== '') {
-            if(validate(this_.val(), true)) {
-                this_.removeClass('border-failure').addClass('border-success');
-            } else {
-                this_.removeClass('border-success').addClass('border-failure');
-            }
-        } else {
-            this_.removeClass('border-success border-failure');
-        }
-    })
+    $('#automata_text').on('change keyup paste', handleChange);
+    $('#transducer_text1').on('change keyup paste', handleChange)
+    $('#transducer_text2').on('change keyup paste', handleChange)
 });
 
-//     elif count == 3: # Transducer with type
-//         res = re.search(r'@(.+)\n(@[\s\S]+)\n(@[\s\S]+)$', aut_str)
-//         result['transducer_type'] = res.group(1)
-//         result['transducer'] = res.group(2)
-//         result['aut_str'] = res.group(3)
-//         return result
+function handleChange() {
+    var this_ = $(this);
 
-//     result['aut_str'] = aut_str
-//     return result
+    if(this_.val() !== '') {
+        if(validate(this_.val(), true)) {
+            this_.removeClass('border-failure').addClass('border-success');
+        } else {
+            this_.removeClass('border-success').addClass('border-failure');
+        }
+    } else {
+        this_.removeClass('border-success border-failure');
+    }
+}
 
 function validate(str) {
     var CODES = ['@PREFIX', '@SUFFIX', '@INFIX', '@OUTFIX', '@HYPERCODE', '@CODE'],
@@ -152,7 +105,9 @@ function setRadio() {
     }
 }
 
-function setMaximality() {
+function setFields() {
+    var $select = $('#divsat_select')
+
     switch (document.form1.question.value) {
         case "0":
             hide('divsat');
@@ -160,18 +115,27 @@ function setMaximality() {
             hide('integers_input');
             break;
         case "1":
+            show('divsat');
+            show('automata_load');
+            hide('integers_input');
+            $select.find('[value=4]').show();
+            $select.find('[value=5]').show();
+            $select.selectpicker('refresh');
+            break;
         case "2":
             show('divsat');
             show('automata_load');
             hide('integers_input');
-            $('#divsat_select').find('[value=4]').show();
-            $('#divsat_select').selectpicker('refresh');
+            $select.find('[value=4]').show();
+            $select.find('[value=5]').hide();
+            $select.selectpicker('refresh');
             break;
         case "3":
             show('divsat');
             hide('automata_load');
-            $('#divsat_select').find('[value=4]').hide();
-            $('#divsat_select').selectpicker('refresh');
+            $select.find('[value=4]').hide();
+            $select.find('[value=5]').hide();
+            $select.selectpicker('refresh');
             show('integers_input');
             break;
     }
@@ -181,6 +145,7 @@ function setFixedProperty() {
     hide('div1');
     hide('div2');
     hide('div3');
+    hide('div4');
     switch (document.getElementById('divsat_select').value) {
         case "1":
             show('div1');
@@ -192,15 +157,18 @@ function setFixedProperty() {
         case "4":
             show('div2');
             break;
+        case "5":
+            show('div2');
+            show('div4');
         default:
             break;
     }
 }
 
 function hide(id) {
-    document.getElementById(id).style.display="none";
+    document.getElementById(id).style.display = "none";
 }
 
 function show(id) {
-    document.getElementById(id).style.display="";
+    document.getElementById(id).style.display = "";
 }

@@ -20,7 +20,7 @@ def construct_automaton(aut_str):
     aut_str += "\n"
     try:
         return readOneFromString(aut_str)
-    except YappyError as e:
+    except (YappyError, IndexError):
         try:
             return importFromGrailString(aut_str)
         except YappyError:

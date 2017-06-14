@@ -1,0 +1,68 @@
+<div class="col-md-12 text-center">
+    <h3>Format for Transducers</h3>
+</div>
+<div class="col-md-12 text-justify">
+    <div class="col-md-12 text-justify">
+        <p>As of June 2014, only the FAdo format of transducers is accepted, as the Grail-like format is not generally supported. Transducers must be in standard form, that is, having <i>transitions of the form  &nbsp p x y q</i>, where p and q are states, and each of x and y is either a single alphabet symbol or the empty word. The empty word is written as <i>@epsilon</i>. The format of transducer <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:</p>
+        <ol>
+            <li>'#' begins a comment</li>
+            <li><b>@Transducer</b> begins a new transducer and must be followed by the list of the final states separated</li>
+            by blanks
+            <li>Transitions are written one per line and must be in standard form as noted above.</li>
+            <li>The source state of the first transition is the initial state.</li>
+        </ol>
+        <p>Please see the FAdo documentation for the full description of Transducer format.</p>
+        <p>Below is an example of an input-altering transducer describing the <i>suffix code</i> property over the alphabet {a, b}. The transducer outputs any <i>proper</i> suffix of a given input word.</p>
+    </div>
+    <div class="col-md-12 text-justify">
+        <pre><code>
+@Transducer 2 3
+1 a @epsilon 2
+1 b @epsilon 2
+2 a @epsilon 2
+2 b @epsilon 2
+2 a a 3
+2 b b 3
+3 a a 3
+3 b b 3
+        </code></pre>
+        <h4><b>More examples below:</b></h4>
+        <p>Input-preserving transducer describing the <i>1-substitution-detecting</i> property over the alphabet {0, 1}. On input <i>w</i>, the transducer outputs either <i>w</i>, or any word resulting by substituting 1 bit of <i>w</i> with a different bit.</p>
+        <pre><code>
+@Transducer 0 1
+0 0 0 0
+0 1 1 0
+0 0 1 1
+0 1 0 1
+1 0 0 1
+1 1 1 1
+        </code></pre>
+        <p>Input-preserving transducer describing the <i>1-sid-detecting</i> property over the alphabet {a, b}. On input <i>w</i>, the transducer outputs any word resulting by performing at most one symbol substitution/insertion/deletion operation on <i>w</i>.</p>
+        <pre><code>
+@Transducer 0 1
+0 a a 0
+0 b b 0
+0 a b 1
+0 b a 1
+0 a @epsilon 1
+0 b @epsilon 1
+0 @epsilon a 1
+0 @epsilon b 1
+1 a a 1
+1 b b 1
+        </code></pre>
+        <p>Input-altering transducer describing the <i>thin</i> property (= all languages whose words are of different lengths). On input <i>w</i>, the transducer outputs any word of the same length as <i>w</i>, but different from <i>w</i>.
+        <pre><code>
+@Transducer 2
+1 a a 1
+1 b b 1
+1 a b 2
+1 b a 2
+2 a a 2
+2 b b 2
+2 a b 2
+2 b a 2
+        </code></pre>
+        </p>
+    </div>
+</div>

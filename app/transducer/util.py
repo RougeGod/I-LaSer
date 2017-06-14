@@ -123,4 +123,69 @@ def parse_aut_str(aut_str):
     result['aut_str'] = aut_str
     return result
 
+# pylint:disable=C0201
+def parse_theta_str(theta_str):
+    """Parses the theta string into a dict used to convert automata"""
 
+    match = re.search(r'^@THETA *\n(([\w\d] +[\w\d]\s*)+)', theta_str)
+
+    swaps = match.group(1)
+
+    result = {}
+    for swap in swaps.splitlines():
+        tmp = swap.split(' ')
+        result[tmp[0]] = tmp[1]
+
+    for key in result.keys():
+        result[result[key]] = key
+
+    return result
+
+def apply_theta_antimorphism(aut, theta):
+    """Update the automaton to reverse start and end states, reverse transitions, and update sigma"""
+    orig = aut
+    aut = aut.toNFA()
+
+    newDelta = {}
+
+    # Update transitions to theta(old)
+    for delta in aut.delta:
+        newDelta[delta] = {}
+        for key in theta:
+            try:
+                newDelta[delta][theta[key]] = aut.delta[delta][key]
+            except KeyError:
+                continue
+
+    aut.delta = newDelta
+
+    # Swap Initial and Final States
+    initial = aut.Initial
+    final = aut.Final
+
+    aut.Initial = set()
+    aut.Final = set()
+    for index in final:
+        aut.addInitial(aut.stateIndex(aut.States[index]))
+    for index in initial:
+        aut.addFinal(aut.stateIndex(aut.States[index]))
+
+    # Swap transitions
+    delta = aut.delta
+
+    aut.delta = {}
+
+    for to in delta:
+        for val in delta[to]:
+            for frm in delta[to][val]:
+                if not frm in aut.delta:
+                    aut.delta[frm] = {}
+                
+                if not val in aut.delta[frm]:
+                    aut.delta[frm][val] = set()
+
+                aut.delta[frm][val].add(to)
+
+    orig.delta == aut.delta
+
+    return aut

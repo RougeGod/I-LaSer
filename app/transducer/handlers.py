@@ -16,7 +16,7 @@ from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
      make_block_code
 
-from app.transducer.util import create_fixed_property, write_witness, parse_aut_str
+from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, apply_theta_antimorphism
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 
@@ -282,6 +282,22 @@ def handle_satisfaction_maximality(
             except (YappyError, AttributeError):
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
+        elif property_type == '5':
+            try:
+                prop = IPTProp(readOneFromString(t_str))
+            except (YappyError, AttributeError):
+                try:
+                    prop = construct_input_alt_prop(t_str, aut.Sigma)
+                except (IncorrectFormat, TypeError):
+                    return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
+                            'automaton':aut_name, 'transducer':t_name}
+
+            # Here is extra work for DNA Code Property
+            theta_str = data.get('theta_text')
+
+            theta = parse_theta_str(theta_str)
+
+            aut = apply_theta_antimorphism(aut, theta)
 
     # Check to see if the computation would be too computationally expensive
     if limit_tran_prop(aut.delta, prop.Aut.delta, LIMIT):
