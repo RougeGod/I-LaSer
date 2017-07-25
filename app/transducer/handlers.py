@@ -297,7 +297,20 @@ def handle_satisfaction_maximality(
 
             theta = parse_theta_str(theta_str)
 
-            aut = apply_theta_antimorphism(aut, theta)
+            theta_aut = apply_theta_antimorphism(aut, theta)
+
+            prop_aut = prop.Aut.outIntersection(aut)
+
+            functional = prop_aut.outIntersection(theta_aut).functionalP()
+
+            if functional:
+                decision = "YES, the language satisfies the property"
+                proof = ''
+            else:
+                decision = "NO, the language does not satisfy the property"
+                proof = ''
+            return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+                    'result':decision, 'proof': proof}
 
     # Check to see if the computation would be too computationally expensive
     if limit_tran_prop(aut.delta, prop.Aut.delta, LIMIT):

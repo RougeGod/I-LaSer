@@ -143,21 +143,20 @@ def parse_theta_str(theta_str):
 
 def apply_theta_antimorphism(aut, theta):
     """Update the automaton to reverse start and end states, reverse transitions, and update sigma"""
-    orig = aut
     aut = aut.toNFA()
 
-    newDelta = {}
+    newdelta = {}
 
     # Update transitions to theta(old)
     for delta in aut.delta:
-        newDelta[delta] = {}
+        newdelta[delta] = {}
         for key in theta:
             try:
-                newDelta[delta][theta[key]] = aut.delta[delta][key]
+                newdelta[delta][theta[key]] = aut.delta[delta][key]
             except KeyError:
                 continue
 
-    aut.delta = newDelta
+    aut.delta = newdelta
 
     # Swap Initial and Final States
     initial = aut.Initial
@@ -172,20 +171,15 @@ def apply_theta_antimorphism(aut, theta):
 
     # Swap transitions
     delta = aut.delta
-
     aut.delta = {}
 
-    for to in delta:
-        for val in delta[to]:
-            for frm in delta[to][val]:
-                if not frm in aut.delta:
-                    aut.delta[frm] = {}
-                
-                if not val in aut.delta[frm]:
-                    aut.delta[frm][val] = set()
-
-                aut.delta[frm][val].add(to)
-
-    orig.delta == aut.delta
+    for endstate in delta:
+        for val in delta[endstate]:
+            for startstate in delta[endstate][val]:
+                if not startstate in aut.delta:
+                    aut.delta[startstate] = {}
+                if not val in aut.delta[startstate]:
+                    aut.delta[startstate][val] = set()
+                aut.delta[startstate][val].add(endstate)
 
     return aut
