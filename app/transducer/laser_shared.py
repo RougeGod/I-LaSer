@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Interfaces for the website to communicate with the FAdo backend"""
 from FAdo.fio import readOneFromString
 from FAdo.grail import importFromGrailString
@@ -30,7 +31,7 @@ def construct_automaton(aut_str):
             except Exception:
                 raise IncorrectFormat()
 
-def construct_input_alt_prop(t_str, sigma):
+def construct_input_alt_prop(t_str, sigma, gen=False):
     """Construct an input-altering property"""
 
     t_str.strip()
@@ -39,16 +40,22 @@ def construct_input_alt_prop(t_str, sigma):
     try:
         result = readOneFromString(t_str)
         if isinstance(result, (NFA, DFA)):
+            if gen:
+                return 'INALT'
             return IATProp(result)
         else:
+            if gen:
+                return 'TRAJECT'
             return TrajProp(result, sigma)
     except YappyError:
         try:
+            if gen:
+                return 'TRAJECT'
             return buildTrajPropS(t_str, sigma)
         except Exception:
             raise IncorrectFormat
 
-def format_counter_example(witness):
+def format_counter_example(witness, theta=False):
     """Using a witness object, output a string that shows an example where a property fails."""
     if isinstance(witness, tuple):
         if len(witness) == 3:
@@ -59,7 +66,10 @@ def format_counter_example(witness):
                        % (''.join(witness[0]), str(witness[0]), str(witness[1]))
                     # % (witness[0][0]+witness[0][1], str(witness[0]), str(witness[1]) )
             else:
-                return "Witness: The words '%s' and '%s' violate the property" % witness
+                if theta:
+                    return u'Witness: The words "%s" and Θ("%s") violate the property' % witness
+                else:
+                    return "Witness: The words '%s' and '%s' violate the property" % witness
         else:
             return "N/A"
     else:

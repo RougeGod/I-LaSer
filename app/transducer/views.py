@@ -14,7 +14,7 @@ import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 from FAdo.yappy_parser import YappyError
 
-from app.transducer.laser_shared import construct_automaton, IncorrectFormat
+from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
@@ -30,7 +30,7 @@ except django.core.exceptions.ImproperlyConfigured:
 DECIDE_REQUEST = 'Decide whether the given language '
 TEST_DICT = {'1': 'SATW', '2': 'MAXW', '3': 'MKCO'}
 DESCRIBE = {'1': DECIDE_REQUEST + 'satisfies the given property. \
-                    If no, return a witness; else return Nones.',#Satisfaction
+If no, return a witness; else return Nones.', #Satisfaction
             '2': DECIDE_REQUEST+'is maximal. If no, return a witness; else return None.',#Maximality
             '3': 'Construct set of words satisfying the given property.'}#Construction
 FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'INFIX',
@@ -172,6 +172,8 @@ def get_code(data, files, form=True, test_mode=None):
         if not t_str:
             return error('Please provide a property file.')
 
+    theta = None
+
     # Input-Altering Property (given as trajectory or transducer)
     if not property_type:
         return error('Please provide a property type.')
@@ -215,15 +217,32 @@ def get_code(data, files, form=True, test_mode=None):
             return error(PROPERTY_INCORRECT_FORMAT)
         prop = 'ERRCORR'
 
+    elif property_type == '5':
+        sigma = aut.Sigma
+        theta = data.get('theta_text')
+
+        try:
+            IPTProp(readOneFromString(t_str))
+            prop = 'INPRES'
+        except (YappyError, AttributeError):
+            try:
+                prop = construct_input_alt_prop(t_str, aut.Sigma, True)
+            except (IncorrectFormat, TypeError):
+                return error(PROPERTY_INCORRECT_FORMAT)
+
     description = DESCRIBE[question]
     test = TEST_DICT[question]
+
+    if property_type == '5':
+        test = 'NONEMPTYW'
+
     if question == '2' and property_type == '1' and fixed_type == '6':
         # This is a special case - code does not return a witness
         description = DECIDE_REQUEST + 'is maximal.'
         test = 'MAXP'
 
     prog_lines = gen_program(name, prop, test, aut_str, t_str, sigma, regexp,
-                             description, test_mode, s_num, l_num, n_num)
+                             description, test_mode, s_num, l_num, n_num, theta)
 
     if test_mode is not None:
         return prog_lines

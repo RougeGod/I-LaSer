@@ -3,7 +3,7 @@
 from os import path
 import string
 
-from app.transducer.laser_gen import generate_program
+from app.transducer.laser_gen import generate_program_file
 
 def hamm_dist(str1, str2):
     """Return the hamming distance of two strings"""
@@ -45,7 +45,7 @@ def openfile(file_):
 
 def make_prog(lines, request):
     """makes program out of the given lines, omitting I/O statements, or replacing them with pass"""
-    plines = generate_program(lines, None, request).split("\n")
+    plines = generate_program_file(lines, None, request).split("\n")
     len_ = len(plines)
     prog = ''
     for i in range(len_):

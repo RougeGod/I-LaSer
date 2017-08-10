@@ -1,5 +1,5 @@
 """Various Utility methods used throughout the program"""
-
+import copy
 import re
 
 import FAdo.codes as codes
@@ -141,45 +141,52 @@ def parse_theta_str(theta_str):
 
     return result
 
+def reverse_theta_antimorphism(word, theta):
+    new_word = ''
+    for c in word[::-1]:
+        new_word += theta[c]
+
+    return new_word
+
 def apply_theta_antimorphism(aut, theta):
     """Update the automaton to reverse start and end states, reverse transitions, and update sigma"""
-    aut = aut.toNFA()
+    new_aut = copy.deepcopy(aut.toNFA())
 
     newdelta = {}
 
     # Update transitions to theta(old)
-    for delta in aut.delta:
+    for delta in new_aut.delta:
         newdelta[delta] = {}
         for key in theta:
             try:
-                newdelta[delta][theta[key]] = aut.delta[delta][key]
+                newdelta[delta][theta[key]] = new_aut.delta[delta][key]
             except KeyError:
                 continue
 
-    aut.delta = newdelta
+    new_aut.delta = newdelta
 
     # Swap Initial and Final States
-    initial = aut.Initial
-    final = aut.Final
+    initial = new_aut.Initial
+    final = new_aut.Final
 
-    aut.Initial = set()
-    aut.Final = set()
+    new_aut.Initial = set()
+    new_aut.Final = set()
     for index in final:
-        aut.addInitial(aut.stateIndex(aut.States[index]))
+        new_aut.addInitial(new_aut.stateIndex(new_aut.States[index]))
     for index in initial:
-        aut.addFinal(aut.stateIndex(aut.States[index]))
+        new_aut.addFinal(new_aut.stateIndex(new_aut.States[index]))
 
     # Swap transitions
-    delta = aut.delta
-    aut.delta = {}
+    delta = new_aut.delta
+    new_aut.delta = {}
 
     for endstate in delta:
         for val in delta[endstate]:
             for startstate in delta[endstate][val]:
-                if not startstate in aut.delta:
-                    aut.delta[startstate] = {}
-                if not val in aut.delta[startstate]:
-                    aut.delta[startstate][val] = set()
-                aut.delta[startstate][val].add(endstate)
+                if not startstate in new_aut.delta:
+                    new_aut.delta[startstate] = {}
+                if not val in new_aut.delta[startstate]:
+                    new_aut.delta[startstate][val] = set()
+                new_aut.delta[startstate][val].add(endstate)
 
-    return aut
+    return new_aut

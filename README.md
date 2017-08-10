@@ -68,7 +68,7 @@ It contains methods that are used to generate the code for the local running of 
 
 ## Single File Format
 
-This format can be followed in either an uploaded file, or the first textarea.
+This format can be followed in either an uploaded file, or the first textarea. This does not support theta-transducer properties, wue to the extra complexity of the theta-transducer properties.
 
 ```
 # I = Input

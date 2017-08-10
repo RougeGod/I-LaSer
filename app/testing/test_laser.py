@@ -6,7 +6,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 import FAdo.fl as fl
 
 from app.transducer.views import get_response
-from app.transducer.laser_gen import program
+from app.transducer.laser_gen import program_lines
 from app.testing.test_util import hamm_dist, hamm_dist_list, openfile, make_prog
 from app.testing.test_data import a_ab_bb, a_bstar_a, str1sd, t1ts, t1t01s
 
@@ -80,8 +80,8 @@ class MyTestCase(TestCase):
         self.assertEquals(result['result'], "NO, the language does not satisfy the property")
         if not TEST_GEN:
             return
-        lines = program(ptype="INALT", test="SATW", aname=a_ab_bb,
-                        strexp=None, sigma=None, tname=str1sd)
+        lines = program_lines(ptype="INALT", test="SATW", aut_str=a_ab_bb,
+                              strexp=None, sigma=None, t_str=str1sd)
         prog = make_prog(lines, 'decide satisfaction')
         answer = ['']
         exec(prog)
@@ -134,8 +134,8 @@ class MyTestCase(TestCase):
         self.assertEquals(result['result'], "YES, the language satisfies the property")
         if not TEST_GEN:
             return
-        lines = program(ptype="INPRES", test="SATW", aname=a_bstar_a,
-                        strexp=None, sigma=None, tname=t1ts)
+        lines = program_lines(ptype="INPRES", test="SATW", aut_str=a_bstar_a,
+                              strexp=None, sigma=None, t_str=t1ts)
         prog = make_prog(lines, 'decide satisfaction.')
         prog_vars = {}
         exec(prog, prog_vars, prog_vars)   # prog computes answer
@@ -400,8 +400,8 @@ class MyTestCase(TestCase):
         self.assertTrue(result['prop'].satisfiesP(fl.FL(W).trieFA().toNFA()))
         if not TEST_GEN:
             return
-        lines = program(ptype="INPRES", test="MKCO", aname=None,
-                        strexp=None, sigma=None, tname=t1t01s, s_num=2, l_num=8, n_num=5)
+        lines = program_lines(ptype="INPRES", test="MKCO", aut_str=None,
+                              strexp=None, sigma=None, t_str=t1t01s, s_num=2, l_num=8, n_num=5)
         prog = make_prog(lines, 'generate code.')
         prog_vars = {}
         exec(prog, prog_vars)   # prog computes answer and p

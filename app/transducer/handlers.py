@@ -16,7 +16,7 @@ from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
      make_block_code
 
-from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, apply_theta_antimorphism
+from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, apply_theta_antimorphism, reverse_theta_antimorphism
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 
@@ -282,7 +282,7 @@ def handle_satisfaction_maximality(
             except (YappyError, AttributeError):
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
-        elif property_type == '5':
+        elif property_type == '5': # We have to branch off, it is handled differently.
             try:
                 prop = IPTProp(readOneFromString(t_str))
             except (YappyError, AttributeError):
@@ -293,22 +293,21 @@ def handle_satisfaction_maximality(
                             'automaton':aut_name, 'transducer':t_name}
 
             # Here is extra work for DNA Code Property
-            theta_str = data.get('theta_text')
-
-            theta = parse_theta_str(theta_str)
+            theta = parse_theta_str(data.get('theta_text'))
 
             theta_aut = apply_theta_antimorphism(aut, theta)
 
-            prop_aut = prop.Aut.outIntersection(aut)
+            witness = prop.Aut.inIntersection(aut).outIntersection(theta_aut).nonEmptyW()
 
-            functional = prop_aut.outIntersection(theta_aut).functionalP()
-
-            if functional:
-                decision = "YES, the language satisfies the property"
+            if witness == (None, None):
+                decision = 'YES, the language satisfies the property'
                 proof = ''
             else:
-                decision = "NO, the language does not satisfy the property"
-                proof = ''
+                decision = 'NO, the language does not satisfy the property'
+
+                witness = (witness[0], reverse_theta_antimorphism(witness[1], theta))
+
+                proof = format_counter_example(witness, True)
             return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                     'result':decision, 'proof': proof}
 
@@ -319,41 +318,41 @@ def handle_satisfaction_maximality(
                 'automaton':aut_name, 'transducer':t_name}
 
     # Check Satisfaction
-    if question == "1":
+    if question == '1':
         try:
             witness = prop.notSatisfiesW(aut)
         except TypeError:
-            decision = "The automaton file appears to be incorrectly formatted."
+            decision = 'The automaton file appears to be incorrectly formatted.'
             return {'form':form, 'error_message': decision,
                     'automaton':aut_name, 'transducer':t_name}
 
         if witness == (None, None) or witness == (None, None, None):
-            decision = "YES, the language satisfies the property"
+            decision = 'YES, the language satisfies the property'
             proof = ''
         else:
-            decision = "NO, the language does not satisfy the property"
+            decision = 'NO, the language does not satisfy the property'
             proof = format_counter_example(witness)
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                 'result':decision, 'proof': proof}
     # Check Maximality
-    elif question == "2":
+    elif question == '2':
         err = ''
         try:
             witness = prop.notMaximalW(aut)
         except PropertyNotSatisfied:
-            err = "ERROR: the language does not satisfy the property."
+            err = 'ERROR: the language does not satisfy the property.'
         except TypeError:
-            err = "The automaton file appears to be incorrectly formatted."
+            err = 'The automaton file appears to be incorrectly formatted.'
 
         if err:
             return {'form':form, 'error_message': err,
                     'automaton':aut_name, 'transducer':t_name}
 
         if witness is None:
-            decision = "YES, the language is maximal with respect to the property."
+            decision = 'YES, the language is maximal with respect to the property.'
             proof = ''
         else:
-            decision = "NO, the language is not maximal with respect to the property."
+            decision = 'NO, the language is not maximal with respect to the property.'
             proof = format_counter_example(witness)
 
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,

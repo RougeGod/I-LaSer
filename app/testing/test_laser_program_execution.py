@@ -6,7 +6,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from app.transducer.views import get_response
-from app.transducer.laser_gen import program, generate_program
+from app.transducer.laser_gen import program_lines, generate_program_file
 from app.testing.test_util import openfile, readfile
 
 REGS = ['test_files/DFA-a+ab+bb.fa', 'test_files/NFA-aa+ab+bb.fa', 'test_files/NFA-aa+ab+ba+bb.fa',
@@ -424,12 +424,12 @@ class MyTestCase(TestCase):
         aut = openfile(REGS[0])
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':''}
         aut_str = files['automata_file'].read()
-        lines = program(ptype="PREFIX", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=None,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="PREFIX", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=None,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Fixed PREFIX Property.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
 
@@ -455,12 +455,12 @@ class MyTestCase(TestCase):
         aut = openfile(REGS[0])
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':''}
         aut_str = files['automata_file'].read()
-        lines = program(ptype="SUFFIX", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=None,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="SUFFIX", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=None,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Fixed SUFFIX Property.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -482,12 +482,12 @@ class MyTestCase(TestCase):
         aut = openfile(REGS[0])
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':''}
         aut_str = files['automata_file'].read()
-        lines = program(ptype="INFIX", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=None,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="INFIX", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=None,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Fixed INFIX Propert.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -509,12 +509,12 @@ class MyTestCase(TestCase):
         aut = openfile(REGS[0])
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':''}
         aut_str = files['automata_file'].read()
-        lines = program(ptype="OUTFIX", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=None,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="OUTFIX", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=None,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Fixed Outfix Property.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -536,12 +536,12 @@ class MyTestCase(TestCase):
         aut = openfile(REGS[0])
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':''}
         aut_str = files['automata_file'].read()
-        lines = program(ptype="HYPERCODE", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=None,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="HYPERCODE", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=None,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Fixed Hypercode Property.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -567,12 +567,12 @@ class MyTestCase(TestCase):
     #     aut = openfile(REGS[0])
     #     files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':''}
     #     aut_str = files['automata_file'].read()
-    #     lines = program(ptype="CODE", test="MKCO", aname=aut_str,
-    #                     strexp=None, sigma=None, tname=None,
-    #                     s_num=self.alphabet_size, n_num=self.words,
-    #                     l_num=self.word_length)
+    #     lines = program(ptype="CODE", test="MKCO", aut_str=aut_str,
+    #                            strexp=None, sigma=None, t_str=None,
+    #                            s_num=self.alphabet_size, n_num=self.words,
+    #                            l_num=self.word_length)
     #     request = 'Construct Fixed Code Property.'
-    #     prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+    #     prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
     #     prog_vars, prog_vars_test = {}, {}
     #     #Execute program twice and Generate two automaton from the code construction output
     #     exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -599,12 +599,12 @@ class MyTestCase(TestCase):
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
         aut_str = files['automata_file'].read()
         t_str = files['transducer_file'].read()
-        lines = program(ptype="TRAJECT", test="MKCO", aname=aut_str,
-                        strexp="1*0*1*", sigma={'a', 'b', '0', '1'}, tname=t_str,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="TRAJECT", test="MKCO", aut_str=aut_str,
+                              strexp="1*0*1*", sigma={'a', 'b', '0', '1'}, t_str=t_str,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Trajectory property.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -635,12 +635,12 @@ class MyTestCase(TestCase):
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
         aut_str = files['automata_file'].read()
         t_str = files['transducer_file'].read()
-        lines = program(ptype="INALT", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=t_str,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="INALT", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=t_str,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Input-altering Property'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -670,14 +670,14 @@ class MyTestCase(TestCase):
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
         aut_str = files['automata_file'].read()
         t_str = files['transducer_file'].read()
-        lines = program(ptype="ERRCORR", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=t_str,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="ERRCORR", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=t_str,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct error correction.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
-        #Execute program twice and Generate two automaton from the code construction output
+        # Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
         self.assertFalse(prog_vars['p'].satisfiesP(prog_vars['a'])) #Test is automata satisfies property and return boolean value
         # We know that automata would always varify output becuase automata is generated from output
@@ -707,12 +707,12 @@ class MyTestCase(TestCase):
         files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
         aut_str = files['automata_file'].read()
         t_str = files['transducer_file'].read()
-        lines = program(ptype="INPRES", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=t_str,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="INPRES", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=t_str,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct Input-preserving Property.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
@@ -743,12 +743,12 @@ class MyTestCase(TestCase):
         files = {'automata_file': aut, 'transducer_file': t_file}
         aut_str = files['automata_file'].read()
         t_str = files['transducer_file'].read()
-        lines = program(ptype="ERRDET", test="MKCO", aname=aut_str,
-                        strexp=None, sigma=None, tname=t_str,
-                        s_num=self.alphabet_size, n_num=self.words,
-                        l_num=self.word_length)
+        lines = program_lines(ptype="ERRDET", test="MKCO", aut_str=aut_str,
+                              strexp=None, sigma=None, t_str=t_str,
+                              s_num=self.alphabet_size, n_num=self.words,
+                              l_num=self.word_length)
         request = 'Construct error detection.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program(lines, None, request)[:-38]
+        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
         prog_vars, prog_vars_test = {}, {}
         #Execute program twice and Generate two automaton from the code construction output
         exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class

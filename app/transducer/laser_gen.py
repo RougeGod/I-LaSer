@@ -30,6 +30,7 @@ TESTS = {"MAXP": "maximalP",
          "MAXW": "notMaximalW",
          "SATP": "satisfiesP",
          "SATW": "notSatisfiesW",
+         "NONEMPTYW": "Aut.inIntersection(a).outIntersection(theta_aut).nonEmptyW",
          "MKCO": "makeCode"}
 
 #for running unittest
@@ -50,7 +51,7 @@ def stand_alone(name, lines, request=None):
     os.system("rm -f %s.zip" % name)
     os.chdir(name)
     os.system("%s -q %s" % (UNZIP_PROG, FADO_ZIP))
-    generate_program(lines, "__main__.py", request)
+    generate_program_file(lines, "__main__.py", request)
     os.system("zip -r -q %s.zip *" % name)
     os.chdir("..")
     os.system("rm -r %s" % name)
@@ -58,7 +59,7 @@ def stand_alone(name, lines, request=None):
     os.system("find %s -regextype sed -regex '.*[0-9]\{13\}.zip' \
     -mtime +1 -exec rm -rf {} \;" % PATH)
 
-def generate_program(lines, name=None, request=None):
+def generate_program_file(lines, name=None, request=None):
     """
     Generation of the stand alone program
     :param list lines: list of the commands to include
@@ -68,7 +69,7 @@ def generate_program(lines, name=None, request=None):
     """
     prog = the_prologue(request)
     for line in lines:
-        prog += line
+        prog += line + "\n"
     prog += the_epilogue()
     if name is not None:
         file_ = open(name, "w")
@@ -81,14 +82,14 @@ def the_prologue(request=None):
     Returns the import statements for the program
     :param str request: the description of the request for which to generate program
     :rtype: str"""
-    pro = """
-try:
+    pro = """try:
     from FAdo.reex import *
     from FAdo.codes import *
     from FAdo.fio import *
     import base64
 except:
     exit()
+
 """
     if request is not None:
         pro += "print \"\\nREQUEST:\\n" + request + "\"\n"
@@ -100,10 +101,79 @@ def the_epilogue():
     :rtype: str"""
     return "raw_input('\\nPress <enter> to quit.')\n"
 
-def program(
-        ptype, test=None, aname=None,
-        strexp=None, sigma=None, tname=None,
-        s_num=None, l_num=None, n_num=None
+def theta_helper_methods(theta_str, list_):
+    """Add the helper methods for theta-transducer properties."""
+    list_.append("""
+def parse_theta_str(theta_str):
+    match = re.search(r'^@THETA *\\n(([\\w\\d] +[\\w\\d]\\s*)+)', theta_str)
+
+    swaps = match.group(1)
+
+    result = {}
+    for swap in swaps.splitlines():
+        tmp = swap.split(' ')
+        result[tmp[0]] = tmp[1]
+
+    for key in result.keys():
+        result[result[key]] = key
+
+    return result""")
+
+    list_.append("""
+def apply_theta_antimorphism(aut, theta):
+    new_aut = copy.deepcopy(aut.toNFA())
+
+    newdelta = {}
+
+    for delta in new_aut.delta:
+        newdelta[delta] = {}
+        for key in theta:
+            try:
+                newdelta[delta][theta[key]] = new_aut.delta[delta][key]
+            except KeyError:
+                continue
+
+    new_aut.delta = newdelta
+
+    # Swap Initial and Final States
+    initial = new_aut.Initial
+    final = new_aut.Final
+
+    new_aut.Initial = set()
+    new_aut.Final = set()
+    for index in final:
+        new_aut.addInitial(new_aut.stateIndex(new_aut.States[index]))
+    for index in initial:
+        new_aut.addFinal(new_aut.stateIndex(new_aut.States[index]))
+
+    # Swap transitions
+    delta = new_aut.delta
+    new_aut.delta = {}
+
+    for endstate in delta:
+        for val in delta[endstate]:
+            for startstate in delta[endstate][val]:
+                if not startstate in new_aut.delta:
+                    new_aut.delta[startstate] = {}
+                if not val in new_aut.delta[startstate]:
+                    new_aut.delta[startstate][val] = set()
+                new_aut.delta[startstate][val].add(endstate)
+
+                return new_aut
+""")
+
+    list_.extend([
+        "tx = \"%s\"" % base64.b64encode(theta_str),
+        "tt = parse_theta_str(base64.b64decode(tx))",
+        "theta_aut = apply_theta_antimorphism(a, tt)"
+    ])
+
+
+def program_lines(
+        ptype, test=None, aut_str=None,
+        strexp=None, sigma=None, t_str=None,
+        s_num=None, l_num=None, n_num=None,
+        theta_str=None
     ):
     "Generates the program"
 
@@ -119,8 +189,8 @@ def program(
         list_.append("n_num = int(\"%s\")\n" % n_num)
         if BUILD_NAME[ptype][2] == 1:
             string = ''
-            if tname:
-                list_.append("tx = \"%s\"\n" % base64.b64encode(tname))
+            if t_str:
+                list_.append("tx = \"%s\"\n" % base64.b64encode(t_str))
                 list_.append("t = base64.b64decode(tx)\n")
             else:
                 string += "alp = set()\nfor i in range(int(s_num)):\n    alp.add(str(i))\n"
@@ -143,11 +213,19 @@ def program(
             list_.append(string)
         return list_
     else:
-        list_.extend(["ax = \"%s\"\n" % base64.b64encode(aname),
+
+        if aut_str and not aut_str.endswith('\n'):
+            aut_str = aut_str + '\n'
+
+        list_.extend(["ax = \"%s\"\n" % base64.b64encode(aut_str),
                       "a = readOneFromString(base64.b64decode(ax))\n"])
+
+        if theta_str:
+            theta_helper_methods(theta_str, list_)
+
         if BUILD_NAME[ptype][2] == 1:
-            if tname:
-                list_.extend(["tx = \"%s\"\n" % base64.b64encode(tname),
+            if t_str:
+                list_.extend(["tx = \"%s\"\n" % base64.b64encode(t_str),
                               "t = base64.b64decode(tx)\n"])
             string = "ssigma = a.Sigma\n"
             string += "p = " + BUILD_NAME[ptype][0] + "("
@@ -157,8 +235,10 @@ def program(
                 else:
                     string += "%s," % expand(s_1)
             string = string[:-1] + ")\n"
-            list_.extend([string, "answer = p.%s(a)\n" % TESTS[test],
-                          "print answer\n"])
+
+            ans = "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
+
+            list_.extend([string, ans, "print answer\n"])
         else:
             string = "print " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -167,21 +247,26 @@ def program(
             list_.append(string)
         return list_
 
-def gen_program(file_name, prop_type, test_name=None, aut_name=None, trans_name=None, sigma=None,
-                regexp=None, request=None, test_mode=None, s_num=None, l_num=None, n_num=None):
+def gen_program(file_name, prop_type, test_name=None, aut_str=None, t_str=None, sigma=None,
+                regexp=None, request=None, test_mode=None, s_num=None, l_num=None, n_num=None,
+                theta_str=None):
     """
     :param str file_name: name of the generated program (.zip)
     :param str prop_type: key of the property name
     :param str test_name: key for the test inside prop (if that is the case)
-    :param str aut_name: string description of the automaton
-    :param str trans_name: string description of the transducer (if needed)
+    :param str aut_str: string description of the automaton
+    :param str t_str: string description of the transducer (if needed)
     :param set sigma:  the alphabet (if needed)
     :param str regexp: the regular expression for trajectories
     :param str request: description of request for which to generate program
     :param bool test_mode: whether the method is used for testing
     :rtype: list
     """
-    lines = program(prop_type, test_name, aut_name, regexp, sigma, trans_name, s_num, l_num, n_num)
+
+    lines = program_lines(prop_type, test_name, aut_str,
+                          regexp, sigma, t_str, s_num,
+                          l_num, n_num, theta_str)
+
     if (test_mode is None) or (not test_mode):
         stand_alone(file_name, lines, request)
     return lines
