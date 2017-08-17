@@ -87,6 +87,7 @@ def the_prologue(request=None):
     from FAdo.codes import *
     from FAdo.fio import *
     import base64
+    import copy
 except:
     exit()
 
@@ -159,7 +160,7 @@ def apply_theta_antimorphism(aut, theta):
                     new_aut.delta[startstate][val] = set()
                 new_aut.delta[startstate][val].add(endstate)
 
-                return new_aut
+    return new_aut
 """)
 
     list_.extend([

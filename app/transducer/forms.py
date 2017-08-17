@@ -77,6 +77,7 @@ class UploadFileForm(forms.Form):
 
         if data:
             self.theta_name = data.name
+            data.seek(0)
             newdata = str(data.read())
             data.close()
             return newdata

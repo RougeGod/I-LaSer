@@ -28,7 +28,7 @@ IP_TRANSDUCER_NAMES = ['test_files/P-transpose-1.ipt.fa', 'test_files/TR-sub1.ab
                        'test_files/P-transpose1.01.ip.fa']
 
 
-#pylint:disable=C0301,W0122,C0111,C0103
+#pylint:disable=C0301,W0122,C0111,C0103,R0904
 class MyTestCase(TestCase):
     def test_hamm_dist(self):
         self.assertEquals(hamm_dist('000', '101'), 2)

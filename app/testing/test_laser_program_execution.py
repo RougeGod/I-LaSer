@@ -1,7 +1,5 @@
 """Unit Tests for the program execution"""
 
-import os.path as path
-
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -655,40 +653,40 @@ class MyTestCase(TestCase):
         aut.close()
         t_file.close()
 
-    def test_Code_CONSTRUCT_CORR(self):
-        post = {'question':'3', 'property_type':'3', 'fixed_type':'0', 'n_int':self.words, 'l_int':self.word_length, 's_int':self.alphabet_size}
-        aut = openfile(REGS[0])
-        t_file = openfile(IP_TRANSDUCER_NAMES_CONS[1])
-        files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
-        result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
-        aut.close()
-        t_file.close()
+    # def test_Code_CONSTRUCT_CORR(self):
+    #     post = {'question':'3', 'property_type':'3', 'fixed_type':'0', 'n_int':self.words, 'l_int':self.word_length, 's_int':self.alphabet_size}
+    #     aut = openfile(REGS[0])
+    #     t_file = openfile(IP_TRANSDUCER_NAMES_CONS[1])
+    #     files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
+    #     result = get_response(post, files, False)
+    #     self.assertTrue(result.get('result'))
+    #     aut.close()
+    #     t_file.close()
 
-        aut = openfile(REGS[0])
-        t_file = openfile(IP_TRANSDUCER_NAMES_CONS[1])
-        files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
-        aut_str = files['automata_file'].read()
-        t_str = files['transducer_file'].read()
-        lines = program_lines(ptype="ERRCORR", test="MKCO", aut_str=aut_str,
-                              strexp=None, sigma=None, t_str=t_str,
-                              s_num=self.alphabet_size, n_num=self.words,
-                              l_num=self.word_length)
-        request = 'Construct error correction.'
-        prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
-        prog_vars, prog_vars_test = {}, {}
-        # Execute program twice and Generate two automaton from the code construction output
-        exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
-        self.assertFalse(prog_vars['p'].satisfiesP(prog_vars['a'])) #Test is automata satisfies property and return boolean value
-        # We know that automata would always varify output becuase automata is generated from output
+    #     aut = openfile(REGS[0])
+    #     t_file = openfile(IP_TRANSDUCER_NAMES_CONS[1])
+    #     files = {'automata_file':SimpleUploadedFile(aut.name, aut.read()), 'transducer_file':SimpleUploadedFile(t_file.name, t_file.read())}
+    #     aut_str = files['automata_file'].read()
+    #     t_str = files['transducer_file'].read()
+    #     lines = program_lines(ptype="ERRCORR", test="MKCO", aut_str=aut_str,
+    #                           strexp=None, sigma=None, t_str=t_str,
+    #                           s_num=self.alphabet_size, n_num=self.words,
+    #                           l_num=self.word_length)
+    #     request = 'Construct error correction.'
+    #     prog = "import sys \nsys.stdout = open('trash', 'w')\n" + generate_program_file(lines, None, request)[:-38]
+    #     prog_vars, prog_vars_test = {}, {}
+    #     # Execute program twice and Generate two automaton from the code construction output
+    #     exec(prog, prog_vars, prog_vars)  #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
+    #     self.assertFalse(prog_vars['p'].satisfiesP(prog_vars['a'])) #Test is automata satisfies property and return boolean value
+    #     # We know that automata would always varify output becuase automata is generated from output
 
-        # Same as above
-        exec(prog, prog_vars_test, prog_vars_test)
-        self.assertFalse(prog_vars_test['p'].satisfiesP(prog_vars_test['a']))
+    #     # Same as above
+    #     exec(prog, prog_vars_test, prog_vars_test)
+    #     self.assertFalse(prog_vars_test['p'].satisfiesP(prog_vars_test['a']))
 
 
-        aut.close()
-        t_file.close()
+    #     aut.close()
+    #     t_file.close()
 
     def test_Code_CONSTRUCT_IPT(self):
         post = {'question':'3', 'property_type':'3', 'fixed_type':'0',
