@@ -127,7 +127,7 @@ def parse_aut_str(aut_str):
 def parse_theta_str(theta_str):
     """Parses the theta string into a dict used to convert automata"""
 
-    match = re.search(r'^@THETA *\n(([\w\d] +[\w\d]\s*)+)', theta_str)
+    match = re.search(r'^@THETA *\n(([\w\d] +[\w\d]\s*)+)', theta_str, re.IGNORECASE)
 
     swaps = match.group(1)
 

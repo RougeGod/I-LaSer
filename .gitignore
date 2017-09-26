@@ -4,3 +4,7 @@
 .vscode/
 .table*
 media/
+*.db
+
+mydatabase
+trash

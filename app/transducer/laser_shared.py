@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """Interfaces for the website to communicate with the FAdo backend"""
 from FAdo.fio import readOneFromString
 from FAdo.grail import importFromGrailString
@@ -66,10 +65,7 @@ def format_counter_example(witness, theta=False):
                        % (''.join(witness[0]), str(witness[0]), str(witness[1]))
                     # % (witness[0][0]+witness[0][1], str(witness[0]), str(witness[1]) )
             else:
-                if theta:
-                    return u'Witness: The words "%s" and Θ("%s") violate the property' % witness
-                else:
-                    return "Witness: The words '%s' and '%s' violate the property" % witness
+                return "Witness: The words '%s' and '%s' violate the property" % witness
         else:
             return "N/A"
     else:

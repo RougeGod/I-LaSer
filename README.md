@@ -1,4 +1,4 @@
-v# LaSer - Language Server
+# LaSer - Language Server
 
 ## Introduction
 
@@ -88,3 +88,7 @@ L -> @DFA|@NFA|@REGEX
 
 Add language and property below result
 ```
+
+## Running Unit Tests
+
+In order to run the python unit tests, navigate to the root of the directory and run `python manage.py test`. This will tell django to run all the unit tests in the project.

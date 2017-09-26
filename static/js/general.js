@@ -44,7 +44,7 @@ function validate(str) {
     })
 
     if(count === 0) {
-        return /[01* +()]/.test(str.split(/\n/)[0]) && str.split(/\n/).length == 2
+        return /[01* +()a-zA-Z]/.test(str.split(/\n/)[0])
     } else if(count === 1) {
         if(!str.startsWith('@')) {
             var match = str.match(/^(.+)\n([\s\S]+)/)
