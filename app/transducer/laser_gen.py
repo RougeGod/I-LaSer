@@ -33,14 +33,22 @@ TESTS = {"MAXP": "maximalP",
          "NONEMPTYW": "Aut.inIntersection(a).outIntersection(theta_aut).nonEmptyW",
          "MKCO": "makeCode"}
 
+PARSERS_BEFORE = {"readOneFromString": "readOneFromString",
+                  "importFromGrailString": "importFromGrailString",
+                  "str2regexp": "str2regexp"}
+
+PARSERS_AFTER = {"readOneFromString": "",
+                  "importFromGrailString": "",
+                  "str2regexp": ".toNFA()"}
+
 #for running unittest
 #PATH='/Users/Stavros/Dropbox/Documents/\
 # my_documents/RESEARCH/myHQP/abisola/laser_update/laser/media/'
 #PATH = '/var/www/project/media/'
 
 #for running the server, it's beautiful
-PATH = settings.MEDIA_ROOT if platform.system() == 'Linux' else \
-    path.realpath(path.join(path.dirname(__file__), '..\\..', 'media'))
+PATH = settings.MEDIA_ROOT
+    
 FADO_ZIP = path.join(PATH, "Fado.zip")
 
 def stand_alone(name, lines, request=None):
@@ -83,6 +91,7 @@ def the_prologue(request=None):
     :param str request: the description of the request for which to generate program
     :rtype: str"""
     pro = """try:
+    from FAdo.grail import importFromGrailString
     from FAdo.reex import *
     from FAdo.codes import *
     from FAdo.fio import *
@@ -171,7 +180,7 @@ def apply_theta_antimorphism(aut, theta):
 
 
 def program_lines(
-        ptype, test=None, aut_str=None,
+        ptype, test=None, aut_str=None, aut_type="readOneFromString",
         strexp=None, sigma=None, t_str=None,
         s_num=None, l_num=None, n_num=None,
         theta_str=None
@@ -218,8 +227,9 @@ def program_lines(
         if aut_str and not aut_str.endswith('\n'):
             aut_str = aut_str + '\n'
 
-        list_.extend(["ax = \"%s\"\n" % base64.b64encode(aut_str),
-                      "a = readOneFromString(base64.b64decode(ax))\n"])
+        list_.append("ax = \"%s\"\n" % base64.b64encode(aut_str))
+
+        list_.append("a = %s(base64.b64decode(ax))%s\n" % (PARSERS_BEFORE[aut_type], PARSERS_AFTER[aut_type]))
 
         if theta_str:
             theta_helper_methods(theta_str, list_)
@@ -248,7 +258,7 @@ def program_lines(
             list_.append(string)
         return list_
 
-def gen_program(file_name, prop_type, test_name=None, aut_str=None, t_str=None, sigma=None,
+def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="readOneFromString", t_str=None, sigma=None,
                 regexp=None, request=None, test_mode=None, s_num=None, l_num=None, n_num=None,
                 theta_str=None):
     """
@@ -264,9 +274,10 @@ def gen_program(file_name, prop_type, test_name=None, aut_str=None, t_str=None, 
     :rtype: list
     """
 
-    lines = program_lines(prop_type, test_name, aut_str,
-                          regexp, sigma, t_str, s_num,
-                          l_num, n_num, theta_str)
+    lines = program_lines(prop_type, test_name, aut_str, 
+                          aut_type, regexp, sigma, t_str, 
+                          s_num, l_num, n_num,
+                          theta_str)
 
     if (test_mode is None) or (not test_mode):
         stand_alone(file_name, lines, request)

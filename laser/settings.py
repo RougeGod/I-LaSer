@@ -2,6 +2,7 @@
 """
 import os
 import logging
+from os import path
 from platform import system
 import django
 
@@ -132,9 +133,7 @@ TEMPLATES = [
     },
 ]
 
-MEDIA_ROOT = '/var/www/project/media/' if system() == 'Linux' \
-    else 'C:\\cygwin64\\home\\Matthew\\LaSer\\media'
-    # Change this to whateveryou need if developing on Windows
+MEDIA_ROOT = path.realpath(path.join(path.dirname(__file__), '..', 'media'))
 MEDIA_URL = '/media/'
 
 
@@ -156,4 +155,3 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     #'laser.DEV.SK.templates', #SK added this, but then not even the main worked
 )
-

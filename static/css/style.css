@@ -226,3 +226,7 @@ a#others:hover {
     margin-right: 5px;
     width: 150px;
 }
+
+hr {
+    border-top: 1px solid black;
+}

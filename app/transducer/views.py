@@ -14,7 +14,7 @@ import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 from FAdo.yappy_parser import YappyError
 
-from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop
+from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
@@ -108,10 +108,11 @@ def get_code(data, files, form=True, test_mode=None):
     if not question:
         return error('Please select a question.')
 
-    prop = regexp = fixed_type = sigma = None
+    prop = regexp = fixed_type = sigma = aut_type = None
     name = str(int(time()*1000))
     n_num = s_num = l_num = 0
     aut_str = t_str = ''
+    
 
     # Automaton String, or number generation
     if question in ['1', '2']: # Satisfaction, maximality
@@ -132,6 +133,7 @@ def get_code(data, files, form=True, test_mode=None):
             property_type = '1'
 
         try:
+            aut_type = detect_automaton_type(aut_str)
             aut = construct_automaton(aut_str)
         except IncorrectFormat:
             return {'form': form, 'error_message':
@@ -241,7 +243,7 @@ def get_code(data, files, form=True, test_mode=None):
         description = DECIDE_REQUEST + 'is maximal.'
         test = 'MAXP'
 
-    prog_lines = gen_program(name, prop, test, aut_str, t_str, sigma, regexp,
+    prog_lines = gen_program(name, prop, test, aut_str, aut_type, t_str, sigma, regexp,
                              description, test_mode, s_num, l_num, n_num, theta)
 
     if test_mode is not None:

@@ -31,22 +31,14 @@
     <div class="tab-content">
         <div id="home" class="tab-pane fade in active">
            <!-- <div class="col-md-12 text-center"><h3 class="text-center"><b>Independent Language Server</b></h3></div> -->
-            <div class="col-md-12 text-justify">
-                <p>I-LaSer answers questions about regular languages and independent properties - prefix code property, suffix code property, ..., various error-detection and error-correction properties.</p>
-                <ul>
-                    <li><b> Satisfaction question: </b>
-                        Given language L and property P, does L satisfy P?
-                    </li>
-                    <li><b> Maximality question: </b>
-                        Given language L and property P, is L maximal with respect to P?
-                    </li>
-                    <li><b> Construction question: </b>
-                        Given property P and integers N,k>0, return a language of N words of length k satisfying P.
-                    </li>
-                </ul>
-                <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 0 &lt s &lt 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 
+           <div id="div5" class="col-md-12 text-center center-block">
+                <h4>{{ automaton }}</h4>
+                <h4>{{ transducer }}</h4>
+                <h4>{{ result|safe }}</h4>
+                <h4>{{ max_result }}</h4>
+                <h4><a href="{{ MEDIA_URL }}{{ construct_path }}" >{{ construct_text }}</a></h4>
+                <h4>{{ proof }}</h4>
             </div>
-            <div class="col-md-12" style="border: solid #c0c0c0 1px; margin-top: 20px; margin-bottom: 10px;"></div>
             <form action="{% url 'app:independence' %}" method="post" enctype="multipart/form-data" name="form1">
                 {% csrf_token %}
                 <div class="col-md-12 text-center" style="color: red; font-size: 12px;">
@@ -163,13 +155,21 @@
                     <input type="submit" value="Clear" name="clear_page"/>
                 </div>
             </form>
-            <div id="div5" class="col-md-12 text-center center-block">
-                <h4>{{ automaton }}</h4>
-                <h4>{{ transducer }}</h4>
-                <h4>{{ result|safe }}</h4>
-                <h4>{{ max_result }}</h4>
-                <h4><a href="{{ MEDIA_URL }}{{ construct_path }}" >{{ construct_text }}</a></h4>
-                <h4>{{ proof }}</h4>
+            <hr/>
+            <div class="col-md-12 text-justify">
+                <p>I-LaSer answers questions about regular languages and independent properties - prefix code property, suffix code property, ..., various error-detection and error-correction properties.</p>
+                <ul>
+                    <li><b> Satisfaction question: </b>
+                        Given language L and property P, does L satisfy P?
+                    </li>
+                    <li><b> Maximality question: </b>
+                        Given language L and property P, is L maximal with respect to P?
+                    </li>
+                    <li><b> Construction question: </b>
+                        Given property P and integers N,k>0, return a language of N words of length k satisfying P.
+                    </li>
+                </ul>
+                <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 0 &lt s &lt 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 
             </div>
         </div>
 

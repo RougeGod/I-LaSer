@@ -30,6 +30,30 @@ def construct_automaton(aut_str):
             except Exception:
                 raise IncorrectFormat()
 
+def detect_automaton_type(aut_str):
+    """construct an automaton from a string"""
+
+    aut_str = str(aut_str)
+
+    aut_str.strip()
+    aut_str += "\n"
+    try:
+        readOneFromString(aut_str)
+
+        return 'readOneFromString'
+    except (YappyError, IndexError):
+        try:
+            importFromGrailString(aut_str)
+
+            return 'importFromGrailString'
+        except YappyError:
+            try:
+                aut_str.strip()
+                reex.str2regexp(aut_str).toNFA()
+                return 'str2regexp'
+            except Exception:
+                raise IncorrectFormat()
+
 def construct_input_alt_prop(t_str, sigma, gen=False):
     """Construct an input-altering property"""
 

@@ -10,7 +10,7 @@ from app.testing.test_data import a_bstar_a, s1ts, a_ab_bb, t1ts, aa_ab_bb, a_ab
 #  the above line "from transducer.laser_gen...." appropriately)
 
 LN_ANS = 6
-LN_REQ = 9
+LN_REQ = 10
 EXP_EDIT_LINE = 2
 FIXED_LINE = 4
 

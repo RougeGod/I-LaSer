@@ -10,7 +10,7 @@ from app.testing.test_util import openfile, readfile
 REGS = ['test_files/DFA-a+ab+bb.fa', 'test_files/NFA-aa+ab+bb.fa', 'test_files/NFA-aa+ab+ba+bb.fa',
         'test_files/NFA-abx.fa', 'test_files/DFA-a+ab+bb.fa', 'test_files/NFA-ab#a.fa',
         'test_files/NFA-Even-b-words.fa', 'test_files/NFA-aaa+bbb.fa', 'test_files/NFA-a(aa)#.fa',
-        'test_files/DFA-EvenParity100.fa']
+        'test_files/DFA-EvenParity100.fa', 'test_files/REGEX-a#b.fa']
 TRAJ_NAMES = ['test_files/1#0#1#.traj', 'test_files/1#0#.traj']
 IA_TRANSDUCER_NAMES = ['test_files/P-infix.fa', 'test_files/P-suffix.fa']
 IP_TRANSDUCER_NAMES = ['test_files/P-transpose-1.ipt.fa', 'test_files/TR-sub1.ab.fa',
