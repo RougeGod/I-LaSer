@@ -130,6 +130,11 @@ class UploadFileForm(forms.Form):
         elif data.get('transducer_text2'):
             data['transducer_text'] = data.get('transducer_text2')
 
+        print data.get('question')
+
+        if data.get('question') == '0':
+            raise forms.ValidationError('Please select a question.')
+
         if not data.get('automata_text') and data.get('question') != '3':
             raise forms.ValidationError('You did not supply an automata.')
 

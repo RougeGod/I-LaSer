@@ -293,7 +293,11 @@ def handle_satisfaction_maximality(
                             'automaton':aut_name, 'transducer':t_name}
 
             # Here is extra work for DNA Code Property
-            theta = parse_theta_str(data.get('theta_text'))
+            try:
+                theta = parse_theta_str(data.get('theta_text'))
+            except AttributeError:
+                return {'form': form, 'error_message': 'Theta appears to be incorrectly formatted.',
+                        'automaton': aut_name, 'transducer': t_name}
 
             theta_aut = apply_theta_antimorphism(aut, theta)
 
