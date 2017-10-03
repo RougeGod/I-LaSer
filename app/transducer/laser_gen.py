@@ -48,8 +48,8 @@ PARSERS_AFTER = {"readOneFromString": "",
 
 #for running the server, it's beautiful
 PATH = settings.MEDIA_ROOT
-    
-FADO_ZIP = path.join(PATH, "Fado.zip")
+
+FADO_ZIP = path.join(PATH, "FAdo.zip")
 
 def stand_alone(name, lines, request=None):
     """Create the standalone python files"""
@@ -58,9 +58,9 @@ def stand_alone(name, lines, request=None):
     os.mkdir(name)
     os.system("rm -f %s.zip" % name)
     os.chdir(name)
-    os.system("%s -q %s" % (UNZIP_PROG, FADO_ZIP))
+    os.system("%s %s" % (UNZIP_PROG, FADO_ZIP))
     generate_program_file(lines, "__main__.py", request)
-    os.system("zip -r -q %s.zip *" % name)
+    os.system("zip -r %s.zip *" % name)
     os.chdir("..")
     os.system("rm -r %s" % name)
     #pylint: disable=w1401
@@ -258,9 +258,9 @@ def program_lines(
             list_.append(string)
         return list_
 
-def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="readOneFromString", t_str=None, sigma=None,
-                regexp=None, request=None, test_mode=None, s_num=None, l_num=None, n_num=None,
-                theta_str=None):
+def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="readOneFromString",
+                t_str=None, sigma=None, regexp=None, request=None, test_mode=None, s_num=None,
+                l_num=None, n_num=None, theta_str=None):
     """
     :param str file_name: name of the generated program (.zip)
     :param str prop_type: key of the property name
@@ -274,8 +274,8 @@ def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="re
     :rtype: list
     """
 
-    lines = program_lines(prop_type, test_name, aut_str, 
-                          aut_type, regexp, sigma, t_str, 
+    lines = program_lines(prop_type, test_name, aut_str,
+                          aut_type, regexp, sigma, t_str,
                           s_num, l_num, n_num,
                           theta_str)
 
