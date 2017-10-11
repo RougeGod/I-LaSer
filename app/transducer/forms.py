@@ -10,7 +10,7 @@ PROPERTY_TYPE_CHOICE = (('0', '-Please Select-'),
                         ('2', 'Trajectory or Input-Altering Transducer '),
                         ('3', 'Error-Detection (via input-preserving transducer)'),
                         ('4', 'Error-Correction (via input-preserving transducer)'),
-                        ('5', 'Theta-Transducer Property (via input-preserving transducer and antimorphic permutation)'))
+                        ('5', 'Theta-Transducer Property (via transducer and antimorphic permutation)'))
 
 FIXED_TYPE_CHOICE = (('1', 'Prefix'),
                      ('2', 'Suffix'),
