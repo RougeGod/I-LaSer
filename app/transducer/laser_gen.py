@@ -115,7 +115,7 @@ def theta_helper_methods(theta_str, list_):
     """Add the helper methods for theta-transducer properties."""
     list_.append("""
 def parse_theta_str(theta_str):
-    match = re.search(r'^@THETA *\\n(([\\w\\d] +[\\w\\d]\\s*)+)', theta_str)
+    match = re.search(r'^@THETA *\\n(([\\w\\d] +[\\w\\d]\\s*)+)', theta_str, re.IGNORECASE)
 
     swaps = match.group(1)
 
