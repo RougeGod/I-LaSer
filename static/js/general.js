@@ -53,6 +53,8 @@ function validate(str) {
             return str.replace(/^.+\n([\s\S]+)/, "$1").split(/\n/).length == 1;
         } else if(str.startsWith('@Transducer')) {
             return testTrans(str);
+        } else if(str.startsWith('@SymbolicTransducer')) {
+            return testSymTrans(str);
         } else {
             return testFA(str);
         }
@@ -88,6 +90,10 @@ function testFA(aut) {
 
 function testTrans(tran) {
     return /(@Transducer.+\n(\d+ ([\w\d]|@epsilon) ([\w\d]|@epsilon) \d+\n)+)(.+)$/.test(tran);
+}
+
+function testSymTrans(tran) {
+    return /(@SymbolicTransducer.+\n(\d+ ([\w\d]|@\w+) ([\w\d]|@\w+) \d+\n)+)(.+)$/.test(tran);
 }
 
 function setRadio() {
@@ -160,6 +166,9 @@ function setFixedProperty() {
         case "5":
             show('div2');
             show('div4');
+            break;
+        case "6":
+            show('div2');
         default:
             break;
     }

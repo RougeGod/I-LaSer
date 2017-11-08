@@ -336,6 +336,7 @@ def handle_satisfaction_maximality(
         else:
             decision = 'NO, the language does not satisfy the property'
             proof = format_counter_example(witness)
+
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                 'result':decision, 'proof': proof}
     # Check Maximality
