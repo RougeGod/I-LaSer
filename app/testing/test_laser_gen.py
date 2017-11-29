@@ -1,8 +1,10 @@
 """Laser Program Generation Tests"""
 
 from django.test import TestCase
+from app.transducer.views import get_code
 from app.transducer.laser_gen import program_lines, generate_program_file
 from app.testing.test_data import a_bstar_a, s1ts, a_ab_bb, t1ts, aa_ab_bb, a_ab_ba, a_bb_star
+from app.testing.test_util import hamm_dist, hamm_dist_list, readfile, openfile
 
 #  This program tests methods in the module "laser_gen.py". The
 #  current directory should contain a directory "transducer"
@@ -16,6 +18,14 @@ FIXED_LINE = 4
 
 #pylint:disable=C0301,W0122,C0111,C0103
 class MyTestCase(TestCase):
+    def test_p_transpose_constr(self):
+        files = {}
+        trans_text = readfile('test_files/P-transpose1.01.ia.fa')
+        post = {'question': '3', 'property_type': '2', 'transducer_text1': trans_text, 'n_int': 20, 'l_int': 10, 's_int': 10}
+        result = get_code(post, files, False)
+
+        self.assertTrue(result.get('result').startswith('<a'))
+
     def test_CORRsatNO(self):
         lines = "".join(program_lines(ptype="ERRCORR", test="SATW", aut_str=a_bstar_a,
                                       strexp=None, sigma=None, t_str=s1ts, s_num=None,

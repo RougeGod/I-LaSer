@@ -30,7 +30,6 @@ COMBINED_NAMES = ['test_files/combined/test1.fa', 'test_files/combined/test2.fa'
 #pylint:disable=C0111,C0301,C0103
 class MyTestCase(TestCase):
     """Holds test cases for the website"""
-
     def test_hamm_dist(self):
         self.assertEquals(hamm_dist('000', '101'), 2)
         self.assertEquals(hamm_dist('00', '101'), None)
@@ -38,7 +37,7 @@ class MyTestCase(TestCase):
         self.assertEquals(hamm_dist_list(['000', '101']), 2)
         self.assertEquals(hamm_dist_list(['0011001100', '1111000011', '000', '101']), 2)
 
-    def test_combined_files(self):
+    def test_combined_files_1(self):
         files = {}
 
         aut_text = readfile(COMBINED_NAMES[0])
@@ -46,61 +45,85 @@ class MyTestCase(TestCase):
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
+    def test_combined_files_2(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[1])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
+    def test_combined_files_3(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[2])
         post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
+    def test_combined_files_4(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[3])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_5(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[4])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
+    def test_combined_files_6(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[5])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_7(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[6])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_8(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[7])
         post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_9(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[8])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_10(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[9])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_11(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[10])
         post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_12(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[11])
         post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
+    def test_combined_files_13(self):
+        files = {}
         aut_text = readfile(COMBINED_NAMES[12])
         post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)

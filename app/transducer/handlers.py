@@ -149,7 +149,11 @@ def handle_construction(
         return {'form': form, 'construct_path': '',
                 'construct_text': '', 'result': result}
 
-    t_str = data.get('transducer_text')
+    t_str = re.sub(r'\r', '', data.get('transducer_text'))
+
+    t_str.strip()
+    t_str += "\n"
+
     t_name = data.get('trans_name', 'N/A')
 
     if not t_str:
@@ -175,6 +179,7 @@ def handle_satisfaction_maximality(
 
     # Try and get an automata file from the fiels uploaded.
     aut_str = data.get('automata_text')
+
     aut_name = "Language: " + data.get('aut_name', 'N/A')
 
     if not aut_str:
@@ -238,7 +243,11 @@ def handle_satisfaction_maximality(
     # User-Input Property
     else:
         # Check for a transducer file
-        t_str = data.get('transducer_text')
+        t_str = re.sub(r'\r', '', data.get('transducer_text'))
+
+        t_str.strip()
+        t_str += '\n'
+
         t_name = 'Property: ' + data.get('trans_name', 'N/A')
 
         if transducer:
