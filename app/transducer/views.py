@@ -159,7 +159,7 @@ def get_code(data, files, form=True, test_mode=None):
         else:
             prop = fixed_type
     else:
-        t_str = data.get('transducer_text')
+        t_str = re.sub(r'\r', '', data.get('transducer_text'))
 
         if transducer:
             t_str = re.sub(r'\r', '', transducer)
@@ -173,6 +173,9 @@ def get_code(data, files, form=True, test_mode=None):
 
         if not t_str:
             return error('Please provide a property file.')
+        else:
+            t_str.strip()
+            t_str = t_str + '\n'
 
     theta = None
 
