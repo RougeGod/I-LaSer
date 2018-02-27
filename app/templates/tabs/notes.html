@@ -10,7 +10,7 @@
 
 <div class="col-md-12 text-justify">
     <br>
-    <b>Online computation</b> VS <b>Program generation: </b> When a user specifies a 
+    <b>Online computation</b> VS <b>Program generation: </b> When a user specifies a
     question to solve and the required input, ILaSer  either computes the answer in real time, if the user clicks on "Submit Request", or it produces a zip file containing a self contained Python2.7 executable file, if the user clicks on "Generate Program". In the latter case, the executable file can produce the answer on the user's local machine.
     <!-- by, either dragging it into the user's python.exe icon, or by entering 'python fname.zip' on a command line window, where fname.zip is the name of the downloaded executable file.  -->
     <br>
@@ -21,10 +21,15 @@
     <ul>
     <li>
     Requests for the Satisfaction question are not processed, if the quantity N*N*M exceeds 500,000, where N and M are the numbers of transitions in the automaton and
-    transducer, respectively.  
-    </li><li>
-    Requests for the Construction question are not processed, if the quantity N*N*L*M exceeds 500,000, where N is the requested number of words, L is the requested length of these words, and M is, either the number of transitions in the 
+    transducer, respectively.
+    </li>
+    <li>
+    Requests for the Construction question are not processed, if the quantity N*N*L*M exceeds 500,000, where N is the requested number of words, L is the requested length of these words, and M is, either the number of transitions in the
     transducer describing the property, or M=1 if the property is fixed.
+    </li>
+    <li>
+    Requests for the Satisfaction question with theta properties are not processed, if the quantity N*N*M*N*T exceeds 500,000, where N and M are the numbers of transitions in the automaton and
+    transducer, respectively, and T is the size of the language of the theta property.
     </li>
     </ul>
 </div>
@@ -32,7 +37,7 @@
 <div class="col-md-12 text-justify">
     <br>
     <b>Properties</b> Examples of language properties are: prefix code, infix code, 1-substitution-error-detecting language [6,5,3]. These are examples of <i>independences</i> (independent properties). Roughly speaking, a language satisfies an independence if every subset of the language also satisfies that independence. Many independent properties have the following characteristic: a language L satisfies the property P if there are NO different words u,v in L such that v can result by performing a certain word <u>operation</u> on u--this word operation is what defines the property P. For example, prefix codes are defined by the word operation of removing any nonempty ending of the word u; and 1-substitution-detecting languages are defined by the operation that changes exactly 1 symbol in the word u. Certain transducers can conveniently be used to realize such operations, and we say that each such transducer <u>describes</u> a property.  The method of trajectories is more limited in describing independences, but the descriptions are much simpler.
-    I-LaSer supports the following independent properties.  
+    I-LaSer supports the following independent properties.
     </p>
     <ul>
         <div class="col-md-12 text-justify" style="margin-bottom: 5px;">
@@ -56,8 +61,8 @@
 
         <div class="col-md-12 text-justify" style="margin-bottom: 5px;">
             <li>
-                <u>Input-altering Transducer properties [1]</u> 
-                A <u>transducer</u> <i>t</i> is a 
+                <u>Input-altering Transducer properties [1]</u>
+                A <u>transducer</u> <i>t</i> is a
                 nondeterministic automaton with output such that <i>t(w)</i> = the set of possible output words of <i>t</i> when the input is the word <i>w</i>. Note that <i>t(w)</i> could be empty for some words <i>w</i>. An input-altering transducer is one such that, for any input word <i>w</i>,  the output is never equal to <i>w</i>.
                 An input-altering transducer <i>t</i> <u>describes</u> the following property.
                 All languages <i>L</i>  such that
@@ -67,7 +72,7 @@
                 that is, the transducer <i>t</i> cannot take as input an <i>L</i>-word and also output an <i>L</i>-word. For example, the <i>prefix code</i> property can be
                 described via a transducer that, on input w, returns all <i>proper</i> prefixes
                 of w---see <b>Format
-                for transducers</b> for more details. 
+                for transducers</b> for more details.
             </li>
         </div>
 
@@ -81,10 +86,10 @@
                 </code>
                 for any words <code>x, y in L</code>; that is, on any input word x from <i>L</i>, the
                 transducer <i>t</i> will never output another word in <i>L</i>.
-                An <u>input-preserving transducer</u>, also called <u>channel</u>, is a transducer t 
+                An <u>input-preserving transducer</u>, also called <u>channel</u>, is a transducer t
                 that, on any input word w for which t(w) is nonempty, the set t(w) includes w; thus, t acts as a communication channel that receives a word w and can always return w (case of no error) or posiibly a word other than w (case of error). For example, the <i>1-subsitution-detection</i> property can be
                 described by a transducer that, on input w, returns either w or any word that obtains by changing 1 symbol of w---see <b>Format
-                for transducers</b> for examples.  
+                for transducers</b> for examples.
             </li>
         </div>
 
@@ -97,7 +102,7 @@
                     w in t(x) and w in t(y) implies y=x,
                 </code>
                 for any words <code>x, y in L</code> and any word w; that is, the transducer cannot turn two different input words x, y from <i>L</i> into the same word. For example, the <i>1-subsitution-correction</i> property can be
-                described by a transducer that, on input w, returns either w or any word that obtains by changing 1 symbol of w.  
+                described by a transducer that, on input w, returns either w or any word that obtains by changing 1 symbol of w.
             </li>
         </div>
 
