@@ -14,7 +14,7 @@ import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 from FAdo.yappy_parser import YappyError
 
-from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type
+from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
@@ -112,7 +112,7 @@ def get_code(data, files, form=True, test_mode=None):
     name = str(int(time()*1000))
     n_num = s_num = l_num = 0
     aut_str = t_str = ''
-    
+    transducer = fixed_type = transducer_type = trajectory = None
 
     # Automaton String, or number generation
     if question in ['1', '2']: # Satisfaction, maximality
@@ -159,7 +159,7 @@ def get_code(data, files, form=True, test_mode=None):
         else:
             prop = fixed_type
     else:
-        t_str = data.get('transducer_text')
+        t_str = re.sub(r'\r', '', data.get('transducer_text'))
 
         if transducer:
             t_str = re.sub(r'\r', '', transducer)
@@ -173,6 +173,9 @@ def get_code(data, files, form=True, test_mode=None):
 
         if not t_str:
             return error('Please provide a property file.')
+        else:
+            t_str.strip()
+            t_str = t_str + '\n'
 
     theta = None
 
@@ -188,19 +191,10 @@ def get_code(data, files, form=True, test_mode=None):
                 sigma.add(str(i))
 
         try:
-            result = readOneFromString(t_str.strip()+'\n')
-            if isinstance(result, (DFA, NFA)):
-                prop = 'TRAJECT' # Trajectory
-            else:
-                sigma = None
-                prop = 'INALT' # Transducer
-        except YappyError:
-            try:
-                codes.buildTrajPropS(t_str, sigma)
-            except regexpInvalid:
-                return error(PROPERTY_INCORRECT_FORMAT)
-            prop = 'TRAJECT' # Also Trajectory
-            regexp = 'tStr'
+            result = construct_input_alt_prop(t_str, sigma)
+            prop = construct_input_alt_prop(t_str, sigma, True)
+        except IncorrectFormat:
+            return error(PROPERTY_INCORRECT_FORMAT)
 
     # Input-Preserving Property
     elif property_type == '3':

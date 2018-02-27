@@ -365,7 +365,8 @@ class MyTestCase(TestCase):
         tFile = openfile(IA_TRANSDUCER_NAMES[0])
         files = {'automata_file': SimpleUploadedFile(aut.name, aut.read()), 'transducer_file': SimpleUploadedFile(tFile.name, tFile.read())}
         lines = "".join(get_code(post, files, False, True)).split("\n")
-        should_be = (lines[LN_ANS-1].startswith('p = buildTrajPropS')) and \
+
+        should_be = (lines[LN_ANS-1].startswith('p = buildIATPropS')) and \
                     (lines[LN_ANS] == 'answer = p.notSatisfiesW(a)')
         self.assertTrue(should_be)
 

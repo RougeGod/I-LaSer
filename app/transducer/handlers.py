@@ -14,7 +14,7 @@ from FAdo.yappy_parser import YappyError
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
-     make_block_code
+     make_block_code, limit_theta_prop
 
 from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, apply_theta_antimorphism, reverse_theta_antimorphism
 
@@ -149,7 +149,11 @@ def handle_construction(
         return {'form': form, 'construct_path': '',
                 'construct_text': '', 'result': result}
 
-    t_str = data.get('transducer_text')
+    t_str = re.sub(r'\r', '', data.get('transducer_text'))
+
+    t_str.strip()
+    t_str += "\n"
+
     t_name = data.get('trans_name', 'N/A')
 
     if not t_str:
@@ -175,6 +179,7 @@ def handle_satisfaction_maximality(
 
     # Try and get an automata file from the fiels uploaded.
     aut_str = data.get('automata_text')
+
     aut_name = "Language: " + data.get('aut_name', 'N/A')
 
     if not aut_str:
@@ -238,7 +243,11 @@ def handle_satisfaction_maximality(
     # User-Input Property
     else:
         # Check for a transducer file
-        t_str = data.get('transducer_text')
+        t_str = re.sub(r'\r', '', data.get('transducer_text'))
+
+        t_str.strip()
+        t_str += '\n'
+
         t_name = 'Property: ' + data.get('trans_name', 'N/A')
 
         if transducer:
@@ -298,6 +307,11 @@ def handle_satisfaction_maximality(
             except AttributeError:
                 return {'form': form, 'error_message': 'Theta appears to be incorrectly formatted.',
                         'automaton': aut_name, 'transducer': t_name}
+
+            if limit_theta_prop(aut.delta, prop.Aut.delta, theta, LIMIT):
+                return {'form':form, 'error_message':
+                        'Sizes of the automaton, transducer and theta exceed limit! (See "Technical Notes")',
+                        'automaton':aut_name, 'transducer':t_name}
 
             theta_aut = apply_theta_antimorphism(aut, theta)
 
