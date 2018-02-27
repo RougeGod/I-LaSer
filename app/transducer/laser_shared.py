@@ -138,6 +138,26 @@ def limit_tran_prop(aut_delta, tran_delta, limit, lang_size=0):
 
     return size*size*size_2 > limit
 
+def limit_theta_prop(aut_delta, tran_delta, theta, limit, lang_size=0):
+    size = lang_size
+    if size == 0:
+        for key in aut_delta:
+            for key_2 in aut_delta[key]:
+                if isinstance(aut_delta[key][key_2], int):
+                    size += 1
+                else:
+                    size += len(aut_delta[key][key_2])
+
+    size_2 = 0
+    for key in tran_delta:
+        for key2 in tran_delta[key]:
+            size_2 += len(tran_delta[key][key2])
+
+    size_3 = len(theta)
+
+    return size*size*size_2*size*size_3 > limit
+
+
 def make_block_code(list_length, word_length, alphabet_size):
     """Returns an NFA and a list W of up to N words of length word_length, such that the NFA
     accepts W, which satisfies the property. The alphabet to use is
