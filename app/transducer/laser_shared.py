@@ -26,7 +26,7 @@ def construct_automaton(aut_str):
         except YappyError:
             try:
                 aut_str.strip()
-                return reex.str2regexp(aut_str, no_table=0).toNFA()
+                return reex.str2regexp(aut_str).toNFA()
             except Exception:
                 raise IncorrectFormat()
 
