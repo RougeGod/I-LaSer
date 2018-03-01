@@ -153,9 +153,9 @@ def limit_theta_prop(aut_delta, tran_delta, theta, limit, lang_size=0):
         for key2 in tran_delta[key]:
             size_2 += len(tran_delta[key][key2])
 
-    size_3 = len(theta)
-
-    return size*size*size_2*size*size_3 > limit
+    # size_3 = len(theta)
+    # *size*size_3
+    return size*size*size_2 > limit
 
 
 def make_block_code(list_length, word_length, alphabet_size):
