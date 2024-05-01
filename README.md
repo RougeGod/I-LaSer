@@ -35,6 +35,7 @@ Contains the methods that handle `get_response` - that is, the code that parses 
 - `handle_iap`
 - `handle_ipp`
 - `handle_satisfaction_maximality`
+- `handle_approximate_maximality`
 
 All four of these methods support many ways to pass in the language and property:
 
