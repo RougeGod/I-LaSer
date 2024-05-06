@@ -34,11 +34,11 @@ TESTS = {"MAXP": "maximalP",
          "MKCO": "makeCode"}
 
 PARSERS_BEFORE = {"readOneFromString": "readOneFromString",
-                  "importFromGrailString": "importFromGrailString",
+                  #"importFromGrailString": "importFromGrailString",
                   "str2regexp": "str2regexp"}
 
 PARSERS_AFTER = {"readOneFromString": "",
-                  "importFromGrailString": "",
+                 # "importFromGrailString": "",
                   "str2regexp": ".toNFA()"}
 
 #for running unittest
@@ -91,25 +91,26 @@ def the_prologue(request=None):
     :param str request: the description of the request for which to generate program
     :rtype: str"""
     pro = """try:
-    from FAdo.grail import importFromGrailString
     from FAdo.reex import *
     from FAdo.codes import *
     from FAdo.fio import *
+    #from FAdo.prax import *
     import base64
     import copy
 except:
+    print("Error with imports. Program will now exit.")
     exit()
 
 """
     if request is not None:
-        pro += "print \"\\nREQUEST:\\n" + request + "\"\n"
-    pro += "print \"\\nANSWER:\\n\",\n"
+        pro += "print(\"\\nREQUEST:\\n" + request + "\")\n"
+    pro += "print(\"\\nANSWER:\\n\"),\n"
     return pro
 
 def the_epilogue():
     """
     :rtype: str"""
-    return "raw_input('\\nPress <enter> to quit.')\n"
+    return "input('\\nPress <enter> to quit.')\n"
 
 def theta_helper_methods(theta_str, list_):
     """Add the helper methods for theta-transducer properties."""
@@ -174,7 +175,7 @@ def apply_theta_antimorphism(aut, theta):
 
     list_.extend([
         "tx = \"%s\"" % base64.b64encode(theta_str),
-        "tt = parse_theta_str(base64.b64decode(tx))",
+        "tt = parse_theta_str(str(base64.b64decode(tx))[2:-1])",
         "theta_aut = apply_theta_antimorphism(a, tt)"
     ])
 
@@ -201,7 +202,7 @@ def program_lines(
             string = ''
             if t_str:
                 list_.append("tx = \"%s\"\n" % base64.b64encode(t_str))
-                list_.append("t = base64.b64decode(tx)\n")
+                list_.append("t = str(base64.b64decode(tx))[2:-1]\n")
             else:
                 string += "alp = set()\nfor i in range(int(s_num)):\n    alp.add(str(i))\n"
                 string += "ssigma = alp\n"
@@ -214,12 +215,12 @@ def program_lines(
             string = string[:-1] + ")\n"
             list_.extend([string,
                           'a, answer = p.%s(n_num, l_num, s_num)\n' % TESTS[test],
-                          'print\nfor w in answer:\n    print w\n'])
+                          'print(\nfor w in answer:\n    print w\n)'])
         else:  # this is probably not needed
-            string = "print " + BUILD_NAME[ptype][0] + "("
+            string = "print(" + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
                 string += "%s," % expand(s_1)
-            string = string[:-1] + ")\n"
+            string = string[:-1] + "))\n"
             list_.append(string)
         return list_
     else:
@@ -229,7 +230,7 @@ def program_lines(
 
         list_.append("ax = \"%s\"\n" % base64.b64encode(aut_str))
 
-        list_.append("a = %s(base64.b64decode(ax))%s\n" % (PARSERS_BEFORE[aut_type], PARSERS_AFTER[aut_type]))
+        list_.append("a = %s(str(base64.b64decode(ax))%s[2:-1])\n" % (PARSERS_BEFORE[aut_type], PARSERS_AFTER[aut_type]))
 
         if theta_str:
             theta_helper_methods(theta_str, list_)
@@ -237,7 +238,7 @@ def program_lines(
         if BUILD_NAME[ptype][2] == 1:
             if t_str:
                 list_.extend(["tx = \"%s\"\n" % base64.b64encode(t_str),
-                              "t = base64.b64decode(tx)\n"])
+                              "t = str(base64.b64decode(tx))[2:-1]\n"])
             string = "ssigma = a.Sigma\n"
             string += "p = " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -249,12 +250,12 @@ def program_lines(
 
             ans = "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
 
-            list_.extend([string, ans, "print answer\n"])
+            list_.extend([string, ans, "print(answer)\n"])
         else:
-            string = "print " + BUILD_NAME[ptype][0] + "("
+            string = "print(" + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
                 string += "%s," % expand(s_1)
-            string = string[:-1] + ")\n"
+            string = string[:-1] + "))\n"
             list_.append(string)
         return list_
 

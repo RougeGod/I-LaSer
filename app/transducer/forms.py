@@ -22,7 +22,8 @@ FIXED_TYPE_CHOICE = (('1', 'Prefix'),
 QUESTION_CHOICE = (('0', '-Please Select-'),
                    ('1', 'Satisfaction'),
                    ('2', 'Maximality'),
-                   ('3', 'Construction'))
+                   ('3', 'Construction')
+                   ('4', 'Approximate Maximality'))
 
 class UploadFileForm(forms.Form):
     """This class is used to declare the file form used on the website to interface with FAdo"""

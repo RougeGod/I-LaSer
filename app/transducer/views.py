@@ -80,8 +80,8 @@ def get_response(data, files, form):
 
     if not question:
         return {'form': form, 'error_message': "Please select a question."}
-    # elif not property_type:
-    #     return {'form': form, 'error_message': "Please select a property type."}
+    if (property_type == '0'): #no property type was entered
+         return {'form': form, 'error_message': "Please select a property type."}
 
     if question in ['1', '2']:
         return handle_satisfaction_maximality(property_type, question, data, files, form)
