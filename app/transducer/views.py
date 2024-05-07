@@ -6,7 +6,7 @@ test the decision question.
 import re
 from time import time
 import django
-from django.shortcuts import render_to_response, render
+from django.shortcuts import render
 from django.conf import settings
 
 from FAdo.fio import readOneFromString, NFA, DFA
@@ -17,7 +17,7 @@ from FAdo.yappy_parser import YappyError
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
-from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
+from app.transducer.handlers import handle_construction, handle_satisfaction_maximality, handle_approx_maximality
 from app.transducer.util import parse_aut_str
 
 try:
@@ -28,11 +28,12 @@ except django.core.exceptions.ImproperlyConfigured:
     LIMIT_AUTOMATON = 250
 
 DECIDE_REQUEST = 'Decide whether the given language '
-TEST_DICT = {'1': 'SATW', '2': 'MAXW', '3': 'MKCO'}
+TEST_DICT = {'1': 'SATW', '2': 'MAXW', '3': 'MKCO', '4':'AMAX'}
 DESCRIBE = {'1': DECIDE_REQUEST + 'satisfies the given property. \
 If no, return a witness; else return Nones.', #Satisfaction
             '2': DECIDE_REQUEST+'is maximal. If no, return a witness; else return None.',#Maximality
-            '3': 'Construct set of words satisfying the given property.'}#Construction
+            '3': 'Construct set of words satisfying the given property.', #Construction
+            '4': DECIDE_REQUEST + 'is approximately maximal given an &epsi;'} #Approximate Maximality
 FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'INFIX',
               '4': 'OUTFIX', '5': 'HYPERCODE', '6': 'CODE'}
 
@@ -78,7 +79,7 @@ def get_response(data, files, form):
     question = data.get('question')
     property_type = data.get('property_type')
 
-    if not question:
+    if not question: #User clicked submit without specifying question
         return {'form': form, 'error_message': "Please select a question."}
     if (property_type == '0'): #no property type was entered
          return {'form': form, 'error_message': "Please select a property type."}
@@ -87,6 +88,8 @@ def get_response(data, files, form):
         return handle_satisfaction_maximality(property_type, question, data, files, form)
     elif question == '3':
         return handle_construction(property_type, data, files, form)
+    elif question == '4':
+        return handle_approx_maximality(property_type, data, files, form) #we know what question is, it's 4
 
 def get_code(data, files, form=True, test_mode=None):
     """
@@ -107,15 +110,17 @@ def get_code(data, files, form=True, test_mode=None):
     property_type = data.get('property_type')
     if not question:
         return error('Please select a question.')
+    elif property_type == '0':
+        return error("Please select a property type.")
 
     prop = regexp = fixed_type = sigma = aut_type = None
-    name = str(int(time()*1000))
+    name = str(int(time()*1000)) #the name of the ZIP file, which is the current millisecond. 
     n_num = s_num = l_num = 0
     aut_str = t_str = ''
     transducer = fixed_type = transducer_type = trajectory = None
 
     # Automaton String, or number generation
-    if question in ['1', '2']: # Satisfaction, maximality
+    if question in ['1', '2', '4']: # Satisfaction, maximality, approx-maximality
         aut_str = data.get('automata_text')
 
         if not aut_str:
@@ -129,7 +134,7 @@ def get_code(data, files, form=True, test_mode=None):
         transducer_type = parsed.get('transducer_type')
         trajectory = parsed.get('trajectory')
 
-        if fixed_type and not property_type:
+        if fixed_type and not property_type: #if we somehow have a fixed property type set without a property type set, assume property type is "fixed"
             property_type = '1'
 
         try:
@@ -149,7 +154,7 @@ def get_code(data, files, form=True, test_mode=None):
             return error('S must be less than 10 and greater than 1')
         elif s_num > l_num:
             return error('S must be less than L')
-
+    
     # Get Fixed Type, or get Transducer String
     if property_type == "1":
         t_str = None
@@ -213,7 +218,7 @@ def get_code(data, files, form=True, test_mode=None):
             return error(PROPERTY_INCORRECT_FORMAT)
         prop = 'ERRCORR'
 
-    elif property_type == '5':
+    elif property_type == '5': #there currently is no property 5
         sigma = aut.Sigma
         theta = data.get('theta_text')
 
@@ -248,10 +253,11 @@ def get_code(data, files, form=True, test_mode=None):
          % (settings.MEDIA_URL, name)
     return {'form': form, 'result': decision}
 
-def index(_):
-    """returns the rendered index.html files"""
-    return render_to_response('index.html')
+def index(request):
+    """renders index.html"""
+    return render(request, 'index.html')
 
-def examples(_, example_type):
-    """returns the various example html files"""
-    return render_to_response('examples/'+example_type+'.html')
+
+def examples(request, example_type):
+    """Returns the various examples"""
+    return render(request, 'examples/'+example_type+'.html')

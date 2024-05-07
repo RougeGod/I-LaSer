@@ -78,8 +78,11 @@
                         {{ form.property_type }}
                     </div>
                 </div>
-
-                <!-- TODO: Div here that has a text input, maximum 1 minimum 0, for epsilon.-->                
+                <div id="epsilon" class="col-md-12 text-center" style="margin-top: 10px; display: none">
+                    <div class="col-md-offset-3 col-md-6">
+                        {{ form.epsilon }}
+                    </div>
+                </div>
 
                 <br>
                 <div id="integers_input" class="col-md-12 text-center" >
@@ -171,6 +174,9 @@
                     </li>
                     <li><b> Construction question: </b>
                         Given property P and integers N,k>0, return a language of N words of length k satisfying P.
+                    </li>
+                    <li><b> Approximate Maximality question: </b>
+                        Given language L and property P, is the proportion of words in L least 1-&epsi;?
                     </li>
                 </ul>
                 <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 2 &le; s &le; 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 

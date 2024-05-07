@@ -22,11 +22,12 @@ FIXED_TYPE_CHOICE = (('1', 'Prefix'),
 QUESTION_CHOICE = (('0', '-Please Select-'),
                    ('1', 'Satisfaction'),
                    ('2', 'Maximality'),
-                   ('3', 'Construction')
+                   ('3', 'Construction'),
                    ('4', 'Approximate Maximality'))
 
 class UploadFileForm(forms.Form):
-    """This class is used to declare the file form used on the website to interface with FAdo"""
+    """This class is used to declare the file form used on the website to interface with FAdo
+       In all cases, JS validates that all required fields have been filled in, so set Required to False"""
     def __init__(self, *args, **kwargs):
         super(UploadFileForm, self).__init__(*args, **kwargs)
         self.aut_name = 'N/A'
@@ -68,9 +69,12 @@ class UploadFileForm(forms.Form):
     fixed_type = forms.ChoiceField(choices=FIXED_TYPE_CHOICE, required=False,
                                    widget=forms.Select(attrs={'class': cls}))
 
-    s_int = forms.IntegerField(required=False)
+    s_int = forms.IntegerField(required=False, min_value=2, max_value=10) 
     n_int = forms.IntegerField(required=False)
     l_int = forms.IntegerField(required=False)
+
+    EPS = 1e-5
+    epsilon = forms.DecimalField(required=False, min_value=EPS, max_value=1-EPS)
 
     def clean_theta_file(self):
         """Clean the data of the automata file"""

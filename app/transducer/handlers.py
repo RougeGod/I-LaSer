@@ -168,6 +168,18 @@ def handle_construction(
 
     return result
 
+def handle_approx_maximality (property_type, data, files, form):
+    aut_name = "Language: " + data.get('aut_name', 'N/A')
+    decision = "This function hasn't yet been implemented but will be soon!"
+    proof = None
+    if property_type == "1": # Fixed type
+        t_name = ""
+    t_name = 'Property: ' + data.get('trans_name', 'N/A')
+    return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+            'result':decision, 'proof': proof}
+     
+    
+
 def handle_satisfaction_maximality(
         property_type, question, data, files, form
     ):
@@ -177,7 +189,7 @@ def handle_satisfaction_maximality(
         """Formats an error using the given string"""
         return {'form': form, 'error_message': err}
 
-    # Try and get an automata file from the fiels uploaded.
+    # Try and get an automata file from the file/text uploaded.
     aut_str = data.get('automata_text')
 
     aut_name = "Language: " + data.get('aut_name', 'N/A')

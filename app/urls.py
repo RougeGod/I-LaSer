@@ -1,7 +1,7 @@
 """Contains all of the urls used in the app."""
 
 #url pattern
-from django.conf.urls import url
+from django.urls import re_path
 from django.views.static import serve
 from django.conf import settings
 
@@ -13,12 +13,12 @@ from app.transducer import views_others
 app_name = 'app'
 urlpatterns = [
     # Example:
-    url(r'^$', views.index, name='index'),
-    url(r'^$', views_others.index, name='index'),
-    url(r'^independence/$', views.upload_file, name='independence'),
-    url(r'^others/$', views_others.upload_file, name='others'),
-    url(r'^transducer/$', views.upload_file, name='transducer'),
-    url(r'^media/([0-9]+.zip)$', \
+    re_path(r'^$', views.index, name='index'),
+    re_path(r'^$', views_others.index, name='index'),
+    re_path(r'^independence/$', views.upload_file, name='independence'),
+    re_path(r'^others/$', views_others.upload_file, name='others'),
+    re_path(r'^transducer/$', views.upload_file, name='transducer'),
+    re_path(r'^media/([0-9]+.zip)$', \
         serve, \
         {'document_root': settings.MEDIA_ROOT})
 

@@ -2,7 +2,6 @@
 The views_others.py program handles the "other" part of the site.
 """
 
-from django.shortcuts import render_to_response
 from django.shortcuts import render
 
 from FAdo.codes import exponentialDensityP, editDistanceW
@@ -78,11 +77,11 @@ def get_response(post, files, form=None):
     return {'form':form}
 
 #@login_required
-def index(_):
+def index(request):
     """renders index.html"""
-    return render_to_response('index.html')
+    return render(request, 'index.html')
 
 
-def examples(_, example_type):
+def examples(request, example_type):
     """Returns the various examples"""
-    return render_to_response('examples/'+example_type+'.html')
+    return render(request, 'examples/'+example_type+'.html')
