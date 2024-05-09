@@ -9,12 +9,12 @@ $(function() {
     $("#epsilon").hide()
 
     setFixedProperty();
-    //this causes an error when loading the index file. don't worry about that
+    //this causes an error when loading the index file since the divs don't yet exist. don't worry about that error
     //it is necessary when it comes to upload.html
     
     $('#automata_text').on('change keyup paste', handleChange);
     $('#transducer_text1').on('change keyup paste', handleChange)
-    $('#transducer_text2').on('change keyup paste', handleChange)
+    //$('#transducer_text2').on('change keyup paste', handleChange)
 });
 
 function handleChange() {
@@ -110,19 +110,18 @@ function setRadio() {
 
 function setFields() {
     var $select = $('#divsat_select')
-    console.log("New function called")
     switch (document.form1.question.value) {
         case "0": //hide all input areas when no property selected
             hide('divsat'); //property selector for satisfaction, maximality, approx-maximality
             hide('automata_load'); //text box AND file upload space for automata input
             hide('integers_input'); //for Construction only: L, S, and N input boxes. 
-            hide('epsilon');
+            hide('approximation_input'); //for approximate maximality
             break;
         case "1":
             show('divsat');
             show('automata_load');
             hide('integers_input');
-            hide('epsilon');
+            hide('approximation_input');
             $select.find('[value=4]').show();
             $select.find('[value=5]').show();
             $select.selectpicker('refresh');
@@ -131,7 +130,7 @@ function setFields() {
             show('divsat');
             show('automata_load');
             hide('integers_input');
-            hide('epsilon');
+            hide('approximation_input');
             $select.find('[value=4]').show();
             $select.find('[value=5]').hide();
             $select.selectpicker('refresh');
@@ -139,17 +138,16 @@ function setFields() {
         case "3":
             show('divsat');
             hide('automata_load');
-            hide('epsilon');
+            hide('approximation_input');
             $select.find('[value=4]').hide();
             $select.find('[value=5]').hide();
             $select.selectpicker('refresh');
             show('integers_input');
             break;
         case "4":
-            console.log("I can finallydebug!!");
             show('divsat');
             show('automata_load');
-            show('epsilon');
+            show('approximation_input');
             hide('integers_input');
             $select.find('[value=4]').show();
             $select.find('[value=5]').show();
@@ -161,15 +159,13 @@ function setFields() {
 function setFixedProperty() {
     hide('div1');
     hide('div2');
-    hide('div3');
     hide('div4');
     switch (document.getElementById('divsat_select').value) {
         case "1":
             show('div1');
             break;
         case "2":
-            show('div3');
-            break;
+            show('div2');
         case "3":
         case "4":
             show('div2');

@@ -1,10 +1,9 @@
 """Interfaces for the website to communicate with the FAdo backend"""
 from FAdo.fio import readOneFromString
-from FAdo.grail import importFromGrailString
 from FAdo import reex
-from FAdo.yappy_parser import YappyError
 from FAdo.codes import IATProp, buildTrajPropS, TrajProp
 from FAdo.fa import DFA, NFA
+from FAdo.common import FAdoError
 import FAdo.fl as fl
 
 from app.transducer.util import list_to_string, long_to_base
@@ -20,15 +19,12 @@ def construct_automaton(aut_str):
     aut_str += "\n"
     try:
         return readOneFromString(aut_str)
-    except (YappyError, IndexError):
+    except FAdoError:
         try:
-            return importFromGrailString(aut_str)
-        except YappyError:
-            try:
-                aut_str.strip()
-                return reex.str2regexp(aut_str).toNFA()
-            except Exception:
-                raise IncorrectFormat()
+            aut_str.strip()
+            return reex.str2regexp(aut_str).toNFA()
+        except Exception:
+            raise IncorrectFormat()
 
 def detect_automaton_type(aut_str):
     """construct an automaton from a string"""
@@ -41,18 +37,18 @@ def detect_automaton_type(aut_str):
         readOneFromString(aut_str)
 
         return 'readOneFromString'
-    except (YappyError, IndexError):
+    except IndexError:
         try:
-            importFromGrailString(aut_str)
+            readOneFromString(aut_str)
 
             return 'importFromGrailString'
-        except YappyError:
+        except FAdoError:
             try:
                 aut_str.strip()
                 reex.str2regexp(aut_str).toNFA()
                 return 'str2regexp'
             except Exception:
-                raise IncorrectFormat()
+                raise IncorrectFormat("could not read from string")
 
 def construct_input_alt_prop(t_str, sigma, gen=False):
     """Construct an input-altering property"""
@@ -70,7 +66,7 @@ def construct_input_alt_prop(t_str, sigma, gen=False):
             if gen:
                 return 'TRAJECT'
             return TrajProp(result, sigma)
-    except YappyError:
+    except FAdoError:
         try:
             if gen:
                 return 'TRAJECT'

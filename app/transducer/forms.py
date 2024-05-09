@@ -3,6 +3,8 @@ import re
 
 from django import forms
 
+import logging
+
 from app.transducer.util import parse_aut_str
 
 PROPERTY_TYPE_CHOICE = (('0', '-Please Select-'),
@@ -25,9 +27,16 @@ QUESTION_CHOICE = (('0', '-Please Select-'),
                    ('3', 'Construction'),
                    ('4', 'Approximate Maximality'))
 
+#takes in an uploaded file and properly converts it to text. Returns the text of the file. 
+#required because uploaded files are automatically stored as binary data. In Python 2, this 
+#wasn't an issue because all data was binary, but now the two types of data are seperate
+def file2Text(inputBinary):
+    return bytes.decode(inputBinary)
+
 class UploadFileForm(forms.Form):
     """This class is used to declare the file form used on the website to interface with FAdo
-       In all cases, JS validates that all required fields have been filled in, so set Required to False"""
+       In all cases, JS validates that all required fields have been filled in, so set Required to False
+       If a user disables the JSvalidation they could also disable this."""
     def __init__(self, *args, **kwargs):
         super(UploadFileForm, self).__init__(*args, **kwargs)
         self.aut_name = 'N/A'
@@ -75,6 +84,7 @@ class UploadFileForm(forms.Form):
 
     EPS = 1e-5
     epsilon = forms.DecimalField(required=False, min_value=EPS, max_value=1-EPS)
+    dirichletT = forms.DecimalField(required=False, min_value=1)
 
     def clean_theta_file(self):
         """Clean the data of the automata file"""
@@ -83,7 +93,8 @@ class UploadFileForm(forms.Form):
         if data:
             self.theta_name = data.name
             data.seek(0)
-            newdata = str(data.read())
+            #don't use str(data.read()),doing so removes the ability to bytes.decode() it later,which is required
+            newdata = data.read()
             data.close()
             return newdata
 
@@ -96,7 +107,7 @@ class UploadFileForm(forms.Form):
 
         if data:
             self.aut_name = data.name
-            newdata = str(data.read())
+            newdata = data.read() 
             data.close()
             return newdata
 
@@ -109,7 +120,7 @@ class UploadFileForm(forms.Form):
 
         if data:
             self.trans_name = data.name
-            newdata = str(data.read())
+            newdata = data.read()
             data.close()
             return newdata
 
@@ -121,19 +132,18 @@ class UploadFileForm(forms.Form):
         data['aut_name'] = self.aut_name
         data['trans_name'] = self.trans_name
         data['theta_name'] = self.theta_name
-
         if data.get('automata_file'):
-            data['automata_text'] = data.get('automata_file')
+            data['automata_text'] = file2Text(data.get('automata_file'))
 
         if data.get('theta_file'):
-            data['theta_text'] = data.get('theta_file')
+            data['theta_text'] = file2Text(data.get('theta_file'))
 
         if data.get('transducer_file'):
-            data['transducer_text'] = data.get('transducer_file')
+            data['transducer_text'] = file2Text(data.get('transducer_file'))
         elif data.get('transducer_text1'):
             data['transducer_text'] = data.get('transducer_text1')
-        elif data.get('transducer_text2'):
-            data['transducer_text'] = data.get('transducer_text2')
+        #elif data.get('transducer_text2'):
+        #    data['transducer_text'] = data.get('transducer_text2')
 
         if data.get('question') == '0':
             raise forms.ValidationError('Please select a question.')
@@ -154,12 +164,14 @@ class UploadFileForm(forms.Form):
             pass
         else:
             data['theta_text'] = re.sub(r'\r', '', str(data['theta_text']))
+            data
 
         data['automata_text'] = re.sub(r'\r', '', str(data['automata_text']))
 
         return data
 
-class ContactForm(forms.Form):
-    """This class is used to specify the contact form used in the website."""
-    subjects = forms.CharField(max_length=80)
-    message = forms.CharField()
+#there is no contact form
+#class ContactForm(forms.Form):
+#    """This class is used to specify the contact form used in the website."""
+#    subjects = forms.CharField(max_length=80)
+#    message = forms.CharField()

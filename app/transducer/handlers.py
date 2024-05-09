@@ -10,7 +10,8 @@ from FAdo.fio import readOneFromString
 import FAdo.codes as codes
 from FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnknown, \
     ErrCorrectProp
-from FAdo.yappy_parser import YappyError
+
+from FAdo.prax import 
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
@@ -78,7 +79,7 @@ def handle_ipp(
     """Handle Input-preserving properties"""
     try:
         prop = codes.buildErrorDetectPropS(t_str)
-    except (YappyError, AttributeError):
+    except AttributeError:
         return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
 
@@ -176,7 +177,7 @@ def handle_approx_maximality (property_type, data, files, form):
         t_name = ""
     t_name = 'Property: ' + data.get('trans_name', 'N/A')
     return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-            'result':decision, 'proof': proof}
+            'result':decision}#, 'proof': proof}
      
     
 
@@ -292,7 +293,7 @@ def handle_satisfaction_maximality(
         elif property_type == "3":
             try:
                 prop = IPTProp(readOneFromString(t_str))
-            except (YappyError, AttributeError):
+            except AttributeError:
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
 
@@ -300,13 +301,13 @@ def handle_satisfaction_maximality(
         elif property_type == "4":
             try:
                 prop = ErrCorrectProp(readOneFromString(t_str))
-            except (YappyError, AttributeError):
+            except AttributeError:
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
         elif property_type == '5': # We have to branch off, it is handled differently.
             try:
                 prop = IPTProp(readOneFromString(t_str))
-            except (YappyError, AttributeError):
+            except FAdoError:
                 try:
                     prop = construct_input_alt_prop(t_str, aut.Sigma)
                 except (IncorrectFormat, TypeError):
@@ -387,3 +388,4 @@ def handle_satisfaction_maximality(
 
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                 'result':decision, 'proof': proof}
+    elif question == "4":

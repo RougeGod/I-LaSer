@@ -230,3 +230,8 @@ a#others:hover {
 hr {
     border-top: 1px solid black;
 }
+
+.input-span {
+    padding-left: 10px;
+    padding-right: 10px;
+}

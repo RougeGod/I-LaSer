@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>I-Laser</title>
-    {% load staticfiles %}
+    {% load static %}
     <meta name="viewport" content="width=device-width, initial-scale: 1.0"/>
     <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}" />
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
@@ -78,9 +78,21 @@
                         {{ form.property_type }}
                     </div>
                 </div>
-                <div id="epsilon" class="col-md-12 text-center" style="margin-top: 10px; display: none">
-                    <div class="col-md-offset-3 col-md-6">
+
+                <div id="approximation_input" class="col-md-12 text-center" >
+                <br>
+                    <div class="col-md-12 int_title"><b>Input below the approximation parameters:</b></div>
+                    <div class="col-md-6 text-right align-num">
+                        Epsilon:
+                    </div>
+                    <div class="col-md-6 text-left align-num" >
                         {{ form.epsilon }}
+                    </div>
+                    <div class="col-md-6 text-right align-num">
+                        t (Dirichlet distribution param):
+                    </div>
+                    <div class="col-md-6 text-left align-num" >
+                        {{ form.dirichletT }}
                     </div>
                 </div>
 
@@ -130,6 +142,7 @@
                         {{ form.transducer_text1 }}
                     </div>
                 </div>
+                <!-- Seems to be an exact repeat of the other transducer div and everything gets converted to 'transducer_text' in forms.py
                 <div id="div3" class="col-md-12">
                     <div class="col-md-12" >
                         {{ form.transducer_file.errors }}
@@ -142,7 +155,7 @@
                         <label for="transducer_text2"><b>OR</b> use this textarea:</label>
                         {{ form.transducer_text2 }}
                     </div>
-                </div>
+                </div> -->
                 <div id="div4" class="col-md-12">
                     <div class="col-md-12" >
                         {{ form.theta_file.errors }}

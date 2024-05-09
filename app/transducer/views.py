@@ -12,7 +12,6 @@ from django.conf import settings
 from FAdo.fio import readOneFromString, NFA, DFA
 import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
-from FAdo.yappy_parser import YappyError
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop
 from app.transducer.laser_gen import gen_program
@@ -205,7 +204,7 @@ def get_code(data, files, form=True, test_mode=None):
     elif property_type == '3':
         try:
             IPTProp(readOneFromString(t_str)) # Input Preserving Transducer Property
-        except (YappyError, AttributeError):
+        except AttributeError:
             return error(PROPERTY_INCORRECT_FORMAT)
 
         prop = 'INPRES' # Input Preserving
@@ -214,7 +213,7 @@ def get_code(data, files, form=True, test_mode=None):
     elif property_type == '4':
         try:
             ErrCorrectProp(readOneFromString(t_str))
-        except YappyError:
+        except AttributeError:
             return error(PROPERTY_INCORRECT_FORMAT)
         prop = 'ERRCORR'
 
@@ -225,7 +224,7 @@ def get_code(data, files, form=True, test_mode=None):
         try:
             IPTProp(readOneFromString(t_str))
             prop = 'INPRES'
-        except (YappyError, AttributeError):
+        except AttributeError:
             try:
                 prop = construct_input_alt_prop(t_str, aut.Sigma, True)
             except (IncorrectFormat, TypeError):
