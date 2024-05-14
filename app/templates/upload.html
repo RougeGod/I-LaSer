@@ -16,7 +16,7 @@
 
 <body>
 <div class="container text-center">
-    <h2>I-LaSer</h2> <h4>(Independent Language Server, v.5)</h4>
+    <h2>I-LaSer</h2> <h4>(Independent Language Server, v.6&alpha;)</h4>
     <h5><i>v.5 released in Jan. 2018; some things need to be fixed</i></h5>
     <ul class="nav nav-tabs">
         <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
@@ -148,20 +148,7 @@
                         {{ form.transducer_text1 }}
                     </div>
                 </div>
-                <!-- Seems to be an exact repeat of the other transducer div and everything gets converted to 'transducer_text' in forms.py
-                <div id="div3" class="col-md-12">
-                    <div class="col-md-12" >
-                        {{ form.transducer_file.errors }}
-                    </div>
-                    <div class="col-lg-4 col-lg-offset-2 text-center" >
-                        <label for="id_a" style="margin-top: 15px;">Provide <u>a property</u> of the selected type:</label>
-                        {{ form.transducer_file }}
-                    </div>
-                    <div class="col-lg-4 text-center form-group">
-                        <label for="transducer_text2"><b>OR</b> use this textarea:</label>
-                        {{ form.transducer_text2 }}
-                    </div>
-                </div> -->
+
                 <div id="antimorphic_input" class="col-md-12">
                     <div class="col-md-12" >
                         {{ form.theta_file.errors }}

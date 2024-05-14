@@ -13,39 +13,34 @@ FIXED = ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']
 def construct_automaton(aut_str):
     """construct an automaton from a string"""
 
-    aut_str = str(aut_str)
-
-    aut_str.strip()
+    aut_str = str(aut_str).strip()
     aut_str += "\n"
     try:
         return readOneFromString(aut_str)
-    except FAdoError:
+    except Exception: #UnexpectedCharacters, raised by lark grammar parser.     
+                      #was previously YappyError
         try:
-            aut_str.strip()
-            return reex.str2regexp(aut_str).toNFA()
+            return reex.str2regexp(aut_str.strip()).toNFA()
         except Exception:
             raise IncorrectFormat()
 
 def detect_automaton_type(aut_str):
     """construct an automaton from a string"""
 
-    aut_str = str(aut_str)
+    aut_str = str(aut_str).strip()
 
-    aut_str.strip()
     aut_str += "\n"
     try:
         readOneFromString(aut_str)
-
         return 'readOneFromString'
     except IndexError:
         try:
             readOneFromString(aut_str)
-
             return 'importFromGrailString'
-        except FAdoError:
+        except Exception: #UnexpectedCharacters, raised by lark grammar parser.     
+                          #was previously YappyError
             try:
-                aut_str.strip()
-                reex.str2regexp(aut_str).toNFA()
+                reex.str2regexp(aut_str.strip()).toNFA()
                 return 'str2regexp'
             except Exception:
                 raise IncorrectFormat("could not read from string")

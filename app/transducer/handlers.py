@@ -11,7 +11,7 @@ import FAdo.codes as codes
 from FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnknown, \
     ErrCorrectProp
 
-from FAdo.prax import GenWordDis, maximality_index, Dirichlet
+from FAdo.prax import GenWordDis, prax_maximal_nfa, Dirichlet
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
@@ -20,6 +20,7 @@ from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
 from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, apply_theta_antimorphism, reverse_theta_antimorphism
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
+AUTOMATON_INCORRECT_FORMAT = "The automaton or regular expression appears to be invalid."
 
 TRANSDUCER_TYPES = {
     'InputAltering': '2',
@@ -172,24 +173,11 @@ def handle_construction(
         result = handle_ipp(n_num, l_num, s_num, t_name, t_str, form)
 
     return result
-
-'''
-#stub function, this is going to be folded into handle_satisfaction_maximality
-def handle_approx_maximality (property_type, data, files, form):
-    aut_name = "Language: " + data.get('aut_name', 'N/A')
-    decision = "This function hasn't yet been implemented but will be soon!"
-    proof = None
-    if property_type == "1": # Fixed type
-        t_name = ""
-    t_name = 'Property: ' + data.get('trans_name', 'N/A')
-    return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-            'result':decision}#, 'proof': proof}
-     '''
     
-def check_approx_maximality(automaton, prop, eps, t): 
-    pdist = Dirichlet(t=t) #Dirichlet t is the same as the t in this function
-    wordDist = GenWordDis(pdist, automaton.Sigma, 0.05)
-    return maximality_index(wordDist, automaton, prop)
+def check_approx_maximality(automaton, prop, eps, t, disp): 
+    pdist = Dirichlet(t=t, d=disp) #Dirichlet t is the same as the t in this function argument
+    wordDist = GenWordDis(pdist, automaton.Sigma, eps)
+    return "Yes, the language is approximately maximal with respect to the property" if prax_maximal_nfa(wordDist, automaton, prop) else "No, the language is not maximal with respect to the property"
 
 def handle_satisfaction_maximality(
         property_type, question, data, files, form
@@ -220,7 +208,7 @@ def handle_satisfaction_maximality(
     try:
         aut = construct_automaton(aut_str)
     except (IncorrectFormat, TypeError): # Automata syntax error
-        return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
+        return {'form': form, 'error_message':AUTOMATON_INCORRECT_FORMAT,
                 'automaton': aut_name}
 
     # Check to see if the computation would be too computationally expensive
@@ -359,7 +347,7 @@ def handle_satisfaction_maximality(
         try:
             witness = prop.notSatisfiesW(aut)
         except TypeError:
-            decision = 'The automaton file appears to be incorrectly formatted.'
+            decision = AUTOMATON_INCORRECT_FORMAT
             return {'form':form, 'error_message': decision,
                     'automaton':aut_name, 'transducer':t_name}
 
@@ -379,7 +367,7 @@ def handle_satisfaction_maximality(
         except PropertyNotSatisfied:
             err = 'ERROR: the language does not satisfy the property.'
         except TypeError:
-            err = 'The automaton file appears to be incorrectly formatted.'
+            err = AUTOMATON_INCORRECT_FORMAT
 
         if err:
             return {'form':form, 'error_message': err,
@@ -397,8 +385,8 @@ def handle_satisfaction_maximality(
     elif question == "4":
         epsi = float(data.get('epsilon', 0.05))
         t = float(data.get('dirichletT', 2.0001))
-        maximality_index = check_approx_maximality(aut, prop, epsi, t)
-        decision = maximality_index
+        disp = int(data.get('displacement', 1))
+        decision = check_approx_maximality(aut, prop, epsi, t, disp)
         if t_name == "":
             return {'form': form, 'automaton': aut_name, 'result': decision}
         else: 
