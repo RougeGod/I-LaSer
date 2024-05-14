@@ -157,22 +157,21 @@ function setFields() {
 }
 
 function setFixedProperty() {
-    hide('div1');
-    hide('div2');
-    hide('div4');
+    hide('fixed_type');
+    hide('transducer_input');
+    hide('antimorphic_input');
     switch (document.getElementById('divsat_select').value) {
         case "1":
-            show('div1');
+            show('fixed_type');
             break;
         case "2":
-            show('div2');
         case "3":
         case "4":
-            show('div2');
+            show('transducer_input');
             break;
         case "5":
-            show('div2');
-            show('div4');
+            show('transducer_input');
+            show('antimorphic_input');
         default:
             break;
     }

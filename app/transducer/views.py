@@ -16,7 +16,7 @@ from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
-from app.transducer.handlers import handle_construction, handle_satisfaction_maximality, handle_approx_maximality
+from app.transducer.handlers import handle_construction, handle_satisfaction_maximality#, handle_approx_maximality
 from app.transducer.util import parse_aut_str
 
 try:
@@ -83,12 +83,10 @@ def get_response(data, files, form):
     if (property_type == '0'): #no property type was entered
          return {'form': form, 'error_message': "Please select a property type."}
 
-    if question in ['1', '2']:
+    if question in ['1', '2', '4']:
         return handle_satisfaction_maximality(property_type, question, data, files, form)
     elif question == '3':
         return handle_construction(property_type, data, files, form)
-    elif question == '4':
-        return handle_approx_maximality(property_type, data, files, form) #we know what question is, it's 4
 
 def get_code(data, files, form=True, test_mode=None):
     """
@@ -132,7 +130,13 @@ def get_code(data, files, form=True, test_mode=None):
         transducer = parsed.get('transducer')
         transducer_type = parsed.get('transducer_type')
         trajectory = parsed.get('trajectory')
+        
 
+        DEFAULT_EPSI = 0.01
+        DEFAULT_DIRIC = 2.001
+        epsi = float(data.get('epsilon')) if data.get('epsilon') is not None else DEFAULT_EPSI
+        dirichletT = float(data.get('dirichletT')) if data.get('dirichletT') is not None else DEFAULT_DIRIC    
+        
         if fixed_type and not property_type: #if we somehow have a fixed property type set without a property type set, assume property type is "fixed"
             property_type = '1'
 
@@ -187,7 +191,7 @@ def get_code(data, files, form=True, test_mode=None):
     if not property_type:
         return error('Please provide a property type.')
     elif property_type == '2':
-        if question in ['1', '2']:
+        if question in ['1', '2', '4']:
             sigma = aut.Sigma
         elif question == '3':
             sigma = set()
@@ -242,7 +246,7 @@ def get_code(data, files, form=True, test_mode=None):
         test = 'MAXP'
 
     prog_lines = gen_program(name, prop, test, aut_str, aut_type, t_str, sigma, regexp,
-                             description, test_mode, s_num, l_num, n_num, theta)
+                             description, test_mode, s_num, l_num, n_num, theta, dirichletT, epsi)
 
     if test_mode is not None:
         return prog_lines

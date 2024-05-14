@@ -11,7 +11,7 @@ import FAdo.codes as codes
 from FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnknown, \
     ErrCorrectProp
 
-from FAdo.prax import 
+from FAdo.prax import GenWordDis, maximality_index, Dirichlet
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
@@ -34,6 +34,10 @@ except django.core.exceptions.ImproperlyConfigured:
     LIMIT = 500000
     LIMIT_AUTOMATON = 250
 
+
+def error(err):
+    """Formats an error using the given string"""
+    return {'form': form, 'error_message': err}
 
 def handle_iap(
         n_num, l_num, s_num,
@@ -169,6 +173,8 @@ def handle_construction(
 
     return result
 
+'''
+#stub function, this is going to be folded into handle_satisfaction_maximality
 def handle_approx_maximality (property_type, data, files, form):
     aut_name = "Language: " + data.get('aut_name', 'N/A')
     decision = "This function hasn't yet been implemented but will be soon!"
@@ -178,17 +184,17 @@ def handle_approx_maximality (property_type, data, files, form):
     t_name = 'Property: ' + data.get('trans_name', 'N/A')
     return {'form':form, 'automaton':aut_name, 'transducer':t_name,
             'result':decision}#, 'proof': proof}
-     
+     '''
     
+def check_approx_maximality(automaton, prop, eps, t): 
+    pdist = Dirichlet(t=t) #Dirichlet t is the same as the t in this function
+    wordDist = GenWordDis(pdist, automaton.Sigma, 0.05)
+    return maximality_index(wordDist, automaton, prop)
 
 def handle_satisfaction_maximality(
         property_type, question, data, files, form
     ):
     """This method handles satisfaction and maximality choices."""
-
-    def error(err):
-        """Formats an error using the given string"""
-        return {'form': form, 'error_message': err}
 
     # Try and get an automata file from the file/text uploaded.
     aut_str = data.get('automata_text')
@@ -389,3 +395,13 @@ def handle_satisfaction_maximality(
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                 'result':decision, 'proof': proof}
     elif question == "4":
+        epsi = float(data.get('epsilon', 0.05))
+        t = float(data.get('dirichletT', 2.0001))
+        maximality_index = check_approx_maximality(aut, prop, epsi, t)
+        decision = maximality_index
+        if t_name == "":
+            return {'form': form, 'automaton': aut_name, 'result': decision}
+        else: 
+            return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+                    'result':decision}
+            

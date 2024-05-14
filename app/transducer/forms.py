@@ -7,6 +7,7 @@ import logging
 
 from app.transducer.util import parse_aut_str
 
+
 PROPERTY_TYPE_CHOICE = (('0', '-Please Select-'),
                         ('1', 'Fixed (UD code, prefix code, suffix code,...)'),
                         ('2', 'Trajectory or Input-Altering Transducer '),
@@ -83,8 +84,9 @@ class UploadFileForm(forms.Form):
     l_int = forms.IntegerField(required=False)
 
     EPS = 1e-5
-    epsilon = forms.DecimalField(required=False, min_value=EPS, max_value=1-EPS)
-    dirichletT = forms.DecimalField(required=False, min_value=1)
+    epsilon = forms.DecimalField(required=False, min_value=EPS, max_value=1-EPS, initial=0.01)
+    dirichletT = forms.DecimalField(required=False, min_value=1, initial=2.001)
+    displacement = forms.IntegerField(required=False, min_value=1, initial=1)
 
     def clean_theta_file(self):
         """Clean the data of the automata file"""
@@ -164,8 +166,6 @@ class UploadFileForm(forms.Form):
             pass
         else:
             data['theta_text'] = re.sub(r'\r', '', str(data['theta_text']))
-            data
-
         data['automata_text'] = re.sub(r'\r', '', str(data['automata_text']))
 
         return data

@@ -28,6 +28,7 @@ BUILD_NAME = {"CODE": ("buildUDCodeProperty", ["ssigma"], 1),
 
 TESTS = {"MAXP": "maximalP",
          "MAXW": "notMaximalW",
+         "AMAX": "maximality_index",
          "SATP": "satisfiesP",
          "SATW": "notSatisfiesW",
          "NONEMPTYW": "Aut.inIntersection(a).outIntersection(theta_aut).nonEmptyW",
@@ -94,7 +95,7 @@ def the_prologue(request=None):
     from FAdo.reex import *
     from FAdo.codes import *
     from FAdo.fio import *
-    #from FAdo.prax import *
+    from FAdo.prax import *
     import base64
     import copy
 except:
@@ -174,8 +175,8 @@ def apply_theta_antimorphism(aut, theta):
 """)
 
     list_.extend([
-        "tx = \"%s\"" % base64.b64encode(theta_str),
-        "tt = parse_theta_str(str(base64.b64decode(tx))[2:-1])",
+        "tx = \"%s\"" % base64.b64encode(theta_str.encode(encoding="utf-8")),
+        "tt = parse_theta_str(base64.b64decode(tx).decode(encoding='utf-8')",
         "theta_aut = apply_theta_antimorphism(a, tt)"
     ])
 
@@ -184,7 +185,7 @@ def program_lines(
         ptype, test=None, aut_str=None, aut_type="readOneFromString",
         strexp=None, sigma=None, t_str=None,
         s_num=None, l_num=None, n_num=None,
-        theta_str=None
+        theta_str=None, dirichletT=None, epsi=None
     ):
     "Generates the program"
 
@@ -201,8 +202,8 @@ def program_lines(
         if BUILD_NAME[ptype][2] == 1:
             string = ''
             if t_str:
-                list_.append("tx = \"%s\"\n" % base64.b64encode(t_str))
-                list_.append("t = str(base64.b64decode(tx))[2:-1]\n")
+                list_.append("tx = %s\n" % base64.b64encode(t_str.encode(encoding="utf-8")))
+                list_.append("t = str(base64.b64decode(tx).decode(encoding='utf-8'))\n")
             else:
                 string += "alp = set()\nfor i in range(int(s_num)):\n    alp.add(str(i))\n"
                 string += "ssigma = alp\n"
@@ -228,17 +229,23 @@ def program_lines(
         if aut_str and not aut_str.endswith('\n'):
             aut_str = aut_str + '\n'
 
-        list_.append("ax = \"%s\"\n" % base64.b64encode(aut_str))
+        list_.append("ax = %s\n" % base64.b64encode(aut_str.encode(encoding='utf-8')))
 
-        list_.append("a = %s(str(base64.b64decode(ax))%s[2:-1])\n" % (PARSERS_BEFORE[aut_type], PARSERS_AFTER[aut_type]))
+        list_.append("a = %s(str(base64.b64decode(ax).decode(encoding='utf-8'))%s)\n" % (PARSERS_BEFORE[aut_type], PARSERS_AFTER[aut_type]))
+    
+        if (test == "AMAX"):
+            if dirichletT is None: 
+                dirichletT = 2.001
+            list_.append("epsi = %f\n" % epsi)   
+            list_.append("dirichT = %f\n" % dirichletT)
 
         if theta_str:
             theta_helper_methods(theta_str, list_)
 
         if BUILD_NAME[ptype][2] == 1:
             if t_str:
-                list_.extend(["tx = \"%s\"\n" % base64.b64encode(t_str),
-                              "t = str(base64.b64decode(tx))[2:-1]\n"])
+                list_.extend(["tx = \"%s\"\n" % base64.b64encode(t_str.encode(encoding='utf-8')),
+                              "t = str(base64.b64decode(tx).decode(encoding='utf-8'))\n"])
             string = "ssigma = a.Sigma\n"
             string += "p = " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -247,8 +254,12 @@ def program_lines(
                 else:
                     string += "%s," % expand(s_1)
             string = string[:-1] + ")\n"
-
-            ans = "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
+            
+            if (test == "AMAX"):
+                ans = "answer = maximality_index(GenWordDis(Dirichlet(t=%s), a, p))" % dirichletT
+            else: 
+                ans = "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
+            
 
             list_.extend([string, ans, "print(answer)\n"])
         else:
@@ -261,7 +272,7 @@ def program_lines(
 
 def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="readOneFromString",
                 t_str=None, sigma=None, regexp=None, request=None, test_mode=None, s_num=None,
-                l_num=None, n_num=None, theta_str=None):
+                l_num=None, n_num=None, theta_str=None, dirichletT=None, epsi=None):
     """
     :param str file_name: name of the generated program (.zip)
     :param str prop_type: key of the property name
@@ -272,13 +283,15 @@ def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="re
     :param str regexp: the regular expression for trajectories
     :param str request: description of request for which to generate program
     :param bool test_mode: whether the method is used for testing
+    :param float dirichletT: the T parameter to the Dirichlet Distribution
+    :param float epsi; A value between 0 and 1
     :rtype: list
     """
 
     lines = program_lines(prop_type, test_name, aut_str,
                           aut_type, regexp, sigma, t_str,
                           s_num, l_num, n_num,
-                          theta_str)
+                          theta_str, dirichletT, epsi)
 
     if (test_mode is None) or (not test_mode):
         stand_alone(file_name, lines, request)
