@@ -15,9 +15,9 @@ urlpatterns = [
     # Example:
     re_path(r'^$', views.index, name='index'),
     re_path(r'^$', views_others.index, name='index'),
-    re_path(r'^independence/$', views.upload_file, name='independence'),
-    re_path(r'^others/$', views_others.upload_file, name='others'),
-    re_path(r'^transducer/$', views.upload_file, name='transducer'),
+    re_path(r'^independence/?$', views.upload_file, name='independence'),
+    re_path(r'^others/?$', views_others.upload_file, name='others'),
+    re_path(r'^transducer/?$', views.upload_file, name='transducer'),
     re_path(r'^media/([0-9]+.zip)$', \
         serve, \
         {'document_root': settings.MEDIA_ROOT})

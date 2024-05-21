@@ -15,6 +15,7 @@ def construct_automaton(aut_str):
 
     aut_str = str(aut_str).strip()
     aut_str += "\n"
+
     try:
         return readOneFromString(aut_str)
     except Exception: #UnexpectedCharacters, raised by lark grammar parser.     
@@ -33,17 +34,12 @@ def detect_automaton_type(aut_str):
     try:
         readOneFromString(aut_str)
         return 'readOneFromString'
-    except IndexError:
+    except Exception: #UnexpectedCharacters
         try:
-            readOneFromString(aut_str)
-            return 'importFromGrailString'
-        except Exception: #UnexpectedCharacters, raised by lark grammar parser.     
-                          #was previously YappyError
-            try:
-                reex.str2regexp(aut_str.strip()).toNFA()
-                return 'str2regexp'
-            except Exception:
-                raise IncorrectFormat("could not read from string")
+            reex.str2regexp(aut_str.strip()).toNFA()
+            return 'str2regexp'
+        except Exception:
+            raise IncorrectFormat("could not read from string")
 
 def construct_input_alt_prop(t_str, sigma, gen=False):
     """Construct an input-altering property"""

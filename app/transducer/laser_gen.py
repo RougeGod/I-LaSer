@@ -28,7 +28,7 @@ BUILD_NAME = {"CODE": ("buildUDCodeProperty", ["ssigma"], 1),
 
 TESTS = {"MAXP": "maximalP",
          "MAXW": "notMaximalW",
-         "AMAX": "maximality_index",
+         "AMAX": "prax_maximal_nfa",
          "SATP": "satisfiesP",
          "SATW": "notSatisfiesW",
          "NONEMPTYW": "Aut.inIntersection(a).outIntersection(theta_aut).nonEmptyW",
@@ -175,7 +175,7 @@ def apply_theta_antimorphism(aut, theta):
 """)
 
     list_.extend([
-        "tx = \"%s\"" % base64.b64encode(theta_str.encode(encoding="utf-8")),
+        "tx = %s" % base64.b64encode(theta_str.encode(encoding="utf-8")),
         "tt = parse_theta_str(base64.b64decode(tx).decode(encoding='utf-8')",
         "theta_aut = apply_theta_antimorphism(a, tt)"
     ])
@@ -185,7 +185,7 @@ def program_lines(
         ptype, test=None, aut_str=None, aut_type="readOneFromString",
         strexp=None, sigma=None, t_str=None,
         s_num=None, l_num=None, n_num=None,
-        theta_str=None, dirichletT=None, epsi=None
+        theta_str=None, dirichletT=None, epsi=None, displacement=None
     ):
     "Generates the program"
 
@@ -231,13 +231,18 @@ def program_lines(
 
         list_.append("ax = %s\n" % base64.b64encode(aut_str.encode(encoding='utf-8')))
 
-        list_.append("a = %s(str(base64.b64decode(ax).decode(encoding='utf-8'))%s)\n" % (PARSERS_BEFORE[aut_type], PARSERS_AFTER[aut_type]))
+        list_.append("a = %s(str(base64.b64decode(ax).decode(encoding='utf-8').strip()+%s))%s\n" % (PARSERS_BEFORE[aut_type], "\"\\n\"" if PARSERS_BEFORE[aut_type] == "readOneFromString" else "\"\"", PARSERS_AFTER[aut_type])) #regular expression parsing needs no newline, but readOneFromString requires a newline at the end of the file, so add in a literal "\n" if we're reading an automaton from string 
     
         if (test == "AMAX"):
             if dirichletT is None: 
                 dirichletT = 2.001
+            if epsi is None: 
+                epsi = 0.01
+            if displacement is None:
+                displacement = 1
             list_.append("epsi = %f\n" % epsi)   
             list_.append("dirichT = %f\n" % dirichletT)
+            list_.append("disp = %f\n" % displacement)
 
         if theta_str:
             theta_helper_methods(theta_str, list_)
@@ -255,13 +260,13 @@ def program_lines(
                     string += "%s," % expand(s_1)
             string = string[:-1] + ")\n"
             
-            if (test == "AMAX"):
-                ans = "answer = maximality_index(GenWordDis(Dirichlet(t=%s), a, p))" % dirichletT
+            if (test == "AMAX"): #approximate maximality code has very different syntax so gets a special case
+                ans = "answer = %s(GenWordDis(Dirichlet(t=%s, d=%s), ssigma, %s), a, p)" % (TESTS["AMAX"], dirichletT, displacement, epsi)
             else: 
                 ans = "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
             
 
-            list_.extend([string, ans, "print(answer)\n"])
+            list_.extend([string, ans, "print(answer) \n"])
         else:
             string = "print(" + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -272,7 +277,7 @@ def program_lines(
 
 def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="readOneFromString",
                 t_str=None, sigma=None, regexp=None, request=None, test_mode=None, s_num=None,
-                l_num=None, n_num=None, theta_str=None, dirichletT=None, epsi=None):
+                l_num=None, n_num=None, theta_str=None, dirichletT=None, epsi=None, displacement=None):
     """
     :param str file_name: name of the generated program (.zip)
     :param str prop_type: key of the property name
@@ -285,13 +290,14 @@ def gen_program(file_name, prop_type, test_name=None, aut_str=None, aut_type="re
     :param bool test_mode: whether the method is used for testing
     :param float dirichletT: the T parameter to the Dirichlet Distribution
     :param float epsi; A value between 0 and 1
+    :param displacement An integer value used for approximate maximality
     :rtype: list
     """
 
     lines = program_lines(prop_type, test_name, aut_str,
                           aut_type, regexp, sigma, t_str,
                           s_num, l_num, n_num,
-                          theta_str, dirichletT, epsi)
+                          theta_str, dirichletT, epsi, displacement)
 
     if (test_mode is None) or (not test_mode):
         stand_alone(file_name, lines, request)

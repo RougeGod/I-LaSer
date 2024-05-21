@@ -1,4 +1,4 @@
-"""
+F"""
 The views.py program receives the requests of the user
 and creates the appropriate automata/transducers to
 test the decision question.
@@ -27,12 +27,13 @@ except django.core.exceptions.ImproperlyConfigured:
     LIMIT_AUTOMATON = 250
 
 DECIDE_REQUEST = 'Decide whether the given language '
+#These next two dictionaries are used in the code generation but do not appear on the website. 
 TEST_DICT = {'1': 'SATW', '2': 'MAXW', '3': 'MKCO', '4':'AMAX'}
 DESCRIBE = {'1': DECIDE_REQUEST + 'satisfies the given property. \
 If no, return a witness; else return Nones.', #Satisfaction
-            '2': DECIDE_REQUEST+'is maximal. If no, return a witness; else return None.',#Maximality
+            '2': DECIDE_REQUEST+'is maximal.',#Maximality
             '3': 'Construct set of words satisfying the given property.', #Construction
-            '4': DECIDE_REQUEST + 'is approximately maximal given an &epsi;'} #Approximate Maximality
+            '4': DECIDE_REQUEST + 'is epsilon-maximal.'} #Approximate Maximality
 FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'INFIX',
               '4': 'OUTFIX', '5': 'HYPERCODE', '6': 'CODE'}
 
@@ -131,11 +132,18 @@ def get_code(data, files, form=True, test_mode=None):
         transducer_type = parsed.get('transducer_type')
         trajectory = parsed.get('trajectory')
         
+        def convertToCorrectType(value, default, desiredType=float): 
+            try: 
+                return desiredType(value)
+            except (ValueError, TypeError):
+                return default
 
         DEFAULT_EPSI = 0.01
         DEFAULT_DIRIC = 2.001
-        epsi = float(data.get('epsilon')) if data.get('epsilon') is not None else DEFAULT_EPSI
-        dirichletT = float(data.get('dirichletT')) if data.get('dirichletT') is not None else DEFAULT_DIRIC    
+        DEFAULT_DISP = 1
+        epsi = convertToCorrectType(data.get("epsilon"), DEFAULT_EPSI)
+        dirichletT = convertToCorrectType(data.get("dirichletT"), DEFAULT_EPSI)
+        displacement = convertToCorrectType(data.get("displacement"), DEFAULT_DISP, desiredType=int)
         
         if fixed_type and not property_type: #if we somehow have a fixed property type set without a property type set, assume property type is "fixed"
             property_type = '1'
