@@ -240,9 +240,6 @@ def program_lines(
                 epsi = 0.01
             if displacement is None:
                 displacement = 1
-            list_.append("epsi = %f\n" % epsi)   
-            list_.append("dirichT = %f\n" % dirichletT)
-            list_.append("disp = %f\n" % displacement)
 
         if theta_str:
             theta_helper_methods(theta_str, list_)

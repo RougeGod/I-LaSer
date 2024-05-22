@@ -44,11 +44,10 @@ def detect_automaton_type(aut_str):
 def construct_input_alt_prop(t_str, sigma, gen=False):
     """Construct an input-altering property"""
 
-    t_str.strip()
-    t_str += "\n"
+    t_str = t_str.strip()
 
     try:
-        result = readOneFromString(t_str)
+        result = readOneFromString(t_str + "\n") #newline no longer added in handlers.py since it breaks regex parsing, add it in when needed
         if isinstance(result, (NFA, DFA)):
             if gen:
                 return 'INALT'
@@ -57,13 +56,13 @@ def construct_input_alt_prop(t_str, sigma, gen=False):
             if gen:
                 return 'TRAJECT'
             return TrajProp(result, sigma)
-    except FAdoError:
-        try:
+    except Exception: #UnexpectedCharacters
+        #try:
             if gen:
                 return 'TRAJECT'
             return buildTrajPropS(t_str, sigma)
-        except Exception:
-            raise IncorrectFormat
+       # except Exception:
+        #    raise IncorrectFormat
 
 def format_counter_example(witness, theta=False):
     """Using a witness object, output a string that shows an example where a property fails."""

@@ -190,8 +190,7 @@ def get_code(data, files, form=True, test_mode=None):
         if not t_str:
             return error('Please provide a property file.')
         else:
-            t_str.strip()
-            t_str = t_str + '\n'
+            t_str = t_str.strip()
 
     theta = None
 

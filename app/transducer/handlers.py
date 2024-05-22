@@ -155,10 +155,7 @@ def handle_construction(
         return {'form': form, 'construct_path': '',
                 'construct_text': '', 'result': result}
 
-    t_str = re.sub(r'\r', '', data.get('transducer_text'))
-
-    t_str.strip()
-    t_str += "\n"
+    t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
 
     t_name = data.get('trans_name', 'N/A')
 
@@ -250,11 +247,7 @@ def handle_satisfaction_maximality(
     # User-Input Property
     else:
         # Check for a transducer file
-        t_str = re.sub(r'\r', '', data.get('transducer_text'))
-
-        t_str.strip()
-        t_str += '\n'
-
+        t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
         t_name = 'Property: ' + data.get('trans_name', 'N/A')
 
         if transducer:
