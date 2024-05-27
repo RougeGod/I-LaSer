@@ -45,16 +45,15 @@ def openfile(file_):
 
 def make_prog(lines, request):
     """makes program out of the given lines, omitting I/O statements, or replacing them with pass"""
-    plines = generate_program_file(lines, None, request).split("\n")
+    plines = generate_program_file(lines, None, request, test=True).split("\n")
     len_ = len(plines)
     prog = ''
+    #remove all "input" and "print" statements so that generated programs can 
+    #be automatically tested
     for i in range(len_):
-        if string.find(plines[i], "raw_input") == 0:
+        if plines[i].find("input(") != -1:
             continue
-        if string.find(plines[i], "print") == 0:
+        if plines[i].find("print(") != -1 and plines[i].find("answer)") != -1: #do print the answer, nothing more
             continue
-        if string.find(plines[i].strip(), "print") == 0:
-            prog = prog + "    pass"
-        else:
-            prog = prog+plines[i]+'\n'
+        prog = prog+plines[i]+'\n'
     return prog

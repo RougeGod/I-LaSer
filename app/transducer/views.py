@@ -1,4 +1,4 @@
-F"""
+"""
 The views.py program receives the requests of the user
 and creates the appropriate automata/transducers to
 test the decision question.
@@ -13,7 +13,7 @@ from FAdo.fio import readOneFromString, NFA, DFA
 import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 
-from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop
+from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop, convertToCorrectType
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality#, handle_approx_maximality
@@ -44,6 +44,8 @@ TRANSDUCER_TYPES = {
     'ErrorDetecting': '3',
     'ErrorCorrecting': '4',
 }
+
+
 
 def upload_file(request):
     """This method handles the parsing of a file uploaded from the website."""
@@ -81,8 +83,8 @@ def get_response(data, files, form):
 
     if not question: #User clicked submit without specifying question
         return {'form': form, 'error_message': "Please select a question."}
-    if (property_type == '0'): #no property type was entered
-         return {'form': form, 'error_message': "Please select a property type."}
+    #if (property_type == '0'): #no property type was entered (entering property type is unnecessary as automaton text area may contain a property description in the form of a transducer)
+    #     return {'form': form, 'error_message': "Please select a property type."}
 
     if question in ['1', '2', '4']:
         return handle_satisfaction_maximality(property_type, question, data, files, form)
@@ -117,6 +119,13 @@ def get_code(data, files, form=True, test_mode=None):
     aut_str = t_str = ''
     transducer = fixed_type = transducer_type = trajectory = None
 
+    DEFAULT_EPSI = 0.01
+    DEFAULT_DIRIC = 2.001
+    DEFAULT_DISP = 1
+    epsi = convertToCorrectType(data.get("epsilon"), DEFAULT_EPSI)
+    dirichletT = convertToCorrectType(data.get("dirichletT"), DEFAULT_EPSI)
+    displacement = convertToCorrectType(data.get("displacement"), DEFAULT_DISP, desiredType=int)
+
     # Automaton String, or number generation
     if question in ['1', '2', '4']: # Satisfaction, maximality, approx-maximality
         aut_str = data.get('automata_text')
@@ -131,20 +140,7 @@ def get_code(data, files, form=True, test_mode=None):
         transducer = parsed.get('transducer')
         transducer_type = parsed.get('transducer_type')
         trajectory = parsed.get('trajectory')
-        
-        def convertToCorrectType(value, default, desiredType=float): 
-            try: 
-                return desiredType(value)
-            except (ValueError, TypeError):
-                return default
-
-        DEFAULT_EPSI = 0.01
-        DEFAULT_DIRIC = 2.001
-        DEFAULT_DISP = 1
-        epsi = convertToCorrectType(data.get("epsilon"), DEFAULT_EPSI)
-        dirichletT = convertToCorrectType(data.get("dirichletT"), DEFAULT_EPSI)
-        displacement = convertToCorrectType(data.get("displacement"), DEFAULT_DISP, desiredType=int)
-        
+              
         if fixed_type and not property_type: #if we somehow have a fixed property type set without a property type set, assume property type is "fixed"
             property_type = '1'
 
@@ -182,6 +178,7 @@ def get_code(data, files, form=True, test_mode=None):
 
             if transducer_type:
                 property_type = TRANSDUCER_TYPES[transducer_type]
+
         elif trajectory:
             t_str = re.sub(r'\r', '', trajectory)
 
@@ -214,7 +211,7 @@ def get_code(data, files, form=True, test_mode=None):
     # Input-Preserving Property
     elif property_type == '3':
         try:
-            IPTProp(readOneFromString(t_str)) # Input Preserving Transducer Property
+            IPTProp(readOneFromString(t_str + "\n")) # Input Preserving Transducer Property
         except AttributeError:
             return error(PROPERTY_INCORRECT_FORMAT)
 
@@ -223,17 +220,17 @@ def get_code(data, files, form=True, test_mode=None):
     # Error-Correction
     elif property_type == '4':
         try:
-            ErrCorrectProp(readOneFromString(t_str))
+            ErrCorrectProp(readOneFromString(t_str + "\n"))
         except AttributeError:
             return error(PROPERTY_INCORRECT_FORMAT)
         prop = 'ERRCORR'
 
-    elif property_type == '5': #there currently is no property 5
+    elif property_type == '5': #Theta-transducer property
         sigma = aut.Sigma
         theta = data.get('theta_text')
 
         try:
-            IPTProp(readOneFromString(t_str))
+            IPTProp(readOneFromString(t_str + "\n"))
             prop = 'INPRES'
         except AttributeError:
             try:
@@ -253,7 +250,7 @@ def get_code(data, files, form=True, test_mode=None):
         test = 'MAXP'
 
     prog_lines = gen_program(name, prop, test, aut_str, aut_type, t_str, sigma, regexp,
-                             description, test_mode, s_num, l_num, n_num, theta, dirichletT, epsi)
+                             description, test_mode, s_num, l_num, n_num, theta, dirichletT, epsi, displacement)
 
     if test_mode is not None:
         return prog_lines

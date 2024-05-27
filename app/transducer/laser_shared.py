@@ -5,6 +5,7 @@ from FAdo.codes import IATProp, buildTrajPropS, TrajProp
 from FAdo.fa import DFA, NFA
 from FAdo.common import FAdoError
 import FAdo.fl as fl
+from lark import UnexpectedCharacters
 
 from app.transducer.util import list_to_string, long_to_base
 
@@ -14,29 +15,23 @@ def construct_automaton(aut_str):
     """construct an automaton from a string"""
 
     aut_str = str(aut_str).strip()
-    aut_str += "\n"
-
     try:
-        return readOneFromString(aut_str)
-    except Exception: #UnexpectedCharacters, raised by lark grammar parser.     
-                      #was previously YappyError
+        return readOneFromString(aut_str + "\n")
+    except UnexpectedCharacters: #If the string is a regex
         try:
-            return reex.str2regexp(aut_str.strip()).toNFA()
-        except Exception:
+            return reex.str2regexp(aut_str).toNFA()
+        except Exception: #anything goes wrong with the regex parsing 
             raise IncorrectFormat()
 
 def detect_automaton_type(aut_str):
     """construct an automaton from a string"""
-
     aut_str = str(aut_str).strip()
-
-    aut_str += "\n"
     try:
-        readOneFromString(aut_str)
+        readOneFromString(aut_str + "\n")
         return 'readOneFromString'
-    except Exception: #UnexpectedCharacters
+    except UnexpectedCharacters:
         try:
-            reex.str2regexp(aut_str.strip()).toNFA()
+            reex.str2regexp(aut_str).toNFA()
             return 'str2regexp'
         except Exception:
             raise IncorrectFormat("could not read from string")
@@ -56,13 +51,20 @@ def construct_input_alt_prop(t_str, sigma, gen=False):
             if gen:
                 return 'TRAJECT'
             return TrajProp(result, sigma)
-    except Exception: #UnexpectedCharacters
-        #try:
+    except UnexpectedCharacters:
+        try:
             if gen:
                 return 'TRAJECT'
             return buildTrajPropS(t_str, sigma)
-       # except Exception:
-        #    raise IncorrectFormat
+        except Exception:
+            raise IncorrectFormat
+
+def convertToCorrectType(value, default, desiredType=float): 
+    '''Converts a value to any desired type, if this is not possible, supply a default'''
+    try: 
+        return desiredType(value)
+    except (ValueError, TypeError):
+        return default
 
 def format_counter_example(witness, theta=False):
     """Using a witness object, output a string that shows an example where a property fails."""
@@ -102,10 +104,18 @@ def isLimitExceedForEditDist(automaton):
 
 
 def limit_aut_prop(aut, limit):
-    """Does something with limits"""
+    """Tells whether or not the automaton is too complicated for web computation"""
     return len(aut.delta) >= limit
 
-
+def is_subset(aut, transducer):
+    '''Tests whether the automaton's alphabet is a subset of the transducer's
+       Returns "trajectory" if the property is a trajectory. This will evaluate
+       to true '''
+    if (type(transducer) == TrajProp):
+        return "trajectory"
+    else:
+        return all([(letter in transducer.Sigma) for letter in aut.Sigma])
+    
 def limit_tran_prop(aut_delta, tran_delta, limit, lang_size=0):
     """Find if the calculation would be too long to do on the server"""
     size = lang_size

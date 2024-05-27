@@ -68,7 +68,7 @@ def stand_alone(name, lines, request=None):
     os.system("find %s -regextype sed -regex '.*[0-9]\{13\}.zip' \
     -mtime +1 -exec rm -rf {} \;" % PATH)
 
-def generate_program_file(lines, name=None, request=None):
+def generate_program_file(lines, name=None, request=None, test=False):
     """
     Generation of the stand alone program
     :param list lines: list of the commands to include
@@ -76,7 +76,7 @@ def generate_program_file(lines, name=None, request=None):
     :param str request: the description of the request for which to generate program
     :rtype: str
     """
-    prog = the_prologue(request)
+    prog = the_prologue(request, testing=test)
     for line in lines:
         prog += line + "\n"
     prog += the_epilogue()
@@ -86,7 +86,7 @@ def generate_program_file(lines, name=None, request=None):
         file_.close()
     return prog
 
-def the_prologue(request=None):
+def the_prologue(request=None, testing=False):
     """
     Returns the import statements for the program
     :param str request: the description of the request for which to generate program
@@ -103,15 +103,18 @@ except:
     exit()
 
 """
-    if request is not None:
-        pro += "print(\"\\nREQUEST:\\n" + request + "\")\n"
-    pro += "print(\"\\nANSWER:\\n\"),\n"
+    if testing is False:
+        if request is not None:
+            pro += "print(\"\\nREQUEST:\\n" + request + "\")\n"
+        pro += "print(\"\\nANSWER:\\n\"),\n"
     return pro
 
-def the_epilogue():
+def the_epilogue(test=False):
     """
     :rtype: str"""
-    return "input('\\nPress <enter> to quit.')\n"
+    if test is False:
+        return "input('\\nPress <enter> to quit.')\n"
+    return None
 
 def theta_helper_methods(theta_str, list_):
     """Add the helper methods for theta-transducer properties."""
@@ -185,7 +188,8 @@ def program_lines(
         ptype, test=None, aut_str=None, aut_type="readOneFromString",
         strexp=None, sigma=None, t_str=None,
         s_num=None, l_num=None, n_num=None,
-        theta_str=None, dirichletT=None, epsi=None, displacement=None
+        theta_str=None, dirichletT=None, epsi=None, displacement=None,
+        testing=False
     ):
     "Generates the program"
 
@@ -203,7 +207,7 @@ def program_lines(
             string = ''
             if t_str:
                 list_.append("tx = %s\n" % base64.b64encode(t_str.encode(encoding="utf-8")))
-                list_.append("t = str(base64.b64decode(tx).decode(encoding='utf-8'))\n")
+                list_.append("t = str(base64.b64decode(tx).decode(encoding='utf-8'))" + (".strip()" if ptype=="TRAJECT" else "") + "\n")
             else:
                 string += "alp = set()\nfor i in range(int(s_num)):\n    alp.add(str(i))\n"
                 string += "ssigma = alp\n"
@@ -216,7 +220,8 @@ def program_lines(
             string = string[:-1] + ")\n"
             list_.extend([string,
                           'a, answer = p.%s(n_num, l_num, s_num)\n' % TESTS[test],
-                          'print(\nfor w in answer:\n    print w\n)'])
+                          '\nfor w in answer:\n    print(w)\n' if not testing else ''])
+                          #don't print the answer if running in s test environment
         else:  # this is probably not needed
             string = "print(" + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -246,7 +251,7 @@ def program_lines(
 
         if BUILD_NAME[ptype][2] == 1:
             if t_str:
-                list_.extend(["tx = \"%s\"\n" % base64.b64encode(t_str.encode(encoding='utf-8')),
+                list_.extend(["tx = %s\n" % base64.b64encode(t_str.encode(encoding='utf-8')).strip(),
                               "t = str(base64.b64decode(tx).decode(encoding='utf-8'))\n"])
             string = "ssigma = a.Sigma\n"
             string += "p = " + BUILD_NAME[ptype][0] + "("

@@ -9,15 +9,17 @@ from FAdo.fio import readOneFromString
 
 import FAdo.codes as codes
 from FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnknown, \
-    ErrCorrectProp
+    ErrCorrectProp, buildErrorDetectPropS
 
 from FAdo.prax import GenWordDis, prax_maximal_nfa, Dirichlet
 
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
-     make_block_code, limit_theta_prop
+     make_block_code, limit_theta_prop, is_subset, convertToCorrectType
 
 from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, apply_theta_antimorphism, reverse_theta_antimorphism
+
+from lark import UnexpectedCharacters
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 AUTOMATON_INCORRECT_FORMAT = "The automaton or regular expression appears to be invalid."
@@ -36,9 +38,7 @@ except django.core.exceptions.ImproperlyConfigured:
     LIMIT_AUTOMATON = 250
 
 
-def error(err):
-    """Formats an error using the given string"""
-    return {'form': form, 'error_message': err}
+
 
 def handle_iap(
         n_num, l_num, s_num,
@@ -64,7 +64,7 @@ def handle_iap(
 
     # Attempt to create the code, that satisfies the given property.
     try:
-        _, witness = prop.makeCode(n_num, l_num, s_num)
+    _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
         return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
@@ -83,7 +83,7 @@ def handle_ipp(
     ):
     """Handle Input-preserving properties"""
     try:
-        prop = codes.buildErrorDetectPropS(t_str)
+        prop = buildErrorDetectPropS(t_str + "\n") #directly calls FAdo code so we need to add the newline here
     except AttributeError:
         return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
@@ -122,9 +122,9 @@ def handle_construction(
     # The post passes the sizes as string, so we need to parse them.
     # This has the added benefit of that if no numbers are given, it defaults to -1,
     # Which will fail!
-    n_num = data.get("n_int", -1)
-    s_num = data.get("s_int", -1)
-    l_num = data.get("l_int", -1)
+    n_num = convertToCorrectType(data.get("n_int"), -1, desiredType=int)
+    s_num = convertToCorrectType(data.get("s_int"), -1, desiredType=int)
+    l_num = convertToCorrectType(data.get("l_int"), -1, desiredType=int)
 
     err = ''
     # Checking number's validity
@@ -180,6 +180,9 @@ def handle_satisfaction_maximality(
         property_type, question, data, files, form
     ):
     """This method handles satisfaction and maximality choices."""
+    def error(err):
+        """Formats an error using the given string"""
+        return {'form': form, 'error_message': err}
 
     # Try and get an automata file from the file/text uploaded.
     aut_str = data.get('automata_text')
@@ -209,10 +212,16 @@ def handle_satisfaction_maximality(
                 'automaton': aut_name}
 
     # Check to see if the computation would be too computationally expensive
-    if limit_aut_prop(aut, LIMIT_AUTOMATON):
-        return {'form':form, 'error_message':
-                'Size of the automaton exceeds limit! (See "Technical Notes")',
-                'automaton':aut_name}
+    try:
+        if limit_aut_prop(aut, LIMIT_AUTOMATON):
+            return {'form':form, 'error_message':
+                    'Size of the automaton exceeds limit! (See "Technical Notes")',
+                    'automaton':aut_name}
+    except AttributeError: #only time I've gotten this is when multiple NFAs are given 
+                           #to readOneFromString, and it returns a list. I don't think that 
+                           #you should be able to enter multiple NFAs at once but I'll check with 
+                           #Stavros
+        return error("The automaton appears to be incorrectly formatted.")
     if property_type == "1": # Fixed type
         t_name = ""
         if fixed_type is None:
@@ -246,17 +255,15 @@ def handle_satisfaction_maximality(
 
     # User-Input Property
     else:
-        # Check for a transducer file
-        t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
         t_name = 'Property: ' + data.get('trans_name', 'N/A')
-
-        if transducer:
+        if transducer: # Check if the transducer was inputted in the NFA area
             t_str = re.sub(r'\r', '', transducer)
-
+        else: 
+            t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
             # transducer_type is a string identifier for the type of transducer.
             # Here we turn that into a number id.
-            if transducer_type:
-                property_type = TRANSDUCER_TYPES[transducer_type]
+        if transducer_type:
+            property_type = TRANSDUCER_TYPES[transducer_type]
         # If the parsed automaton string also contained a trajectory.
         elif trajectory:
             t_str = re.sub(r'\r', '', trajectory)
@@ -272,6 +279,8 @@ def handle_satisfaction_maximality(
         elif property_type == "2":
             try:
                 prop = construct_input_alt_prop(t_str, aut.Sigma)
+                if not is_subset(aut, prop):
+                    return error("The automaton's alphabet should be a subset of the transducer's")
             except (IncorrectFormat, TypeError):
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
@@ -279,32 +288,36 @@ def handle_satisfaction_maximality(
         # Error-Detection
         elif property_type == "3":
             try:
-                prop = IPTProp(readOneFromString(t_str))
-            except AttributeError:
+                prop = IPTProp(readOneFromString(t_str + "\n"))
+            except Exception: #catch-all, likely AttributeError or UnexpectedCharacters
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
 
         # Error-Correction
         elif property_type == "4":
             try:
-                prop = ErrCorrectProp(readOneFromString(t_str))
-            except AttributeError:
+                prop = ErrCorrectProp(readOneFromString(t_str + "\n"))
+                if not is_subset(aut, prop):
+                    return error("The automaton's alphabet should be a subset of the transducer's")
+            except Exception: #catch-all, likely AttributeError or UnexpectedCharacters
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
         elif property_type == '5': # We have to branch off, it is handled differently.
             try:
-                prop = IPTProp(readOneFromString(t_str))
-            except FAdoError:
+                prop = IPTProp(readOneFromString(t_str + "\n"))
+                if not is_subset(aut, prop):
+                    return error("The automaton's alphabet should be a subset of the transducer's")
+            except UnexpectedCharacters: #caused by inputting a trajectory
                 try:
                     prop = construct_input_alt_prop(t_str, aut.Sigma)
-                except (IncorrectFormat, TypeError):
+                except Exception: #not a parseable trajectory or transducer, error out
                     return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                             'automaton':aut_name, 'transducer':t_name}
 
             # Here is extra work for DNA Code Property
             try:
                 theta = parse_theta_str(data.get('theta_text'))
-            except AttributeError:
+            except Exception:
                 return {'form': form, 'error_message': 'Theta appears to be incorrectly formatted.',
                         'automaton': aut_name, 'transducer': t_name}
 

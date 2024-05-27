@@ -14,7 +14,7 @@ def long_to_base(num, base):
     list_ = []
     while num > 0:
         list_.append(num % base)
-        num /= base
+        num //= base
     return list_
 
 def create_fixed_property(alphabet, fixed_type):
@@ -125,21 +125,28 @@ def parse_aut_str(aut_str):
 
 # pylint:disable=C0201
 def parse_theta_str(theta_str):
-    """Parses the theta string into a dict used to convert automata"""
+    """Parses the theta string into a dict used to convert automata
+       Example: If the Theta string is:
+       @THETA
+       a t
+       c g
+       return a dictionary {a:t, t:a, c:g, g:c}"""
 
     match = re.search(r'^@THETA *\n(([\w\d] +[\w\d]\s*)+)', theta_str, re.IGNORECASE)
 
-    swaps = match.group(1)
+    swaps = match.group(1) #remove the @THETA, which is only used to determine whether 
+                           #it's an antimorphism and not used in creating it. 
 
-    result = {}
-    for swap in swaps.splitlines():
+    initial = {} #The initially entered 
+    reverse = {} 
+    for swap in swaps.splitlines(): #collect the swap from each of the lines and add those in
         tmp = swap.split(' ')
-        result[tmp[0]] = tmp[1]
+        initial[tmp[0]] = tmp[1] #contains the entered swaps
 
-    for key in result.keys():
-        result[result[key]] = key
+    for key in initial.keys():
+        reverse[initial[key]] = key #reverse each of the entered swaps, put that in its own dict
 
-    return result
+    return initial | reverse #the union of the two dictionaries, containing both forward and backward swaps
 
 def reverse_theta_antimorphism(word, theta):
     new_word = ''
