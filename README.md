@@ -57,9 +57,9 @@ this method, as expected, handles language construction. It can handle fixed pro
 
 `handle_ipp` is the method that handles language construction for input-preserving properties. If the calcultion is too large for the server to handle, it fails and alerts the user t generate the necessary python code to run it.
 
-#### `handle_satifaction_maximality`
+#### `handle_satisfaction_maximality`
 
-`handle_satifaction_maximality` handles, jointly (due to their similarity) questions of satisfaction and maximality of languages with repsect to a given property. This method is very large, but is difficult to split up due to its reliance on many local variables. a refactor of this method will eventually be necessary.
+`handle_satifaction_maximality` handles, jointly (due to their similarity) questions of satisfaction, maximality, and approximate maximality of languages with repsect to a given property. This method is very large, but is difficult to split up due to its reliance on many local variables and the similar code that all three questions share. a refactor of this method will eventually be necessary.
 
 ### `app/transducer/laser_gen.py`
 

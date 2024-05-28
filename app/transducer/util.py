@@ -63,9 +63,10 @@ def parse_aut_str(aut_str):
         'transducer_type': None
     }
 
+    '''Grail String: No longer supported
     if aut_str.strip().startswith('(START)'):
         result['aut_str'] = aut_str
-        return result
+        return result'''
 
     if count == 0: # Trajectory and Regex
         res = re.search(r'(.+?)\n([\s\S]+)', aut_str)

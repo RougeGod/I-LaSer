@@ -19,6 +19,8 @@ from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality#, handle_approx_maximality
 from app.transducer.util import parse_aut_str
 
+from lark import UnexpectedCharacters
+
 try:
     LIMIT = settings.LIMIT
     LIMIT_AUTOMATON = settings.LIMIT_AUTOMATON
@@ -83,8 +85,7 @@ def get_response(data, files, form):
 
     if not question: #User clicked submit without specifying question
         return {'form': form, 'error_message': "Please select a question."}
-    #if (property_type == '0'): #no property type was entered (entering property type is unnecessary as automaton text area may contain a property description in the form of a transducer)
-    #     return {'form': form, 'error_message': "Please select a property type."}
+    #note that the property type is optional, as it may be inputted via the NFA area
 
     if question in ['1', '2', '4']:
         return handle_satisfaction_maximality(property_type, question, data, files, form)
@@ -232,7 +233,7 @@ def get_code(data, files, form=True, test_mode=None):
         try:
             IPTProp(readOneFromString(t_str + "\n"))
             prop = 'INPRES'
-        except AttributeError:
+        except (AttributeError, UnexpectedCharacters):
             try:
                 prop = construct_input_alt_prop(t_str, aut.Sigma, True)
             except (IncorrectFormat, TypeError):

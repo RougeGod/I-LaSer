@@ -125,14 +125,15 @@ def parse_theta_str(theta_str):
     swaps = match.group(1)
 
     result = {}
+    output = {}
     for swap in swaps.splitlines():
         tmp = swap.split(' ')
         result[tmp[0]] = tmp[1]
 
     for key in result.keys():
-        result[result[key]] = key
+        output[result[key]] = key
 
-    return result""")
+    return result | output""")
 
     list_.append("""
 def apply_theta_antimorphism(aut, theta):
@@ -179,7 +180,7 @@ def apply_theta_antimorphism(aut, theta):
 
     list_.extend([
         "tx = %s" % base64.b64encode(theta_str.encode(encoding="utf-8")),
-        "tt = parse_theta_str(base64.b64decode(tx).decode(encoding='utf-8')",
+        "tt = parse_theta_str(base64.b64decode(tx).decode(encoding='utf-8'))",
         "theta_aut = apply_theta_antimorphism(a, tt)"
     ])
 
@@ -221,7 +222,7 @@ def program_lines(
             list_.extend([string,
                           'a, answer = p.%s(n_num, l_num, s_num)\n' % TESTS[test],
                           '\nfor w in answer:\n    print(w)\n' if not testing else ''])
-                          #don't print the answer if running in s test environment
+                          #don't print the answer if running in a test environment
         else:  # this is probably not needed
             string = "print(" + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
@@ -252,7 +253,7 @@ def program_lines(
         if BUILD_NAME[ptype][2] == 1:
             if t_str:
                 list_.extend(["tx = %s\n" % base64.b64encode(t_str.encode(encoding='utf-8')).strip(),
-                              "t = str(base64.b64decode(tx).decode(encoding='utf-8'))\n"])
+                              "t = str(base64.b64decode(tx).decode(encoding='utf-8'))" + (".strip()" if ptype == "TRAJECT" else "") + "\n"])
             string = "ssigma = a.Sigma\n"
             string += "p = " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:

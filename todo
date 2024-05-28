@@ -1,2 +1,0 @@
-- Add checking for automaton vs transducer's alphabet (the automaton's alphabet should be a subset of the transducer's alphabet.)
-- Add details tab when error happens

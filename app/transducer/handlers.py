@@ -64,7 +64,7 @@ def handle_iap(
 
     # Attempt to create the code, that satisfies the given property.
     try:
-    _, witness = prop.makeCode(n_num, l_num, s_num)
+        _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
         return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
@@ -221,6 +221,8 @@ def handle_satisfaction_maximality(
                            #to readOneFromString, and it returns a list. I don't think that 
                            #you should be able to enter multiple NFAs at once but I'll check with 
                            #Stavros
+        if type(aut) == list:
+            return error("Only one automaton may be inputted at a time.")
         return error("The automaton appears to be incorrectly formatted.")
     if property_type == "1": # Fixed type
         t_name = ""
@@ -258,17 +260,17 @@ def handle_satisfaction_maximality(
         t_name = 'Property: ' + data.get('trans_name', 'N/A')
         if transducer: # Check if the transducer was inputted in the NFA area
             t_str = re.sub(r'\r', '', transducer)
-        else: 
+            property_type = "2" #we've been given a transducer, so this is a transducer -based property
+        elif trajectory: #Or if a trajectory was inputted
+            t_str = re.sub(r'\r', '', trajectory)
+            property_type = "2" #we are dealing with trajectory/transducer based property
+        else: #no transducer or trajectory in the NFA area, so move on to the transducer area.
             t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
             # transducer_type is a string identifier for the type of transducer.
             # Here we turn that into a number id.
         if transducer_type:
             property_type = TRANSDUCER_TYPES[transducer_type]
-        # If the parsed automaton string also contained a trajectory.
-        elif trajectory:
-            t_str = re.sub(r'\r', '', trajectory)
 
-            property_type = "2"
 
         if not t_str:
             return error('Please provide a property file.')

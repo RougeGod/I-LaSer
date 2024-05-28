@@ -1,6 +1,7 @@
 """Online mode unit tests"""
 
 from app.transducer.views import get_response
+from app.transducer.util import parse_aut_str
 from app.testing.test_util import hamm_dist, hamm_dist_list, readfile, openfile
 import FAdo.fl as fl
 
@@ -39,7 +40,6 @@ class MyTestCase(TestCase):
 
     def test_combined_files_1(self):
         files = {}
-
         aut_text = readfile(COMBINED_NAMES[0])
         post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
@@ -104,7 +104,7 @@ class MyTestCase(TestCase):
     def test_combined_files_10(self):
         files = {}
         aut_text = readfile(COMBINED_NAMES[9])
-        post = {'question': '1', 'property_type': '', 'automata_text': aut_text}
+        post = {'question': '1', 'property_type': '', "automata_text": aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
