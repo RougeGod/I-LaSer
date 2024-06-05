@@ -109,8 +109,8 @@ def limit_aut_prop(aut, limit):
 
 def is_subset(aut, transducer):
     '''Tests whether the automaton's alphabet is a subset of the transducer's
-       Returns "trajectory" if the property is a trajectory. This will evaluate
-       to true '''
+       Returns "trajectory" if the property is a trajectory, which will evaluate
+       to true in a Boolean comparison '''
     if (type(transducer) == TrajProp):
         return "trajectory"
     else:
@@ -179,5 +179,4 @@ def make_block_code(list_length, word_length, alphabet_size):
     return aut, words
 
 class IncorrectFormat(Exception):
-    """IncorrectFormat error"""
     pass

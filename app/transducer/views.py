@@ -83,7 +83,7 @@ def get_response(data, files, form):
     question = data.get('question')
     property_type = data.get('property_type')
 
-    if not question: #User clicked submit without specifying question
+    if not question: #User clicked submit without specifying question (question is 0, so not question is true)
         return {'form': form, 'error_message': "Please select a question."}
     #note that the property type is optional, as it may be inputted via the NFA area
 
@@ -176,13 +176,12 @@ def get_code(data, files, form=True, test_mode=None):
 
         if transducer:
             t_str = re.sub(r'\r', '', transducer)
-
+            property_type = "2"
             if transducer_type:
                 property_type = TRANSDUCER_TYPES[transducer_type]
 
         elif trajectory:
             t_str = re.sub(r'\r', '', trajectory)
-
             property_type = '2'
 
         if not t_str:
@@ -269,3 +268,4 @@ def index(request):
 def examples(request, example_type):
     """Returns the various examples"""
     return render(request, 'examples/'+example_type+'.html')
+

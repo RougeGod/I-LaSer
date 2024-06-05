@@ -217,11 +217,8 @@ def handle_satisfaction_maximality(
             return {'form':form, 'error_message':
                     'Size of the automaton exceeds limit! (See "Technical Notes")',
                     'automaton':aut_name}
-    except AttributeError: #only time I've gotten this is when multiple NFAs are given 
-                           #to readOneFromString, and it returns a list. I don't think that 
-                           #you should be able to enter multiple NFAs at once but I'll check with 
-                           #Stavros
-        if type(aut) == list:
+    except AttributeError:
+        if type(aut) == list: #When parsing, if there are multiple NFAs, FAdo returns a list
             return error("Only one automaton may be inputted at a time.")
         return error("The automaton appears to be incorrectly formatted.")
     if property_type == "1": # Fixed type
@@ -265,6 +262,8 @@ def handle_satisfaction_maximality(
             t_str = re.sub(r'\r', '', trajectory)
             property_type = "2" #we are dealing with trajectory/transducer based property
         else: #no transducer or trajectory in the NFA area, so move on to the transducer area.
+            if (data.get('transducer_text') is None):
+                return error("Please provide a property type.")
             t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
             # transducer_type is a string identifier for the type of transducer.
             # Here we turn that into a number id.
@@ -278,7 +277,7 @@ def handle_satisfaction_maximality(
         if not property_type:
             return error('Please provide a property type.')
         # Input-Altering Property (given as trajectory or transducer)
-        elif property_type == "2":
+        if property_type == "2":
             try:
                 prop = construct_input_alt_prop(t_str, aut.Sigma)
                 if not is_subset(aut, prop):
@@ -291,6 +290,8 @@ def handle_satisfaction_maximality(
         elif property_type == "3":
             try:
                 prop = IPTProp(readOneFromString(t_str + "\n"))
+                if not is_subset(aut, prop):
+                    return error("The automaton's alphabet should be a subset of the transducer's")
             except Exception: #catch-all, likely AttributeError or UnexpectedCharacters
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
@@ -333,7 +334,7 @@ def handle_satisfaction_maximality(
             witness = prop.Aut.inIntersection(aut).outIntersection(theta_aut).nonEmptyW()
 
             if witness == (None, None):
-                decision = 'YES, the language satisfies the property'
+                decision = 'YES, the language satisfies the theta-transducer property'
                 proof = ''
             else:
                 decision = 'NO, the language does not satisfy the property'
@@ -400,4 +401,3 @@ def handle_satisfaction_maximality(
         else: 
             return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                     'result':decision}
-            

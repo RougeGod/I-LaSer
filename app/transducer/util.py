@@ -46,14 +46,35 @@ def parse_aut_str(aut_str):
     Parses the given string for extra information
     """
 
+    #determines whether a given candidate string could possibly
+    #be a valid trajectory. A trajectory can only have the characters
+    #0, 1, +, (), *, and space. A value of false indicates that this
+    #cannot be a trajectory, but a value of true does not necessarily
+    #indicate that this is a trajectory
+    def can_be_trajectory(candidate):
+        return bool(re.match(r'[01+*)( ]*', candidate))
+    
+    #given two regex-like objects, says which one the trajectory is and
+    #which one the regex is, if it's unambiguous. 
+    #if both or neither string could be a trajectory, treat the earlier string
+    #(cand1) as the trajectory (LaSer's previous behaviour)
+    def one_traj_one_regex(cand1, cand2):
+        if can_be_trajectory(cand2) and not can_be_trajectory(cand1):
+            return {"trajectory": cand2, "aut_str": cand1}
+        else: 
+            return {"trajectory": cand1, "aut_str": cand2}
+            
+        
     aut_str = re.sub(r'\r', '', aut_str)
     aut_str = re.sub(r'\n#.+\n', '\n', aut_str)
     aut_str = re.sub(r'#.+', '', aut_str)
 
     count = 0
+    namedFields = []
     for line in aut_str.splitlines():
         if line.startswith('@'):
             count += 1
+            namedFields.append(line.split()[0])
 
     result = {
         'aut_str': None,
@@ -63,37 +84,49 @@ def parse_aut_str(aut_str):
         'transducer_type': None
     }
 
-    '''Grail String: No longer supported
+    #grail string inputted, assume no trajectory or transducer info in the NFA tab. 
     if aut_str.strip().startswith('(START)'):
-        result['aut_str'] = aut_str
-        return result'''
-
+        result['aut_str'] = convertGrailToFAdo(aut_str.strip())
+        return result
     if count == 0: # Trajectory and Regex
         res = re.search(r'(.+?)\n([\s\S]+)', aut_str)
         if res:
-            result['trajectory'] = res.group(1)
-            result['aut_str'] = res.group(2)
+            result |= one_traj_one_regex(res.group(1),res.group(2)) #overwrites aut_str and trajectory in the result dict
             return result
     elif count == 1: # @DFA or @NFA, or Fixed type with regex, or transducer with regex
         if not aut_str.startswith('@'):
             res = re.search(r'(.+?)\n([\s\S]+)', aut_str)
-            result['trajectory'] = res.group(1)
-            result['aut_str'] = res.group(2)
+            if can_be_trajectory(res.group(1)): #trajectory + @NFA/@DFA
+                result['trajectory'] = res.group(1)
+                result['aut_str'] = res.group(2)
+            else:                               #regex + @Transducer
+                result["aut_str"] = res.group(1)
+                result["transducer"] = res.group(2)
         else:
             if aut_str.startswith(\
-                    ('@PREFIX', '@SUFFIX', '@INFIX', '@OUTFIX', '@HYPERCODE', '@CODE')):
+                    ('@PREFIX', '@SUFFIX', '@INFIX', '@OUTFIX', '@HYPERCODE', '@CODE')): #fixed type + regex
                 res = re.search(r'@(.+)([\s\S]+)', aut_str)
                 result['fixed_type'] = res.group(1)
                 result['aut_str'] = res.group(2)
-            elif aut_str.startswith('@Transducer'):
+            elif aut_str.startswith('@Transducer'): #transducer + regex
                 res = re.search(r'(@Transducer.+\n(\d+ *([\w\d]|@epsilon) *([\w\d]|@epsilon) *\d+ *\n)+)(.+)', aut_str)
                 result['transducer'] = res.group(1)
                 result['aut_str'] = res.group(5)
-            else:
-                result['aut_str'] = aut_str
+            else: #@DFA/@NFA + trajectory, or @DFA/@NFA on its own
+                res = re.search(r"(@[DN]FA(?: +\d+?)+\n(?:\d+ (?:\w|@epsilon) \d+(?:\n|$))+)(\n.*)?", aut_str)
+                #start with declaration of FA type and one or more final states, then 
+                #one or more lines with number_character_number, match as many of these as 
+                #possible then possibly an addiotional newline and a trajectory
+                if res.group(1):
+                    #checking if everything is formatted correctly and the regex matches an FA
+                    result['aut_str'] = res.group(1)
+                    if res.group(2) is not None and res.group(2).strip(): #trajectory has non-blank characters
+                        result['trajectory'] = res.group(2).strip()
+                else: 
+                    result['aut_str'] = aut_str #no trajectory, just an FA
 
         return result
-    # Three choices: Fixed Type, Transducer Without Type, Transducer with type with regex
+    # Three choices: Fixed Type with DFA, Transducer Without Type with DFA, Transducer with type with regex
     elif count == 2:
         reg = r'@(\w+)\n(@Transducer.+\n(\d+ ([\w\d]|@epsilon) ([\w\d]|@epsilon) \d+\n)+)(.+)'
 
@@ -123,6 +156,47 @@ def parse_aut_str(aut_str):
 
     result['aut_str'] = aut_str
     return result
+
+#limitation: only allows one start state
+def convertGrailToFAdo(grailString):
+    '''Converts a Grail-formatted string to a FAdo-formatted string for use in 
+       both generated programs and in-website solving. Limitation: Because FAdo
+       only supports one start state per automaton, the converted Grail string
+       must also only have one start state. The website will use this converted 
+       string in all operations without interacting with the original Grail.
+       Accepts String, returns String'''
+    splitString = grailString.strip().split("\n")
+    startState = None
+    endStates = set()
+    otherLines = []
+    for line in splitString:
+        if line.strip().startswith("(START) |-"):
+            if (startState is None and len(line.strip().split()) == 3): 
+                #make sure that we have no previous start states and only one inputted start state
+                startState = line.strip().split()[2]
+            else: 
+                raise IncorrectFormat("The Grail string has too many or improper start states.")
+        elif line.strip().endswith("(FINAL)"):
+            if (len(line.strip().split()) == 3):
+                endStates.add(line.strip().split()[0])
+            else: 
+                raise IncorrectFormat("The Grail string has an improper final state.")
+        else: #intermediate line 
+            if (startState is not None) and (line.strip().split()[0] == startState):
+                otherLines = [line] + otherLines #appends this line to the start of the intermediate lines
+            else:
+                otherLines.append(line)
+    if startState is None:
+        raise IncorrectFormat("The start state of the Grail string was not specified.")
+    if len(endStates) == 0:
+        raise IncorrectFormat("The final state of the Grail string was not specified.")
+    else: 
+        firstLine = "@NFA "
+        for state in endStates:
+            firstLine += str(state) + " "
+        firstLine = firstLine.strip() + "\n" #remove the last trailing space
+        return firstLine + "\n".join(otherLines)
+    
 
 # pylint:disable=C0201
 def parse_theta_str(theta_str):
@@ -198,3 +272,7 @@ def apply_theta_antimorphism(aut, theta):
                 new_aut.delta[startstate][val].add(endstate)
 
     return new_aut
+
+class IncorrectFormat(Exception):
+    """IncorrectFormat error"""
+    pass

@@ -77,12 +77,12 @@ class MyTestCase(TestCase):
         """Holds theta tests"""
         THETA_STR = readfile(THETA_NAMES[0])
 
-#        aut_file = openfile(REGS[3])
- #       t_text = readfile(TRAJ_NAMES[1])
-  #      post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-   #     files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
-    #    result = get_response(post, files, False)   
-     #   self.assertTrue(result.get('result', 'FAIL').startswith('NO')) #should error due to multiple NFAs
+        aut_file = openfile(REGS[3])
+        t_text = readfile(TRAJ_NAMES[1])
+        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)   
+        self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_file = openfile(REGS[0])
         t_text = readfile(TRAJ_NAMES[2])
@@ -105,12 +105,12 @@ class MyTestCase(TestCase):
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
-#        aut_file = openfile(REGS[3])
- #       t_text = readfile(TRAJ_NAMES[2])
-  #      post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-   #     files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
-    #    result = get_response(post, files, False)
-     #   self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
+        aut_file = openfile(REGS[3])
+        t_text = readfile(TRAJ_NAMES[2])
+        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
+        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        #self.assertTrue(result.get('result', 'FAIL').startswith('NO')) #unsure if this test should actually return true or false (REGS[3] was recently changed due to its unsupported input)
 
         aut_file = openfile(REGS[0])
         t_text = readfile(TRAJ_NAMES[1])

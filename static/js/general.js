@@ -9,12 +9,11 @@ $(function() {
     $("#epsilon").hide()
 
     setFixedProperty();
-    //this causes an error when loading the index file since the divs don't yet exist. don't worry about that error
-    //it is necessary when it comes to upload.html
+    //this causes an error in the JS console when loading the index file since the divs don't yet exist. 
+    //don't worry about that error it is necessary when we load upload.html
     
     $('#automata_text').on('change keyup paste', handleChange);
     $('#transducer_text1').on('change keyup paste', handleChange)
-    //$('#transducer_text2').on('change keyup paste', handleChange)
 });
 
 function handleChange() {
@@ -108,15 +107,15 @@ function setRadio() {
     }
 }
 
+function resetPropertyPicker() {
+   $("#divsat_select").val(0); //change currently selected option to "please select"
+   $("#divsat_select").selectpicker("refresh"); //refresh the options so that the forced option actually shows up
+   setFixedProperty(); //show and hide input boxes as necessary
+}
+
 function setFields() {
     var $select = $('#divsat_select')
     switch (document.form1.question.value) {
-        case "0": //hide all input areas when no property selected
-            hide('divsat'); //property selector for satisfaction, maximality, approx-maximality
-            hide('automata_load'); //text box AND file upload space for automata input
-            hide('integers_input'); //for Construction only: L, S, and N input boxes. 
-            hide('approximation_input'); //for approximate maximality
-            break;
         case "1":
             show('divsat');
             show('automata_load');
@@ -133,16 +132,20 @@ function setFields() {
             hide('approximation_input');
             $select.find('[value=4]').show();
             $select.find('[value=5]').hide();
-            $select.selectpicker('refresh');
+            if (($select.val() == 5)) { 
+                resetPropertyPicker();
+            } 
             break;
         case "3":
             show('divsat');
             hide('automata_load');
             hide('approximation_input');
+            show('integers_input');
             $select.find('[value=4]').hide();
             $select.find('[value=5]').hide();
-            $select.selectpicker('refresh');
-            show('integers_input');
+            if (($select.val() == 4)||($select.val() == 5)) { 
+                resetPropertyPicker();
+            } 
             break;
         case "4":
             show('divsat');
@@ -150,10 +153,22 @@ function setFields() {
             show('approximation_input');
             hide('integers_input');
             $select.find('[value=4]').show();
-            $select.find('[value=5]').show();
-            $select.selectpicker('refresh');
+            $select.find('[value=5]').hide();
+            if (($select.val() == 5)) { 
+                resetPropertyPicker();
+            } 
+            break;
+        default: //hide all input areas when no property selected or something is wrong
+            hide('divsat'); //property selector for satisfaction, maximality, approx-maximality
+            hide('automata_load'); //text box AND file upload space for automata input
+            hide('integers_input'); //for Construction only: L, S, and N input boxes. 
+            hide('approximation_input'); //for approximate maximality
+            hide('fixed_type');
+            hide('transducer_input');
+            hide('antimorphic_input');
             break;
     }
+    $select.selectpicker("refresh");
 }
 
 function setFixedProperty() {
@@ -167,12 +182,16 @@ function setFixedProperty() {
         case "2":
         case "3":
         case "4":
-            show('transducer_input');
+            show('transducer_input'); //show the transducer input when the property is 2, 3, OR 4
             break;
         case "5":
             show('transducer_input');
             show('antimorphic_input');
-        default:
+            break;
+        default: //no property selected, do not show any input boxes
+            hide('fixed_type');
+            hide('transducer_input');
+            hide('antimorphic_input');
             break;
     }
 }

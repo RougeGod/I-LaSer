@@ -33,13 +33,13 @@ class MyTestCase(TestCase):
 
     def test_TRAJsatNO(self):
         post = {'question':'1', 'property_type':'2'}
-#        aut = openfile(REGS[3])
- #       t_file = openfile(TRAJ_NAMES[1])
-  #      files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertEqual(result.get('result'), "NO, the language does not satisfy the property")
-     #   aut.close()
-     #   t_file.close()
+        aut = openfile(REGS[3])
+        t_file = openfile(TRAJ_NAMES[1])
+        files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEqual(result.get('result'), "NO, the language does not satisfy the property")
+        aut.close()
+        t_file.close()
         aut = openfile(REGS[0])
         t_file = openfile(TRAJ_NAMES[0])
         files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
@@ -76,13 +76,13 @@ class MyTestCase(TestCase):
         self.assertEqual(result.get('result'), "NO, the language does not satisfy the property")
         aut.close()
         t_file.close()
-#        aut = openfile(REGS[3])
- #       t_file = openfile(IA_TRANSDUCER_NAMES[1])
-  #      files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertEqual(result.get('result'), "NO, the language does not satisfy the property")
-     #   aut.close()
-      #  t_file.close()
+        aut = openfile(REGS[3])
+        t_file = openfile(IA_TRANSDUCER_NAMES[1])
+        files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEqual(result.get('result'), "NO, the language does not satisfy the property")
+        aut.close()
+        t_file.close()
 
 
     def test_IATsatYES(self):
@@ -105,13 +105,13 @@ class MyTestCase(TestCase):
 
     def test_IPTsatNO(self):
         post = {'question':'1', 'property_type':'3'}
- #       aut = openfile(REGS[3])
-  #      t_file = openfile(IA_TRANSDUCER_NAMES[1])
-   #     files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
-    #    result = get_response(post, files, False)
-     #   self.assertEqual(result.get('result'), "NO, the language does not satisfy the property")
-      #  aut.close()
-       # t_file.close()
+        aut = openfile(REGS[3])
+        t_file = openfile(IA_TRANSDUCER_NAMES[1])
+        files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEqual(result.get('result'), "NO, the language does not satisfy the property")
+        aut.close()
+        t_file.close()
         aut = openfile(REGS[1])
         t_file = openfile(IP_TRANSDUCER_NAMES[1])
         files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
@@ -285,12 +285,12 @@ class MyTestCase(TestCase):
         self.assertTrue(result.get('result')[:26], "NO, the language does not")
         aut.close()
 
-#        post = {'question':'1', 'property_type':'1', 'fixed_type':'3'}  # INFIX
- #       aut = openfile(REGS[3])
-  #      files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertTrue(result.get('result')[:26], "NO, the language does not")
-     #   aut.close()
+        post = {'question':'1', 'property_type':'1', 'fixed_type':'3'}  # INFIX
+        aut = openfile(REGS[3])
+        files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertTrue(result.get('result')[:26], "NO, the language does not")
+        aut.close()
 
 
 
@@ -353,12 +353,12 @@ class MyTestCase(TestCase):
         self.assertTrue(result.get('result')[:26], "NO, the language does not")
         aut.close()
 
-#        post = {'question':'1', 'property_type':'1', 'fixed_type':'3'}
- #       aut = openfile(REGS[3])
-  #      files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertTrue(result.get('result')[:26], "NO, the language does not")
-     #   aut.close()
+        post = {'question':'1', 'property_type':'1', 'fixed_type':'3'}
+        aut = openfile(REGS[3])
+        files = {'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertTrue(result.get('result')[:26], "NO, the language does not")
+        aut.close()
 
 
 

@@ -27,7 +27,7 @@ class MyTestCase(TestCase):
     def test_theta_program_generation(self):
         """Testing Theta Program Generation"""
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[0])
         t_file = openfile(TRAJ_NAMES[0])
         files = {
@@ -65,7 +65,7 @@ class MyTestCase(TestCase):
 
     def test_2(self):
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[1])
         t_file = openfile(TRAJ_NAMES[0])
         files = {
@@ -99,7 +99,7 @@ class MyTestCase(TestCase):
 
     def test_3(self):
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[2])
         t_file = openfile(TRAJ_NAMES[0])
         files = {
@@ -131,7 +131,7 @@ class MyTestCase(TestCase):
 
     def test_4(self):
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[3])
         t_file = openfile(TRAJ_NAMES[0])
         files = {
@@ -164,7 +164,7 @@ class MyTestCase(TestCase):
 
     def test_5(self):
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[1])
         t_file = openfile(TRAJ_NAMES[0])
         files = {
@@ -201,7 +201,7 @@ class MyTestCase(TestCase):
 
     def test_6(self):
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[1])
         t_file = openfile(TRAJ_NAMES[0])
         files = {
@@ -232,7 +232,7 @@ class MyTestCase(TestCase):
 
     def test_7(self):
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[4])
         t_file = openfile(TRAJ_NAMES[1])
         files = {
@@ -265,7 +265,7 @@ class MyTestCase(TestCase):
 
     def test_8(self):
         th_str = readfile(THETA_NAMES[0])
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         aut = openfile(REGS[10])
         t_file = openfile(TRAJ_NAMES[1])
         files = {
@@ -304,7 +304,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[0])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
@@ -332,7 +332,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[0])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
@@ -360,7 +360,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[0])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
@@ -388,7 +388,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[0])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
@@ -416,7 +416,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[1])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
@@ -444,7 +444,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[1])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
@@ -472,7 +472,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[1])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
@@ -500,7 +500,7 @@ class MyTestCase(TestCase):
         t_file = openfile(TRAJ_NAMES[1])
         th_str = readfile(THETA_NAMES[1])
 
-        post = {'question':'2', 'property_type':'5', 'theta_text':th_str}
+        post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = {
             'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
             'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))

@@ -40,11 +40,11 @@ class MyTestCase(TestCase):
 
     def test_TRAJsatNO(self):
         post = {'question': '1', 'property_type': '2'}
-#        aut = openfile(REGS[3])
- #       tFile = openfile(TRAJ_NAMES[1])
-  #      files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertEquals(result['result'], "NO, the language does not satisfy the property")
+        aut = openfile(REGS[3])
+        tFile = openfile(TRAJ_NAMES[1])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEquals(result['result'], "NO, the language does not satisfy the property")
         aut = openfile(REGS[0])
         tFile = openfile(TRAJ_NAMES[0])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
@@ -73,11 +73,11 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertEquals(result['result'], "NO, the language does not satisfy the property")
-#        aut = openfile(REGS[3])
- #       tFile = openfile(IA_TRANSDUCER_NAMES[1])
-  #      files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertEquals(result['result'], "NO, the language does not satisfy the property")
+        aut = openfile(REGS[3])
+        tFile = openfile(IA_TRANSDUCER_NAMES[1])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEqual(result['result'], "NO, the language does not satisfy the property")
         if not TEST_GEN:
             return
         lines = program_lines(ptype="INALT", test="SATW", aut_str=a_ab_bb,
@@ -110,10 +110,10 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertEquals(result['result'], "NO, the language does not satisfy the property")
-#        aut = openfile(REGS[3])
- #       tFile = openfile(IA_TRANSDUCER_NAMES[1])
-  #      files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
+        aut = openfile(REGS[3])
+        tFile = openfile(IA_TRANSDUCER_NAMES[1])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
         self.assertEquals(result['result'], "NO, the language does not satisfy the property")
         aut = openfile(REGS[1])
         tFile = openfile(IP_TRANSDUCER_NAMES[1])
@@ -140,8 +140,6 @@ class MyTestCase(TestCase):
         prog = make_prog(lines, 'decide satisfaction.')
         prog_vars = {}
         exec(prog, prog_vars, prog_vars)   # prog computes answer
-        # print '\nprog  =\n-\n', prog
-        # raw_input("--> answer = "+str(answer)+"\nPress <ENTER> to continue ")
         self.assertEquals(prog_vars.get('answer'), (None, None))
 
     def test_CORRsatNO(self):
@@ -271,10 +269,10 @@ class MyTestCase(TestCase):
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
         post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}  # INFIX
-#        aut = openfile(REGS[3])
- #       files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
-  #      result = get_response(post, files, False)
-   #     self.assertTrue(result['result'][:26], "NO, the language does not")
+        aut = openfile(REGS[3])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertTrue(result['result'][:26], "NO, the language does not")
 
 
     def test_FIXED_IATsatYES(self):
@@ -323,10 +321,10 @@ class MyTestCase(TestCase):
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
         post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}
-#        aut = openfile(REGS[3])
- #       files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
-  #      result = get_response(post, files, False)
-   #     self.assertTrue(result['result'][:26], "NO, the language does not")
+        aut = openfile(REGS[3])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertTrue(result['result'][:26], "NO, the language does not")
 
 
     def test_FIXED_CODEsatYES(self):
@@ -370,32 +368,29 @@ class MyTestCase(TestCase):
 
     def test_IPTconstr(self):
         post = {'question': '3', 'property_type': '3', 'n_int': 5, 'l_int': 8, 's_int': 2}
-        #aut = openfile(REGS[4])
         tFile = openfile(IP_TRANSDUCER_NAMES[4])
-        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} #{'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} 
         result = get_response(post, files, False)
-        #print 'hdist = ', hamm_dist_list(result['witness'])
         self.assertTrue(hamm_dist_list(result['witness']) > 1)
         post = {'question': '3', 'property_type': '3', 'n_int': 5, 'l_int': 8, 's_int': 2}
-        #aut = openfile(REGS[4])
         tFile = openfile(IP_TRANSDUCER_NAMES[5])
-        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} #{'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         W = result['witness']
         self.assertTrue(hamm_dist_list(W) > 2)
         self.assertTrue(result['prop'].satisfiesP(fl.FL(W).trieFA().toNFA()))
         tFile = openfile(IP_TRANSDUCER_NAMES[6])
-        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} #{'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} 
         result = get_response(post, files, False)
         W = result['witness']
         self.assertTrue(result['prop'].satisfiesP(fl.FL(W).trieFA().toNFA()))
         tFile = openfile(IP_TRANSDUCER_NAMES[5])
-        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} #{'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} 
         result = get_response(post, files, False)
         W = result['witness']
         self.assertTrue(result['prop'].satisfiesP(fl.FL(W).trieFA().toNFA()))
         tFile = openfile(IP_TRANSDUCER_NAMES[5])
-        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} #{'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        files = {'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))} 
         result = get_response(post, files, False)
         W = result['witness']
         self.assertTrue(result['prop'].satisfiesP(fl.FL(W).trieFA().toNFA()))
@@ -406,6 +401,4 @@ class MyTestCase(TestCase):
         prog = make_prog(lines, 'generate code.')
         prog_vars = {}
         exec(prog, prog_vars)   # prog computes answer and p
-        # print '\nprog  =\n-\n', prog
-        # raw_input("--> answer = "+str(answer)+"\nPress <ENTER> to continue ")
         self.assertTrue(prog_vars.get('p').satisfiesP(fl.FL(prog_vars.get('answer')).trieFA().toNFA()))

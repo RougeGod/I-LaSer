@@ -34,9 +34,8 @@ def hamm_dist_list(list_):
 
 def readfile(file_):
     """Return the contents of a file"""
-    aut_file = open(path.join(path.dirname(__file__), file_))
-    aut_text = aut_file.read()
-    aut_file.close()
+    with open(path.join(path.dirname(__file__), file_)) as aut_file:
+        aut_text = aut_file.read()
     return aut_text
 
 def openfile(file_):

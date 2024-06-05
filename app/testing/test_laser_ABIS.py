@@ -23,11 +23,11 @@ LN_REQ = 4
 class MyTestCase(TestCase):
     def test_TRAJsatNO(self):
         post = {'question': '1', 'property_type': '2'}
- #       aut = openfile(REGS[3])
-  #      tFile = openfile(TRAJ_NAMES[1])
-   #     files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
-    #    result = get_response(post, files, False)
-     #   self.assertEquals(result['result'], "NO, the language does not satisfy the property")
+        aut = openfile(REGS[3])
+        tFile = openfile(TRAJ_NAMES[1])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEquals(result['result'], "NO, the language does not satisfy the property")
         aut = openfile(REGS[0])
         tFile = openfile(TRAJ_NAMES[0])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
@@ -56,11 +56,11 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertEquals(result['result'], "NO, the language does not satisfy the property")
-#        aut = openfile(REGS[3])
- #       tFile = openfile(IA_TRANSDUCER_NAMES[1])
-  #      files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertEquals(result['result'], "NO, the language does not satisfy the property")
+        aut = openfile(REGS[3])
+        tFile = openfile(IA_TRANSDUCER_NAMES[1])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEquals(result['result'], "NO, the language does not satisfy the property")
 
 
     def test_IATsatYES(self):
@@ -84,11 +84,11 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertEquals(result['result'], "NO, the language does not satisfy the property")
-#        aut = openfile(REGS[3])
- #       tFile = openfile(IA_TRANSDUCER_NAMES[1])
-  #      files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertEquals(result['result'], "NO, the language does not satisfy the property")
+        aut = openfile(REGS[3])
+        tFile = openfile(IA_TRANSDUCER_NAMES[1])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertEquals(result['result'], "NO, the language does not satisfy the property")
         aut = openfile(REGS[1])
         tFile = openfile(IP_TRANSDUCER_NAMES[1])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")), 'transducer_file': SimpleUploadedFile(tFile.name, str.encode(tFile.read(), encoding="utf-8"))}
@@ -251,11 +251,11 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
-#        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}  # INFIX
- #       aut = openfile(REGS[3])
-  #      files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
-    #    result = get_response(post, files, False)
-   #     self.assertTrue(result['result'][:26], "NO, the language does not")
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}  # INFIX
+        aut = openfile(REGS[3])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertTrue(result['result'][:26], "NO, the language does not")
 
 
     def test_FIXED_IATsatYES(self):
@@ -303,11 +303,11 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
-#        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}
- #       aut = openfile(REGS[3])
-  #      files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
-   #     result = get_response(post, files, False)
-    #    self.assertTrue(result['result'][:26], "NO, the language does not")
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}
+        aut = openfile(REGS[3])
+        files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
+        result = get_response(post, files, False)
+        self.assertTrue(result['result'][:26], "NO, the language does not")
 
 
     def test_FIXED_CODEsatYES(self):

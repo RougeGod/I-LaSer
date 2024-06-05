@@ -144,14 +144,12 @@ class UploadFileForm(forms.Form):
             data['transducer_text'] = file2Text(data.get('transducer_file'))
         elif data.get('transducer_text1'):
             data['transducer_text'] = data.get('transducer_text1')
-        #elif data.get('transducer_text2'):
-        #    data['transducer_text'] = data.get('transducer_text2')
 
         if data.get('question') == '0':
             raise forms.ValidationError('Please select a question.')
 
         if not data.get('automata_text') and data.get('question') != '3':
-            raise forms.ValidationError('You did not supply an automata.')
+            raise forms.ValidationError('You did not supply an automaton.')
 
         result = parse_aut_str(data.get('automata_text'))
 
@@ -169,9 +167,3 @@ class UploadFileForm(forms.Form):
         data['automata_text'] = re.sub(r'\r', '', str(data['automata_text']))
 
         return data
-
-#there is no contact form
-#class ContactForm(forms.Form):
-#    """This class is used to specify the contact form used in the website."""
-#    subjects = forms.CharField(max_length=80)
-#    message = forms.CharField()
