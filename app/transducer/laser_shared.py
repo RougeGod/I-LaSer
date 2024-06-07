@@ -21,7 +21,7 @@ def construct_automaton(aut_str):
         try:
             return reex.str2regexp(aut_str).toNFA()
         except Exception: #anything goes wrong with the regex parsing 
-            raise IncorrectFormat()
+            raise IncorrectFormat("could not build automaton")
 
 def detect_automaton_type(aut_str):
     """construct an automaton from a string"""

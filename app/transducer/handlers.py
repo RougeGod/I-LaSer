@@ -13,11 +13,12 @@ from FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnkno
 
 from FAdo.prax import GenWordDis, prax_maximal_nfa, Dirichlet
 
-from app.transducer.laser_shared import construct_automaton, IncorrectFormat, \
+from app.transducer.laser_shared import construct_automaton, detect_automaton_type, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
      make_block_code, limit_theta_prop, is_subset, convertToCorrectType
 
-from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, apply_theta_antimorphism, reverse_theta_antimorphism
+from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, \
+                                apply_theta_antimorphism, reverse_theta_antimorphism, parse_transducer_string
 
 from lark import UnexpectedCharacters
 
@@ -36,9 +37,6 @@ try:
 except django.core.exceptions.ImproperlyConfigured:
     LIMIT = 500000
     LIMIT_AUTOMATON = 250
-
-
-
 
 def handle_iap(
         n_num, l_num, s_num,
@@ -155,9 +153,9 @@ def handle_construction(
         return {'form': form, 'construct_path': '',
                 'construct_text': '', 'result': result}
 
-    t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
+    t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
 
-    t_name = data.get('trans_name', 'N/A')
+    t_name = data.get('trans_name', 'TextareaProperty')
 
     if not t_str:
         return error('Please provide a property file.')
@@ -176,6 +174,8 @@ def check_approx_maximality(automaton, prop, eps, t, disp):
     wordDist = GenWordDis(pdist, automaton.Sigma, eps)
     return "Yes, the language is approximately maximal with respect to the property" if prax_maximal_nfa(wordDist, automaton, prop) else "No, the language is not maximal with respect to the property"
 
+
+
 def handle_satisfaction_maximality(
         property_type, question, data, files, form
     ):
@@ -187,23 +187,13 @@ def handle_satisfaction_maximality(
     # Try and get an automata file from the file/text uploaded.
     aut_str = data.get('automata_text')
 
-    aut_name = "Language: " + data.get('aut_name', 'N/A')
-
     if not aut_str:
         return error('Please provide an automaton file.')
 
-    parsed = parse_aut_str(aut_str)
+    aut_name = "Language: " + data.get('aut_name', 
+        'Textarea Regex' if detect_automaton_type(aut_str) == "str2regexp" else "Textarea Automaton")
 
-    # Unpack the parsing result
-    aut_str = parsed['aut_str']
-    fixed_type = parsed['fixed_type']
-    transducer = parsed['transducer']
-    transducer_type = parsed['transducer_type']
-    trajectory = parsed['trajectory']
-
-    # Updates the property type if the fixed type was given
-    if fixed_type and not property_type:
-        property_type = "1"
+    aut_str = parse_aut_str(aut_str) #remove comments and convert from Grail
 
     try:
         aut = construct_automaton(aut_str)
@@ -223,9 +213,11 @@ def handle_satisfaction_maximality(
         return error("The automaton appears to be incorrectly formatted.")
     if property_type == "1": # Fixed type
         t_name = ""
+        fixed_type = data.get('fixed_type')
         if fixed_type is None:
-            fixed_type = data.get('fixed_type')
-
+            return {'form': form, 'error_message': "No fixed type was entered.",
+                'automaton': aut_name}
+            
         # This method will return a fixed property, or None if it's a UD Code.
         prop = create_fixed_property(aut.Sigma, fixed_type)
         if prop is None:
@@ -254,22 +246,10 @@ def handle_satisfaction_maximality(
 
     # User-Input Property
     else:
-        t_name = 'Property: ' + data.get('trans_name', 'N/A')
-        if transducer: # Check if the transducer was inputted in the NFA area
-            t_str = re.sub(r'\r', '', transducer)
-            property_type = "2" #we've been given a transducer, so this is a transducer -based property
-        elif trajectory: #Or if a trajectory was inputted
-            t_str = re.sub(r'\r', '', trajectory)
-            property_type = "2" #we are dealing with trajectory/transducer based property
-        else: #no transducer or trajectory in the NFA area, so move on to the transducer area.
-            if (data.get('transducer_text') is None):
-                return error("Please provide a property type.")
-            t_str = re.sub(r'\r', '', data.get('transducer_text')).strip()
-            # transducer_type is a string identifier for the type of transducer.
-            # Here we turn that into a number id.
-        if transducer_type:
-            property_type = TRANSDUCER_TYPES[transducer_type]
-
+        if (data.get('transducer_text') is None):
+            return error("Please provide a property type.")
+        t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
+        t_name = 'Property: ' + data.get('trans_name', 'Textarea-defined property.')
 
         if not t_str:
             return error('Please provide a property file.')
@@ -306,6 +286,7 @@ def handle_satisfaction_maximality(
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
         elif property_type == '5': # We have to branch off, it is handled differently.
+
             try:
                 prop = IPTProp(readOneFromString(t_str + "\n"))
                 if not is_subset(aut, prop):

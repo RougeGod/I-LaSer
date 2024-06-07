@@ -23,7 +23,6 @@ class MyTestCase(TestCase):
     def test_dna(self):
         """Holds DNA tests"""
         THETA_STR = readfile(THETA_NAMES[1])
-
         aut_file = openfile(THETAS[0])
         t_text = readfile(TRAJ_NAMES[0])
         post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}

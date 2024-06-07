@@ -38,6 +38,10 @@ class MyTestCase(TestCase):
         self.assertEquals(hamm_dist_list(['000', '101']), 2)
         self.assertEquals(hamm_dist_list(['0011001100', '1111000011', '000', '101']), 2)
 
+    '''These tests are a holdover from previous versions, where it was possible to input a language property
+       in the language area and have it parsed all as one. Since we have dedicated areas to input language
+       properties, and parsing could be ambiguous, the combined language/property feature has been removed
+       and these tests are no longer necessary
     def test_combined_files_1(self):
         files = {}
         aut_text = readfile(COMBINED_NAMES[0])
@@ -128,6 +132,7 @@ class MyTestCase(TestCase):
         post = {'question': '1', 'property_type': '2', 'automata_text': aut_text}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
+    '''
 
     def test_mixed(self):
         aut_file = openfile(REGS[3])

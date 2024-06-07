@@ -16,8 +16,8 @@ from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop, convertToCorrectType
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
-from app.transducer.handlers import handle_construction, handle_satisfaction_maximality#, handle_approx_maximality
-from app.transducer.util import parse_aut_str
+from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
+from app.transducer.util import parse_aut_str, parse_transducer_string
 
 from lark import UnexpectedCharacters
 
@@ -85,7 +85,8 @@ def get_response(data, files, form):
 
     if not question: #User clicked submit without specifying question (question is 0, so not question is true)
         return {'form': form, 'error_message': "Please select a question."}
-    #note that the property type is optional, as it may be inputted via the NFA area
+    if not property_type: 
+        return {"form": form, "error_message": "Please select a property type."}
 
     if question in ['1', '2', '4']:
         return handle_satisfaction_maximality(property_type, question, data, files, form)
@@ -134,16 +135,7 @@ def get_code(data, files, form=True, test_mode=None):
         if not aut_str:
             return error('Please provide an automaton file.')
 
-        parsed = parse_aut_str(aut_str)
-
-        aut_str = parsed.get('aut_str')
-        fixed_type = parsed.get('fixed_type')
-        transducer = parsed.get('transducer')
-        transducer_type = parsed.get('transducer_type')
-        trajectory = parsed.get('trajectory')
-              
-        if fixed_type and not property_type: #if we somehow have a fixed property type set without a property type set, assume property type is "fixed"
-            property_type = '1'
+        aut_str = parse_aut_str(aut_str)
 
         try:
             aut_type = detect_automaton_type(aut_str)
@@ -166,28 +158,14 @@ def get_code(data, files, form=True, test_mode=None):
     # Get Fixed Type, or get Transducer String
     if property_type == "1":
         t_str = None
+        fixed_type = data.get('fixed_type')
         if fixed_type is None:
-            fixed_type = data.get('fixed_type')
-            prop = FIXED_DICT[fixed_type]
-        else:
-            prop = fixed_type
+            return error("Please select a fixed type.")
+        prop = FIXED_DICT[str(fixed_type)]
     else:
-        t_str = re.sub(r'\r', '', data.get('transducer_text'))
-
-        if transducer:
-            t_str = re.sub(r'\r', '', transducer)
-            property_type = "2"
-            if transducer_type:
-                property_type = TRANSDUCER_TYPES[transducer_type]
-
-        elif trajectory:
-            t_str = re.sub(r'\r', '', trajectory)
-            property_type = '2'
-
+        t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
         if not t_str:
             return error('Please provide a property file.')
-        else:
-            t_str = t_str.strip()
 
     theta = None
 

@@ -35,11 +35,9 @@ TESTS = {"MAXP": "maximalP",
          "MKCO": "makeCode"}
 
 PARSERS_BEFORE = {"readOneFromString": "readOneFromString",
-                  #"importFromGrailString": "importFromGrailString",
                   "str2regexp": "str2regexp"}
 
 PARSERS_AFTER = {"readOneFromString": "",
-                 # "importFromGrailString": "",
                   "str2regexp": ".toNFA()"}
 
 #for running unittest

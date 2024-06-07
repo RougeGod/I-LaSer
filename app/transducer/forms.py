@@ -144,6 +144,8 @@ class UploadFileForm(forms.Form):
             data['transducer_text'] = file2Text(data.get('transducer_file'))
         elif data.get('transducer_text1'):
             data['transducer_text'] = data.get('transducer_text1')
+        else:
+            data["transducer_text"] = None
 
         if data.get('question') == '0':
             raise forms.ValidationError('Please select a question.')
@@ -153,12 +155,6 @@ class UploadFileForm(forms.Form):
 
         result = parse_aut_str(data.get('automata_text'))
 
-        if not data.get('transducer_text'):
-            if not result.get('transducer') and not result.get('fixed_type'):
-                if not result.get('trajectory') and not data.get('property_type'):
-                    raise forms.ValidationError('You did not supply a transducer.')
-        else:
-            data['transducer_text'] = str(data['transducer_text'])
 
         if not data.get('theta_text'):
             pass
