@@ -13,13 +13,15 @@ from FAdo.fio import readOneFromString, NFA, DFA
 import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 
-from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop, convertToCorrectType
+from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop, convertToCorrectType, is_subset
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
 from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
 from app.transducer.util import parse_aut_str, parse_transducer_string
 
 from lark import UnexpectedCharacters
+
+from func_timeout import func_timeout, FunctionTimedOut
 
 try:
     LIMIT = settings.LIMIT
@@ -89,11 +91,19 @@ def get_response(data, files, form):
         return {"form": form, "error_message": "Please select a property type."}
 
     if question in ['1', '2', '4']:
-        return handle_satisfaction_maximality(property_type, question, data, files, form)
+        try:
+            #return handle_satisfaction_maximality(property_type, question, data, files, form)
+            return func_timeout(15, handle_satisfaction_maximality, args=(property_type, question, data, files, form))
+        except FunctionTimedOut:
+            return {'form': form, 'result': "Computation took too long! Would you like to <a href='%s%s.zip'>download your code</a>?</br>"}
     elif question == '3':
-        return handle_construction(property_type, data, files, form)
+        try: 
+            #return handle_construction(property_type, data, files, form)
+            return func_timeout(15, handle_construction, args=(property_type, data, files, form))
+        except FunctionTimedOut: 
+            return {'form': form, 'result': "Computation took too long! Would you like to <a href='%s%s.zip'>download your code</a>?</br>"}
 
-def get_code(data, files, form=True, test_mode=None):
+def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
     """
     If a computation is too expensive to be run in due time on the server,
     the user can generate code and allow the download of that. This method
@@ -154,7 +164,10 @@ def get_code(data, files, form=True, test_mode=None):
             return error('S must be less than 10 and greater than 1')
         elif s_num > l_num:
             return error('S must be less than L')
-    
+
+
+    if not property_type:
+        return error('Please provide a property type.')
     # Get Fixed Type, or get Transducer String
     if property_type == "1":
         t_str = None
@@ -168,28 +181,33 @@ def get_code(data, files, form=True, test_mode=None):
             return error('Please provide a property file.')
 
     theta = None
-
-    # Input-Altering Property (given as trajectory or transducer)
-    if not property_type:
-        return error('Please provide a property type.')
-    elif property_type == '2':
+    if property_type == '2':  # Input-Altering Property (given as trajectory or transducer)
         if question in ['1', '2', '4']:
             sigma = aut.Sigma
         elif question == '3':
             sigma = set()
             for i in range(s_num):
                 sigma.add(str(i))
-
         try:
             result = construct_input_alt_prop(t_str, sigma)
             prop = construct_input_alt_prop(t_str, sigma, True)
+            try: 
+                if not is_subset(aut, result):
+                    return error("The automaton's alphabet should be a subset of the transducer's")
+            except UnboundLocalError: #there is no automaton (construction Question), so checking it is nonsensical
+                pass
         except IncorrectFormat:
             return error(PROPERTY_INCORRECT_FORMAT)
 
     # Input-Preserving Property
     elif property_type == '3':
         try:
-            IPTProp(readOneFromString(t_str + "\n")) # Input Preserving Transducer Property
+            prop = IPTProp(readOneFromString(t_str + "\n")) # Input Preserving Transducer Property
+            try: 
+                if not is_subset(aut, prop):
+                    return error("The automaton's alphabet should be a subset of the transducer's")
+            except UnboundLocalError:
+                pass
         except AttributeError:
             return error(PROPERTY_INCORRECT_FORMAT)
 
@@ -198,7 +216,9 @@ def get_code(data, files, form=True, test_mode=None):
     # Error-Correction
     elif property_type == '4':
         try:
-            ErrCorrectProp(readOneFromString(t_str + "\n"))
+            prop = ErrCorrectProp(readOneFromString(t_str + "\n"))
+            if not is_subset(aut, prop):
+                return error("The automaton's alphabet should be a subset of the transducer's")
         except AttributeError:
             return error(PROPERTY_INCORRECT_FORMAT)
         prop = 'ERRCORR'
@@ -215,6 +235,8 @@ def get_code(data, files, form=True, test_mode=None):
                 prop = construct_input_alt_prop(t_str, aut.Sigma, True)
             except (IncorrectFormat, TypeError):
                 return error(PROPERTY_INCORRECT_FORMAT)
+            if not is_subset(aut, prop):
+                return error("The automaton's alphabet should be a subset of the transducer's")        
 
     description = DESCRIBE[question]
     test = TEST_DICT[question]
@@ -234,8 +256,8 @@ def get_code(data, files, form=True, test_mode=None):
         return prog_lines
 
     # The code has now been placed in the media folder, to download.
-    decision = '<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")'\
-         % (settings.MEDIA_URL, name)
+    decision = '%s<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")'\
+         % (("The computation took too long.<br>" if sentFromTimeout else ""), settings.MEDIA_URL, name)
     return {'form': form, 'result': decision}
 
 def index(request):
