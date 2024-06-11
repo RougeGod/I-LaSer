@@ -126,7 +126,7 @@ class UploadFileForm(forms.Form):
             data.close()
             return newdata
 
-        self.trans_name = 'N/A'
+        self.trans_name = 'Textarea Language Property'
         return data
 
     def clean(self):

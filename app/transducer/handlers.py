@@ -172,7 +172,11 @@ def handle_construction(
 def check_approx_maximality(automaton, prop, eps, t, disp): 
     pdist = Dirichlet(t=t, d=disp) #Dirichlet t is the same as the t in this function argument
     wordDist = GenWordDis(pdist, automaton.Sigma, eps)
-    return "Yes, the language is approximately maximal with respect to the property" if prax_maximal_nfa(wordDist, automaton, prop) else "No, the language is not maximal with respect to the property"
+    witness = prax_maximal_nfa(wordDist, automaton, prop)
+    if witness is None:
+        return "Yes, the language is approximately maximal with respect to the property.", ""
+    else: 
+        return "No, the language is not maximal with respect to the property.", format_counter_example(witness)
 
 
 
@@ -376,9 +380,9 @@ def handle_satisfaction_maximality(
         epsi = float(data.get('epsilon', 0.05))
         t = float(data.get('dirichletT', 2.0001))
         disp = int(data.get('displacement', 1))
-        decision = check_approx_maximality(aut, prop, epsi, t, disp)
+        decision, proof = check_approx_maximality(aut, prop, epsi, t, disp)
         if t_name == "":
-            return {'form': form, 'automaton': aut_name, 'result': decision}
+            return {'form': form, 'automaton': aut_name, 'result': decision, "proof": proof}
         else: 
             return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-                    'result':decision}
+                    'result':decision, 'proof': proof}
