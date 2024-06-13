@@ -23,12 +23,16 @@ from lark import UnexpectedCharacters
 
 from func_timeout import func_timeout, FunctionTimedOut
 
+TIME_LIMIT = 15 #in seconds
+
 try:
     LIMIT = settings.LIMIT
     LIMIT_AUTOMATON = settings.LIMIT_AUTOMATON
 except django.core.exceptions.ImproperlyConfigured:
     LIMIT = 500000
     LIMIT_AUTOMATON = 250
+
+name = str(int(time()*1000)) #the name of the ZIP file, which is the current millisecond. 
 
 DECIDE_REQUEST = 'Decide whether the given language '
 #These next two dictionaries are used in the code generation but do not appear on the website. 
@@ -48,7 +52,6 @@ TRANSDUCER_TYPES = {
     'ErrorDetecting': '3',
     'ErrorCorrecting': '4',
 }
-
 
 
 def upload_file(request):
@@ -92,16 +95,14 @@ def get_response(data, files, form):
 
     if question in ['1', '2', '4']:
         try:
-            #return handle_satisfaction_maximality(property_type, question, data, files, form)
-            return func_timeout(15, handle_satisfaction_maximality, args=(property_type, question, data, files, form))
+            return func_timeout(TIME_LIMIT, handle_satisfaction_maximality, args=(property_type, question, data, files, form))
         except FunctionTimedOut:
-            return {'form': form, 'result': "Computation took too long! Would you like to <a href='%s%s.zip'>download your code</a>?</br>"}
+            return get_code(data, files, form=form, sentFromTimeout=True)
     elif question == '3':
         try: 
-            #return handle_construction(property_type, data, files, form)
-            return func_timeout(15, handle_construction, args=(property_type, data, files, form))
+            return func_timeout(TIME_LIMIT, handle_construction, args=(property_type, data, files, form))
         except FunctionTimedOut: 
-            return {'form': form, 'result': "Computation took too long! Would you like to <a href='%s%s.zip'>download your code</a>?</br>"}
+            return get_code(data, files, form=form, sentFromTimeout=True)
 
 def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
     """
@@ -164,8 +165,6 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
             return error('S must be less than 10 and greater than 1')
         elif s_num > l_num:
             return error('S must be less than L')
-
-
     if not property_type:
         return error('Please provide a property type.')
     # Get Fixed Type, or get Transducer String
@@ -255,9 +254,12 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
     if test_mode is not None:
         return prog_lines
 
-    # The code has now been placed in the media folder, to download.
-    decision = '%s<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")'\
-         % (("The computation took too long.<br>" if sentFromTimeout else ""), settings.MEDIA_URL, name)
+    url_params = (settings.MEDIA_URL, name)
+    if sentFromTimeout:
+        decision = "The computation took too long!<br>Would you like to <a href=%s%s.zip>download your code</a>?<br>" % url_params
+    else: 
+        # The code has now been placed in the media folder, to download.
+        decision = '<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")' % url_params
     return {'form': form, 'result': decision}
 
 def index(request):
