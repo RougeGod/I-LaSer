@@ -2,43 +2,69 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog as fd
 import re
-#from laser import * 
+#from laser import handlers
 #put a laser folder beneath current directory and put all non-views files from transducer there
 #will need to create a specific code_gen file which can handle the get_code method inside views
 #without  using HTML/Django code. 
 
-#also need to put all FAdo files in a subfolder of laser folder. 
+#also need to put all FAdo files in a subfolder of laser folder to be locally imported with no need
+#for extra installations on user's computer. 
+
+
+LIGHTGREEN = "#d5fc99"
+LIGHTRED = "#ff7979"
 
 class ResultFrame(ttk.Frame):
-    def __init__(self, parent, row, result):
-        resultFrame = ttk.Frame(parent, relief="solid", borderwidth=2)
-        if result is not None:
-            resultFrame.grid(column=0, row=row)
-            resultFrame.columnconfigure(0, weight=1)
-            resultLabel = ttk.Label(resultFrame, text=result)
-            resultLabel.grid(column=0, row=0)
+
+    #TODO: add slyle information to distinguish errors from results!
+    def __init__(self, parent, row):
+        self.result = StringVar()
+        self.resultFrame = ttk.Frame(parent, relief="solid", borderwidth=2)
+        self.resultFrame.grid(column=0, row=row, sticky="NEW")
+        self.resultFrame.columnconfigure(0, weight=1)
+        self.resultLabel = ttk.Label(self.resultFrame, text="", textvariable=self.result, wraplength=777)
+        self.resultLabel.grid(column=0, row=0)
     
+    def hide(self):
+        self.resultFrame.grid_remove()
+        self.resultLabel.text = ""
+    
+    def show(self, row=1):
+        self.resultFrame.grid()
+    
+    def setResult(self, result):
+        self.result.set(result)
+        self.show()
+        self.resultLabel.text = result
+     
 
 class QuestionFrame(ttk.Frame):
     choices = ["-Please Select-", "Satisfaction", "Maximality", "Construction", "Approximate Maximality"]  
-    #chosenQuestion = StringVar(value="-Please Select-")
-    #chosenQuestionSave = chosenQuestion.get() #shenanigans to keep the variable alive for default selection
 
-
-    def __init__(self, root, row):
+    def __init__(self, root, row, question, questionChangeFunc):
+        self.questionVar = question
+        self.questionReact = questionChangeFunc
+        self.questionVar.trace_add("write", self.questionReact)        
+        
         questionFrame = ttk.Frame(root, relief="raised", borderwidth=2)
-        questionFrame.grid(column=0, row=row, sticky=(EW)) #result is above it, though if result doesn't exist, it doesn't take up space
+        questionFrame.grid(column=0, row=row, sticky="NEW") #result is above it, though if result doesn't exist, it doesn't take up space
         questionFrame.columnconfigure(0, weight=1)
         questionLabel = ttk.Label(questionFrame, text="What question would you like to solve?")
         questionLabel.grid(row=0, column=0)
-        self.questionPicker = ttk.Combobox(questionFrame, justify="center")
+        self.questionPicker = ttk.Combobox(questionFrame, justify="center", textvariable=self.questionVar)
         self.questionPicker['state'] = 'readonly'
         self.questionPicker['values'] = self.choices
         self.questionPicker.current(newindex=0)
         self.questionPicker.grid(row=1, column=0)
 
-    def getQuestionNumber():
+    def getQuestionNumber(self):
         return self.questionPicker.current()
+
+    def hide(self):
+        self.grid_remove()
+    
+    def show(self, row=2):
+        self.grid()
         
         
 
@@ -50,34 +76,45 @@ class LargeEntryFrame(ttk.Frame):
   userinput = None
   validation = None
 
-  def validate(self):
-    for pattern in self.validation:
+  def validate(self, *uselessArgs):
+    self.userinput.edit_modified(False) #clear the modified flag so it can fire again
+    for pattern in self.validation: #make sure taht you put an iterable in the validation_regex argument
         if re.match(pattern, self.get_data(), re.IGNORECASE):
-            print("Input validates")
+            self.userinput["bg"] = LIGHTGREEN #text is OK so make the background light green
             return True
-    print("Input does not validate")
+    self.userinput["bg"] = "white" #text is not OK, remove colour
     return False
     
   def get_data(self):
-    return self.userinput.get(0, "end")
+    return self.userinput.get(1.0, "end").strip()
 
   def get_file_to_data(self,windowTitle="Select File..."):
-    self.userinput.delete(0, "end")
-    with fd.askopenfile(mode="r", title=windowTitle) as input_file:
-        self.userinput.insert(0, input_file.read())
-
+    try: 
+        with fd.askopenfile(mode="r", title=windowTitle) as input_file:
+            self.userinput.delete(1.0, "end")
+            self.userinput.insert(1.0, input_file.read())
+    except AttributeError: #file selection cancelled
+        pass
 
   def __init__(self, root, row, file_request_text, file_button_text, textbox_label, validation_regex):
     self.validation = validation_regex
-    aut_frame = ttk.Frame(root, relief="solid", borderwidth=2)
-    aut_frame.grid(column=0, row=row, sticky=(EW))
-    aut_frame.columnconfigure(0, weight=1)
-    ttk.Label(aut_frame, text=file_request_text).grid(column=0, row=0)
-    ttk.Button(aut_frame, text=file_button_text, command=self.get_file_to_data).grid(column=0, row=1)
-    ttk.Label(aut_frame, text=textbox_label).grid(column=1, row=0)
-    self.userinput = Text(aut_frame, width=40, height=10, wrap="none")
+    self.aut_frame = ttk.Frame(root, relief="solid", borderwidth=2)
+    self.aut_frame.grid(column=0, row=row, sticky=(EW))
+    self.aut_frame.columnconfigure(0, weight=1)
+    ttk.Label(self.aut_frame, text=file_request_text).grid(column=0, row=0)
+    ttk.Button(self.aut_frame, text=file_button_text, command=self.get_file_to_data).grid(column=0, row=1)
+    ttk.Label(self.aut_frame, text=textbox_label).grid(column=1, row=0)
+    self.userinput = Text(self.aut_frame, width=40, height=10, wrap="none")
+    self.userinput["bg"] = "white"
+    self.userinput["fg"] = "black"
     self.userinput.grid(column=1, row=1)
-    self.userinput.tag_bind("important", "<<Modified>>", self.validate)
+    self.userinput.bind("<<Modified>>", self.validate)
+
+  def hide(self):
+        self.aut_frame.grid_remove()
+    
+  def show(self, *useless):
+    self.aut_frame.grid()
   
   
 
@@ -90,6 +127,10 @@ class AutomatonFrame(LargeEntryFrame):
               
     def __init__(self, root, row):
         super().__init__(root, row, "Choose an automaton file", "Select Automaton File", "Or enter an automaton or regex in this text area.", (self.REGEX_PATTERN, self.GRAIL_PATTERN, self.FADO_PATTERN))
+    
+    #@Override
+    def show(self):
+        super().show(self)
 
 class TransducerFrame(LargeEntryFrame):
     TRANS_PATTERN = r"^(?:(@InputAltering|@ErrorDetecting|@ErrorCorrecting)\r?\n)?@Transducer(?: \d+)+(?:\r?\n\d+ +[0-9A-Za-z] +[0-9A-Za-z] +\d+)+$"
@@ -97,105 +138,243 @@ class TransducerFrame(LargeEntryFrame):
 
     def __init__(self, root, row):
         super().__init__(root, row, "Choose a transducer file", "Select Transducer File", "Or enter a transducer or trajectory in that text area.", (self.TRANS_PATTERN, self.TRAJ_PATTERN))
-
+    #@Override
+    def show(self):
+        super().show(self)
 class ThetaFrame(LargeEntryFrame):
     THETA_PATTERN = r"^@Theta\r?(?:\n[A-Za-z0-9]\s+[A-Za-z0-9])+$"
     
     def __init__(self, root, row):
         super().__init__(root, row, "Choose a Theta File", "Select Theta File", "Or enter an antimorphism here", (self.THETA_PATTERN,))
 
+    #@Override
+    def show(self):
+        super().show(self)
 
 class ConstructionFrame(ttk.Frame):
   s_entry = None
   n_entry = None
   l_entry = None   
+    
+  
 
   def __init__(self, root, row):
-    constructionFrame = ttk.Frame(root, relief="solid", borderwidth=2)
-    constructionFrame.grid(column=0, row=row, sticky=(EW))
-    constructionFrame.columnconfigure(0, weight=1)
-    ttk.Label(constructionFrame, text="Please input the integers for Construction:").grid(column=0, row=0, sticky='EW')
-    ttk.Label(constructionFrame, text="S (# of digits in the alphabet)").grid(column=0, row=1)
-    self.s_entry = ttk.Entry(constructionFrame)
+    self.styling = ttk.Style()
+    self.styling.configure("Valid.TEntry", fieldbackground=LIGHTGREEN)
+    self.styling.configure("Invalid.TEntry", fieldbackground="white")
+    
+
+    self.s_int = StringVar(value="")
+    self.s_int.trace_add("write", self.validate)
+    self.n_int = StringVar(value="")
+    self.n_int.trace_add("write", self.validate)
+    self.l_int = StringVar(value="")
+    self.l_int.trace_add("write", self.validate)
+    self.constructionFrame = ttk.Frame(root, relief="solid", borderwidth=2)
+    self.constructionFrame.grid(column=0, row=row, sticky=(EW))
+    self.constructionFrame.columnconfigure(0, weight=1)
+    ttk.Label(self.constructionFrame, text="Please input the integers for Construction:").grid(column=0, row=0, sticky='EW', columnspan=2)
+    ttk.Label(self.constructionFrame, text="S (# of digits in the alphabet)").grid(column=0, row=1)
+    self.s_entry = ttk.Entry(self.constructionFrame, textvariable=self.s_int)
     self.s_entry.grid(column=1, row=1)
-    ttk.Label(constructionFrame, text="N (# of words to Construct)").grid(column=0, row=2)
-    self.n_entry = ttk.Entry(constructionFrame)
+    ttk.Label(self.constructionFrame, text="N (# of words to Construct)").grid(column=0, row=2)
+    self.n_entry = ttk.Entry(self.constructionFrame, textvariable=self.n_int)
     self.n_entry.grid(column=1, row=2)
-    ttk.Label(constructionFrame, text="L (length of the words to construct)").grid(column=0, row=3)
-    self.l_entry = ttk.Entry(constructionFrame)
+    ttk.Label(self.constructionFrame, text="L (length of the words to construct)").grid(column=0, row=3)
+    self.l_entry = ttk.Entry(self.constructionFrame, textvariable=self.l_int)
     self.l_entry.grid(column=1, row=3)
 
   def getS(self):
-    return int(self.s_entry.get())
+    try: 
+        return int(self.s_entry.get()) #note: this will error and return None on floating-point strings like "1.5"
+    except (TypeError, ValueError):
+        return None
   def getN(self):
-    return int(self.n_entry.get())
+    try:
+        return int(self.n_entry.get())
+    except (TypeError, ValueError): 
+        return None
   def getL(self):
-    return int(self.l_entry.get())
+    try: 
+        return int(self.l_entry.get())
+    except (TypeError, ValueError):
+        return None
   def getConstructionValues(self):
-    return (self.getS(), self.getN(), self.getL())
+    return ({"s_int": self.getS(), "n_int": self.getN(), "l_int": self.getL()})
 
-class ApproximationFrame(ttk.Frame):
+  def hide(self):
+        self.constructionFrame.grid_remove()
+    
+  def show(self):
+        self.constructionFrame.grid()
+
+  def set_backgrounds(self, valid):
+    if valid:
+        self.n_entry["style"] = "Valid.TEntry"
+        self.l_entry["style"] = "Valid.TEntry"
+        self.s_entry["style"] = "Valid.TEntry"
+    else:
+        self.n_entry["style"] = "Invalid.TEntry"
+        self.l_entry["style"] = "Invalid.TEntry"
+        self.s_entry["style"] = "Invalid.TEntry"
+
+  def validate(self, *uselessArgs):
+        try: 
+            if ((2 <= self.getS() <= 10) and (self.getS() <= self.getL()) and (self.getL() >= 1) and (self.getN() >= 1)):
+                self.set_backgrounds(True)
+                return True
+        except TypeError:
+            self.set_backgrounds(False)
+            return False
+        self.set_backgrounds(False)
+        return False
+
+class ApproximationFrame(ttk.Frame): #should have made ApproximationFrame and ConstructionFrame subclasses of a larger class. Perhaps I should do that in the future if there's time
     epsi = None
     disp = None
     dirichletT = None
+
+    def validate(self, *useless):
+        if self.getEpsi() is None:
+            self.epsi["style"] = "Invalid.TEntry"
+        else:   
+            self.epsi["style"] = "Valid.TEntry"
+        if self.getDisp() is None:
+            self.disp["style"] = "Invalid.TEntry"
+        else:   
+            self.disp["style"] = "Valid.TEntry"
+        if self.getT() is None:
+            self.dirichletT["style"] = "Invalid.TEntry"
+        else:   
+            self.dirichletT["style"] = "Valid.TEntry"
+        
             
     def __init__(self, root, row):
-        approximationFrame = ttk.Frame(root, relief="solid", borderwidth=2)
-        approximationFrame.grid(column=0, row=row, sticky=(EW))
-        approximationFrame.columnconfigure(0, weight=1)
-        ttk.Label(approximationFrame, text="Please input the parameters for approximation:").grid(column=0, row=0, sticky='EW')
-        ttk.Label(approximationFrame, text="Epsilon").grid(column=0, row=1, sticky=E)
-        self.epsi = ttk.Entry(approximationFrame)
+        self.styling = ttk.Style()
+        self.styling.configure("Valid.TEntry", fieldbackground=LIGHTGREEN)
+        self.styling.configure("Invalid.TEntry", fieldbackground="white")
+
+        self.epsi_value= StringVar(value="0.01")
+        self.epsi_value.trace_add("write", self.validate)
+
+        self.t_value = StringVar(value="2.001")
+        self.t_value.trace_add("write", self.validate)
+
+        self.disp_value = StringVar(value="1")
+        self.disp_value.trace_add("write", self.validate)
+
+        self.approximationFrame = ttk.Frame(root, relief="solid", borderwidth=2)
+        self.approximationFrame.grid(column=0, row=row, sticky=(EW))
+        self.approximationFrame.columnconfigure(0, weight=1)
+        ttk.Label(self.approximationFrame, text="Please input the parameters for approximation:").grid(column=0, row=0, columnspan=2, sticky='EW')
+
+        ttk.Label(self.approximationFrame, text="Epsilon").grid(column=0, row=1, sticky=E)
+        self.epsi = ttk.Entry(self.approximationFrame, textvariable=self.epsi_value)
         self.epsi.grid(column=1, row=1)
-        self.epsi.insert(0, "0.01")
-        ttk.Label(approximationFrame, text="t (Dirichlet distribution parameter)").grid(column=0, row=2, sticky=E)
-        self.dirichletT = ttk.Entry(approximationFrame)
+
+        ttk.Label(self.approximationFrame, text="t (Dirichlet distribution parameter)").grid(column=0, row=2, sticky=E)
+        self.dirichletT = ttk.Entry(self.approximationFrame, textvariable=self.t_value)
         self.dirichletT.grid(column=1, row=2, sticky=W)
-        self.dirichletT.insert(0, "2.001")
-        ttk.Label(approximationFrame, text="Displacement").grid(column=0, row=3, sticky=E)
-        self.disp = ttk.Entry(approximationFrame)
+
+        ttk.Label(self.approximationFrame, text="Displacement").grid(column=0, row=3, sticky=E)
+        self.disp = ttk.Entry(self.approximationFrame, textvariable=self.disp_value)
         self.disp.grid(column=1, row=3, sticky=W)
-        self.disp.insert(0, "1")
+
+        self.validate()
+
 
     def getEpsi(self):
         try:
-            return float(self.epsi.get())
-        except ValueError:
-            return 0.01
+            val = float(self.epsi_value.get())
+            if (val > 0 and val < 1):
+                return val
+            else: 
+                raise ValueError("Epsilon must be between 0 and 1")
+        except (TypeError, ValueError):
+            return None
+
     def getDisp(self):
         try: 
-            return int(self.disp.get())
-        except ValueError:   
-            return 1
+            d = int(self.disp_value.get())
+            if (d < 0):
+                raise ValueError("Displacement cannot be negative")
+            return d
+        except (TypeError, ValueError):   
+            return None
+
     def getT(self):
         try: 
-            return float(self.dirichletT.get())
-        except ValueError:
-            return 2.001
+            val = float(self.t_value.get())
+            if val <= 1.0:
+                raise ValueError("T must be greater than 1")
+            else: 
+                return val
+        except (TypeError, ValueError):
+            return None
+
     def getApproximationValues(self):
-        return (self.getEpsi(), self.getDisp(), self.getT())
+        return ({"epsilon": self.getEpsi(), "displacement": self.getDisp(), "dirichletT": self.getT()})
+
+    def hide(self):
+        self.approximationFrame.grid_remove()
+    
+    def show(self):
+        self.approximationFrame.grid()
         
 
 
 class PropertySelectorFrame(ttk.Frame):
     choices = ["-Please Select-", "Fixed (UD Code, Prefix Code, Suffix Code...)", "Trajectory or Input-Altering Transducer", "Error-Detection via Input-Preserving Transducer", "Error-Correction via Input-Preserving Transducer", "Theta-Transducer Property via Transducer and Antimorphic Permutation"]  
-    #chosenProperty = StringVar(value="-Please Select-")
-    propertyPicker = None
     
-    def __init__(self, root, row):
-        propertyFrame = ttk.Frame(root, relief="solid", borderwidth=2)
-        propertyFrame.grid(column=0, row=row, sticky=(EW))
-        propertyFrame.columnconfigure(0, weight=1)
-        propertyLabel = ttk.Label(propertyFrame, text="Please Select a Property")
+    def __init__(self, root, row, property, propertyChangeFunc):
+
+        self.propertyVar = property
+        self.propChanger = propertyChangeFunc
+        self.propertyVar.trace_add("write", self.propChanger)
+
+        self.propertyFrame = ttk.Frame(root, relief="solid", borderwidth=2)
+        self.propertyFrame.grid(column=0, row=row, sticky=(EW))
+        self.propertyFrame.columnconfigure(0, weight=1)
+        propertyLabel = ttk.Label(self.propertyFrame, text="Please Select a Property")
         propertyLabel.grid(row=0, column=0)
-        self.propertyPicker = ttk.Combobox(propertyFrame, justify="center", width=58)
+        self.propertyPicker = ttk.Combobox(self.propertyFrame, justify="center", width=58, textvariable=self.propertyVar)
         self.propertyPicker['state'] = 'readonly'
         self.propertyPicker['values'] = self.choices
         self.propertyPicker.current(newindex=0)
         self.propertyPicker.grid(row=1, column=0)
 
+    def updateOptions(self, question):
+        if (question == 1):
+            self.propertyPicker["values"] = self.choices
+        elif (question == 2):
+            if (self.getProperty() == 5):
+                self.resetProperty()
+            self.propertyPicker["values"] = self.choices[0:5]
+        elif (question == 3):
+            if (self.getProperty() in [4,5]):
+                self.resetProperty()
+            self.propertyPicker["values"] = self.choices[0:4]
+        elif (question == 4):
+            if (self.getProperty() == 5):
+                self.resetProperty()
+            self.propertyPicker["values"] = self.choices[0:5]
+        elif (question == 0):
+            self.hide()
+
     def getProperty(self):
         return self.propertyPicker.current()
+
+    def setProperty(self, newProp):
+        self.propertyPicker.current(newindex=newProp)
+
+    def resetProperty(self):
+        self.setProperty(0)
+
+    def hide(self):
+        self.propertyFrame.grid_remove()
+    
+    def show(self):
+        self.propertyFrame.grid()
 
 
 class FixedTypeSelectorFrame(ttk.Frame):
@@ -204,12 +383,12 @@ class FixedTypeSelectorFrame(ttk.Frame):
     #chosenTypeSave = chosenfixedType.get()
     
     def __init__(self, root, row):
-        fixedTypeFrame = ttk.Frame(root, relief="solid", borderwidth=2)
-        fixedTypeFrame.grid(column=0, row=7, sticky=(EW))
-        fixedTypeFrame.columnconfigure(0, weight=1)
-        fixedTypeLabel = ttk.Label(fixedTypeFrame, text="Please Select a Fixed Type")
+        self.fixedTypeFrame = ttk.Frame(root, relief="solid", borderwidth=2)
+        self.fixedTypeFrame.grid(column=0, row=7, sticky=(EW))
+        self.fixedTypeFrame.columnconfigure(0, weight=1)
+        fixedTypeLabel = ttk.Label(self.fixedTypeFrame, text="Please Select a Fixed Type")
         fixedTypeLabel.grid(row=0, column=0)
-        self.fixedTypePicker = ttk.Combobox(fixedTypeFrame, justify="center", width=15)
+        self.fixedTypePicker = ttk.Combobox(self.fixedTypeFrame, justify="center", width=15)
         self.fixedTypePicker['state'] = 'readonly'
         self.fixedTypePicker['values'] = self.choices
         self.fixedTypePicker.current(newindex=0)
@@ -217,17 +396,37 @@ class FixedTypeSelectorFrame(ttk.Frame):
 
     def getFixedType(self):
         return self.fixedTypePicker.current()
-
+    def hide(self):
+        self.fixedTypeFrame.grid_remove()
     
-
+    def show(self):
+        self.fixedTypeFrame.grid()
 
 #code that gets run when the python file runs
 class MainApplication(Tk):
+      
+    def collect_data(self):
+        data = {}
+        data["question"] = self.Question.getQuestionNumber()
+        data["automata_text"] = self.AutomatonInput.get_data()
+        data |= self.Approximation.getApproximationValues()
+        data['property_type'] = self.PropSelector.getProperty()
+        data |= self.ConstructionIntegers.getConstructionValues()
+        data["fixed_type"] = self.FixedSelector.getFixedType()
+        data["theta_text"] = self.ThetaInput.get_data()
+        data["transducer_text"] = self.TransInput.get_data()
+        data["time_limit"] = int(self.timeLimit.get())
+        self.Result.setResult(str(data))
 
     def __init__(self):
         super().__init__()
         self.title("I-LaSer Local Version")
 
+
+        #these need to be class variables so that they persist
+        self.question = StringVar()
+        self.property_type = StringVar()
+        self.fixed_type = StringVar()
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
@@ -236,7 +435,7 @@ class MainApplication(Tk):
         root = ttk.Frame(self)
         root.grid(column=0, row=0, sticky="nesw")
         root.columnconfigure(0, weight=1)
-        root.rowconfigure(0, weight=1)
+            
 
         menuFrame = ttk.Frame(root, relief="solid", borderwidth=2)
         menuFrame.grid(column=0, row=0, sticky="NEW")
@@ -252,27 +451,71 @@ class MainApplication(Tk):
         ttk.Button(menuFrame, text="Technical Notes").grid(column=5, row=0, sticky=(N))
         ttk.Button(menuFrame, text="Credits").grid(column=6, row=0, sticky=(N))
 
-        Question = QuestionFrame(root, 2)
-        AutomatonInput = AutomatonFrame(root, 3)
-        ConstructionIntegers = ConstructionFrame(root, 4)
-        Approximation = ApproximationFrame(root, 5)
-        PropSelector = PropertySelectorFrame(root, 6)
-        FixedSelector = FixedTypeSelectorFrame(root, 7)
-        TransInput = TransducerFrame(root, 8)
-        ThetaInput = ThetaFrame(root, 9)
+        
+        self.Result = ResultFrame(root, 1)
+        self.Question = QuestionFrame(root, 2, self.question, self.reactToQuestionChange)
+        self.AutomatonInput = AutomatonFrame(root, 3)
+        self.ConstructionIntegers = ConstructionFrame(root, 4)
+        self.Approximation = ApproximationFrame(root, 5)
+        self.PropSelector = PropertySelectorFrame(root, 6, self.property_type, self.reactToPropChange)
+        self.FixedSelector = FixedTypeSelectorFrame(root, 7)
+        self.TransInput = TransducerFrame(root, 8)
+        self.ThetaInput = ThetaFrame(root, 9)
 
         #submit button and time limit
-        submitFrame = ttk.Frame(root, relief="solid", borderwidth=2)
-        submitFrame.grid(column=0, row=10, sticky=(EW))
-        submitFrame.columnconfigure(0, weight=1)
-        ttk.Button(submitFrame, text="Submit Request", default="active").grid(column=0, row=0)
-        ttk.Label(submitFrame, text="Time Limit in Seconds:", borderwidth=2).grid(column=1, row=0, sticky=E)
-        timeLimit = ttk.Entry(submitFrame)
-        timeLimit.grid(column=2, row=0, sticky=W)
-        timeLimit.insert(0, "60")
+        self.submitFrame = ttk.Frame(root, relief="solid", borderwidth=2)
+        self.submitFrame.grid(column=0, row=10, sticky=(EW))
+        self.submitFrame.columnconfigure(0, weight=1)
+        ttk.Button(self.submitFrame, text="Submit Request", default="active", command=self.collect_data).grid(column=0, row=0)
+        ttk.Label(self.submitFrame, text="Time Limit in Seconds:", borderwidth=2).grid(column=1, row=0, sticky=E)
+        self.timeLimit = ttk.Entry(self.submitFrame)
+        self.timeLimit.grid(column=2, row=0, sticky=W)
+        self.timeLimit.insert(0, "60")
 
+        for count in range(11):
+            menuFrame.rowconfigure(count, weight=1)
+
+        self.reactToQuestionChange()
+        self.reactToPropChange()
+
+    def reactToQuestionChange(self, *useless):
+        #called whenever the shared variable "question" is modified, to update which 
+        #pieces of the program are shown and hidden
+        question = self.Question.getQuestionNumber()
+        self.AutomatonInput.hide() #always hide first so there is no chance of a double-frame
+        if (question in [1,2,4]):
+            self.AutomatonInput.show()
+        self.ConstructionIntegers.hide()
+        if (question == 3):
+            self.ConstructionIntegers.show()
+        self.PropSelector.hide()
+        if (question != 0):
+            self.PropSelector.show()
+            self.PropSelector.updateOptions(question)
+        self.Approximation.hide()
+        if (question == 4):
+            self.Approximation.show()
+        self.submitFrame.grid_remove()
+        if (question != 0): #do not show the submit button if no question selected
+            self.submitFrame.grid()
+        self.Result.hide()
+    
+    def reactToPropChange(self, *useless):
+        property_type = self.PropSelector.getProperty()
+        self.FixedSelector.hide()
+        if (property_type == 1):
+            self.FixedSelector.show()
+        self.TransInput.hide()
+        if (property_type in [2,3,4,5]):
+            self.TransInput.show()
+        self.ThetaInput.hide()
+        if (property_type == 5):
+            self.ThetaInput.show()
+        self.Result.hide()
+        
+        
 
 
 window = MainApplication()
-window.mainloop() #open the actual GUI window
-
+window.resizable(width=False, height=True)
+window.mainloop() #open the actual GUI window and start responding to inputs
