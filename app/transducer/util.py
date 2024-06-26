@@ -58,7 +58,7 @@ def parse_aut_str(aut_str):
     if aut_str.find("@Transducer") != -1:
         raise IncorrectFormat("Please enter the transducer in its own input area.")
     
-    if aut_str.strip().startswith('(START)'):
+    if aut_str.strip().find('(START)') != -1:
         result = convertGrailToFAdo(aut_str.strip())
         return result
 

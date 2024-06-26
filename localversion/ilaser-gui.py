@@ -2,7 +2,7 @@ from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog as fd
 import re
-#from laser import handlers
+from laser import handlers
 #put a laser folder beneath current directory and put all non-views files from transducer there
 #will need to create a specific code_gen file which can handle the get_code method inside views
 #without  using HTML/Django code. 
@@ -14,10 +14,16 @@ import re
 LIGHTGREEN = "#d5fc99"
 LIGHTRED = "#ff7979"
 
+
+
+
 class ResultFrame(ttk.Frame):
 
-    #TODO: add slyle information to distinguish errors from results!
     def __init__(self, parent, row):
+        self.styling = ttk.Style()
+        self.styling.configure("Error.TFrame", background=LIGHTRED)
+        self.styling.configure("Error.TLabel", background=LIGHTRED)
+
         self.result = StringVar()
         self.resultFrame = ttk.Frame(parent, relief="solid", borderwidth=2)
         self.resultFrame.grid(column=0, row=row, sticky="NEW")
@@ -31,12 +37,26 @@ class ResultFrame(ttk.Frame):
     
     def show(self, row=1):
         self.resultFrame.grid()
-    
+        
     def setResult(self, result):
-        self.result.set(result)
+        if (type(result) == str): #The "calculating... " message (all other messages will be in dictionaries)
+            self.resultFrame["style"] = 'TFrame' #remove all errors
+            self.resultLabel["style"] = "TLabel"
+            self.result.set(result)
+        elif (result.get('error_message')):
+            self.result.set(result["error_message"])     
+            self.resultFrame["style"] = "Error.TFrame"
+            self.resultLabel["style"] = "Error.TLabel"
+            self.resultLabel.text = result
+        elif (result.get("result")):
+            self.resultFrame["style"] = 'TFrame' #default TFrame
+            self.resultLabel["style"] = "TLabel"
+            if (result.get("proof")):
+                self.result.set(result["result"] + "\n" + result["proof"])
+            else:
+                self.result.set(result.get("result"))
         self.show()
-        self.resultLabel.text = result
-     
+        self.resultLabel.text = self.result #don't think this line is necessary
 
 class QuestionFrame(ttk.Frame):
     choices = ["-Please Select-", "Satisfaction", "Maximality", "Construction", "Approximate Maximality"]  
@@ -76,12 +96,23 @@ class LargeEntryFrame(ttk.Frame):
   userinput = None
   validation = None
 
+  def remove_comments(self, enteredString):
+    enteredString = re.sub(r'\r', '', enteredString)
+    enteredString = re.sub(r'\n#.+\n', '\n', enteredString)
+    enteredString = re.sub(r'#.*', '', enteredString)
+    return enteredString
+
   def validate(self, *uselessArgs):
     self.userinput.edit_modified(False) #clear the modified flag so it can fire again
-    for pattern in self.validation: #make sure taht you put an iterable in the validation_regex argument
-        if re.match(pattern, self.get_data(), re.IGNORECASE):
-            self.userinput["bg"] = LIGHTGREEN #text is OK so make the background light green
-            return True
+    for pattern in self.validation: 
+        #make sure that you put an iterable in the validation_regex argument
+        #even if there is only one regex pattern to be matched
+        try: 
+            if re.match(pattern, self.remove_comments(self.get_data()), re.IGNORECASE):
+                self.userinput["bg"] = LIGHTGREEN #text is OK so make the background light green
+                return True
+        except TypeError: #caused by the string being empty and the regex parser complaining
+            print(self.get_data())
     self.userinput["bg"] = "white" #text is not OK, remove colour
     return False
     
@@ -378,7 +409,7 @@ class PropertySelectorFrame(ttk.Frame):
 
 
 class FixedTypeSelectorFrame(ttk.Frame):
-    choices = ["-Please Select-", "Prefix", "Suffix", "Infix", "Outfix", "HyperCode", "Code"]  
+    choices = ["Prefix", "Suffix", "Infix", "Outfix", "HyperCode", "Code"]  
     #chosenfixedType = StringVar(value="-Please Select-")
     #chosenTypeSave = chosenfixedType.get()
     
@@ -395,12 +426,83 @@ class FixedTypeSelectorFrame(ttk.Frame):
         self.fixedTypePicker.grid(row=1, column=0)
 
     def getFixedType(self):
-        return self.fixedTypePicker.current()
+        return self.fixedTypePicker.current() + 1
     def hide(self):
         self.fixedTypeFrame.grid_remove()
     
     def show(self):
         self.fixedTypeFrame.grid()
+
+#class handling non-interactive instructional parts of the application
+
+
+class InstructionFrame(ttk.Frame):
+    
+    def __init__(self, root, message):
+        self.mainFrame = ttk.Frame(root, relief="solid")
+        self.mainFrame.grid(column=0, row=1, sticky="EWS")
+        self.mainFrame.columnconfigure(0, weight=1)
+        messageLabel = ttk.Label(self.mainFrame, wraplength=777, text=message)
+        messageLabel.grid(row=0, column=0, columnspan=2, sticky=(EW))
+
+    def show(self):
+        self.mainFrame.grid()
+    def hide(self):
+        self.mainFrame.grid_remove()
+
+class AutomataFormatFrame(InstructionFrame):
+    
+    def __init__(self, root):
+        text= "You can use either the Grail or FAdo formats for nondeterministic finite automata" \
+        "(those with non-empty transitions). Some points to take into account when"\
+        "writing files in either format:\n\n"\
+        "1. '#' begins a single-line comment\n"\
+        "2. Transitions are written one per line and consist of three space-separated fields: "\
+        "(start state) (symbol) (next state)\n\n"\
+        "How to write files in the FAdo format:\n"\
+        "1. '@NFA' or '@DFA' starts an automaton and determines its type."\
+        "It must be followed by a space-separated list of final states on the same line. \n"\
+        "2. The initial state of the automaton is the start state of the first transition. \n"\
+        "How to write files in the Grail format:\n"\
+        "1. The start state is specified using the line (START) |- X "\
+        "where X is the number of the start state. " \
+        "Only one start state is permitted per automaton.\n"\
+        "2. End states are specified using the line Y -| (FINAL). Multiple end states are permitted.\n\n"\
+        "Below are some examples of automata in both formats\n"
+        super().__init__(root, text)
+
+        #examples for ab*
+        Example1Intro = ttk.Label(self.mainFrame, text="Automaton accepting an a followed by 0 or more b's (a*b):")
+        FAdoExample1  = ttk.Label(self.mainFrame, text="FAdo:\n@NFA 2\n1 a 2\n2 b 2")
+        GrailExample1 = ttk.Label(self.mainFrame, anchor="center", text="Grail:\n(START) |- 1\n1 a 2\n2 b 2")
+        Example2Intro = ttk.Label(self.mainFrame, text="Automaton accepting 0 or more a's followed by one or two nines (a*(9+(99))):")
+        FAdoExample2  = ttk.Label(self.mainFrame, 
+            text="FAdo:\n@NFA 2 3\n1 a 1\n1 9 2\n2 9 3\n2 a 4\n3 a 4\n3 9 4")
+        GrailExample2 = ttk.Label(self.mainFrame,
+         text="Grail:\n(START) |- 1\n2 -| (FINAL)\n3 -| (FINAL)\n1 a 1\n1 9 2\n2 9 3\n2 a 4\n3 a 4\n3 9 4")
+        AdditionalInfo = ttk.Label(self.mainFrame, text="For more examples, please see the instruction manual.")
+        Example1Intro.grid(row=1, column=0, columnspan=2)
+        FAdoExample1.grid(row=2, column=0)
+        GrailExample1.grid(row=2, column=1)
+        Example2Intro.grid(row=3, column=0, columnspan=2)
+        FAdoExample2.grid(row=4, column=0)
+        GrailExample2.grid(row=4, column=1)
+        AdditionalInfo.grid(row=5, column=0, columnspan=2)
+        for count in range(6):
+            self.mainFrame.columnconfigure(count, weight=1)
+
+
+class TransducerFormatFrame(InstructionFrame):
+    text = "The only transducer format accepted is the FAdo tarnsducer format. Complete " \
+           "details are available at fado.dcc.fc.up.pt, below are concise formatting instructions.\n\n" \
+           "1. '#' begins a single-line comment.\n" \
+           "2. '@Transducer' begins the transducer, and this must be followed by a space-separated " \
+           "list of final states.\n" \
+           "3. Transitions are given one per line and must be in the form " \
+           "(start state) (input) (output) (next state)\n" \
+           "4. The initial state is the start state of the first transition.\n\n"
+           
+    
 
 #code that gets run when the python file runs
 class MainApplication(Tk):
@@ -415,8 +517,15 @@ class MainApplication(Tk):
         data["fixed_type"] = self.FixedSelector.getFixedType()
         data["theta_text"] = self.ThetaInput.get_data()
         data["transducer_text"] = self.TransInput.get_data()
-        data["time_limit"] = int(self.timeLimit.get())
-        self.Result.setResult(str(data))
+        try:
+            data["time_limit"] = float(self.timeLimit.get())
+            if data["time_limit"] <= 0:
+                data["time_limit"] = None
+        except ValueError:
+            data["time_limit"] = None
+        self.Result.setResult("Calculating... this may take a while")
+        Tk.update(self) #force the "Calculating..." text to appear
+        self.Result.setResult(handlers.get_response(data))
 
     def __init__(self):
         super().__init__()
@@ -450,6 +559,8 @@ class MainApplication(Tk):
         ttk.Button(menuFrame, text="Antimorphism Format").grid(column=4, row=0, sticky=(N))
         ttk.Button(menuFrame, text="Technical Notes").grid(column=5, row=0, sticky=(N))
         ttk.Button(menuFrame, text="Credits").grid(column=6, row=0, sticky=(N))
+        
+        #self.AutomatonInstructions = AutomataFormatFrame(root)
 
         
         self.Result = ResultFrame(root, 1)
@@ -461,6 +572,7 @@ class MainApplication(Tk):
         self.FixedSelector = FixedTypeSelectorFrame(root, 7)
         self.TransInput = TransducerFrame(root, 8)
         self.ThetaInput = ThetaFrame(root, 9)
+        
 
         #submit button and time limit
         self.submitFrame = ttk.Frame(root, relief="solid", borderwidth=2)
@@ -477,6 +589,7 @@ class MainApplication(Tk):
 
         self.reactToQuestionChange()
         self.reactToPropChange()
+        
 
     def reactToQuestionChange(self, *useless):
         #called whenever the shared variable "question" is modified, to update which 
