@@ -14,9 +14,6 @@ from laser import handlers
 LIGHTGREEN = "#d5fc99"
 LIGHTRED = "#ff7979"
 
-
-
-
 class ResultFrame(ttk.Frame):
 
     def __init__(self, parent, row):
@@ -66,12 +63,12 @@ class QuestionFrame(ttk.Frame):
         self.questionReact = questionChangeFunc
         self.questionVar.trace_add("write", self.questionReact)        
         
-        questionFrame = ttk.Frame(root, relief="raised", borderwidth=2)
-        questionFrame.grid(column=0, row=row, sticky="NEW") #result is above it, though if result doesn't exist, it doesn't take up space
-        questionFrame.columnconfigure(0, weight=1)
-        questionLabel = ttk.Label(questionFrame, text="What question would you like to solve?")
+        self.questionFrame = ttk.Frame(root, relief="raised", borderwidth=2)
+        self.questionFrame.grid(column=0, row=row, sticky="NEW") #result is above it, though if result doesn't exist, it doesn't take up space
+        self.questionFrame.columnconfigure(0, weight=1)
+        questionLabel = ttk.Label(self.questionFrame, text="What question would you like to solve?")
         questionLabel.grid(row=0, column=0)
-        self.questionPicker = ttk.Combobox(questionFrame, justify="center", textvariable=self.questionVar)
+        self.questionPicker = ttk.Combobox(self.questionFrame, justify="center", textvariable=self.questionVar)
         self.questionPicker['state'] = 'readonly'
         self.questionPicker['values'] = self.choices
         self.questionPicker.current(newindex=0)
@@ -81,10 +78,10 @@ class QuestionFrame(ttk.Frame):
         return self.questionPicker.current()
 
     def hide(self):
-        self.grid_remove()
+        self.questionFrame.grid_remove()
     
     def show(self, row=2):
-        self.grid()
+        self.questionFrame.grid()
         
         
 
@@ -146,14 +143,16 @@ class LargeEntryFrame(ttk.Frame):
     
   def show(self, *useless):
     self.aut_frame.grid()
+
+  def clear(self):
+    self.userinput.delete(1.0, "end")
   
   
 
 class AutomatonFrame(LargeEntryFrame):
     REGEX_PATTERN = r"^[0-9A-Za-z()+*]+$" #for the user to input a regex in the NFA area
-    #a single unrestricted line. balanced brackets is not possible and the handler will error
-    #anyways if it cannot parse the regex. 
-    GRAIL_PATTERN = r"^\(START\) +\|- +\d+(?:(?:\r?\n\d+ [0-9A-Za-z] \d)|(?:\r?\n\d+ +-\| +\(FINAL\)))+$"
+    #a single unrestricted line. the handler will error if it cannot parse the regex. 
+    GRAIL_PATTERN = r"^\(START\) +\|- +\d+(?:(?:\r?\n\d+ +[0-9A-Za-z] +\d)|(?:\r?\n\d+ +-\| +\(FINAL\)))+$"
     FADO_PATTERN = r"^@[ND]FA(?: +\d+)+(?:\r?\n\d+ +[0-9A-Za-z] +\d+)+$"
               
     def __init__(self, root, row):
@@ -187,8 +186,6 @@ class ConstructionFrame(ttk.Frame):
   n_entry = None
   l_entry = None   
     
-  
-
   def __init__(self, root, row):
     self.styling = ttk.Style()
     self.styling.configure("Valid.TEntry", fieldbackground=LIGHTGREEN)
@@ -426,15 +423,53 @@ class FixedTypeSelectorFrame(ttk.Frame):
         self.fixedTypePicker.grid(row=1, column=0)
 
     def getFixedType(self):
-        return self.fixedTypePicker.current() + 1
+        return self.fixedTypePicker.current() + 1 #prefix is fixed type 1, and is also the first option
     def hide(self):
         self.fixedTypeFrame.grid_remove()
     
     def show(self):
         self.fixedTypeFrame.grid()
 
-#class handling non-interactive instructional parts of the application
+class SubmissionFrame(ttk.Frame):
 
+    def __init__(self, root, row, clearFunc, submitFunc):
+        self.collect_data = submitFunc
+        self.clear = clearFunc
+        #submit button and time limit
+        self.submitFrame = ttk.Frame(root, relief="solid", borderwidth=2)
+        self.submitFrame.grid(column=0, row=row, sticky=(EW))
+        self.submitFrame.columnconfigure(0, weight=2)
+        self.submitFrame.columnconfigure(1, weight=2)
+        self.submitFrame.columnconfigure(2, weight=1)
+        self.submitFrame.columnconfigure(3, weight=1)
+
+
+        ttk.Button(self.submitFrame, text="Submit Request", default="active", command=self.collect_data).grid(column=0, row=0, sticky=E)
+        ttk.Button(self.submitFrame, text="Clear Data", command=self.clear).grid(column=1, row=0)
+        ttk.Label(self.submitFrame, text="Time Limit in Seconds:", borderwidth=2).grid(column=2, row=0, sticky=E)
+        self.timeLimit = ttk.Entry(self.submitFrame)
+        self.timeLimit.grid(column=3, row=0, sticky=W)
+        self.timeLimit.insert(0, "60")
+
+    def show(self):
+        self.submitFrame.grid()
+
+    def hide(self):
+        self.submitFrame.grid_remove()
+
+    def get_time_limit(self):
+        try: 
+            timeLimit = float(self.timeLimit.get())
+            if (timeLimit > 0):
+                return timeLimit
+            else:
+                return None
+        except ValueError: 
+            return None
+
+#class handling non-interactive instructional parts of the application
+#inherited by AutomataFormatFrame, TransducerFormatFrame, TrajectoryFormatFrame, AntimorphismFormatFrame,
+#and CreditsFrame
 
 class InstructionFrame(ttk.Frame):
     
@@ -454,7 +489,7 @@ class AutomataFormatFrame(InstructionFrame):
     
     def __init__(self, root):
         text= "You can use either the Grail or FAdo formats for nondeterministic finite automata" \
-        "(those with non-empty transitions). Some points to take into account when"\
+        "(those with non-empty transitions). Some points to take into account when "\
         "writing files in either format:\n\n"\
         "1. '#' begins a single-line comment\n"\
         "2. Transitions are written one per line and consist of three space-separated fields: "\
@@ -493,7 +528,8 @@ class AutomataFormatFrame(InstructionFrame):
 
 
 class TransducerFormatFrame(InstructionFrame):
-    text = "The only transducer format accepted is the FAdo tarnsducer format. Complete " \
+    def __init__(self, root):
+        text = "The only transducer format accepted is the FAdo tarnsducer format. Complete " \
            "details are available at fado.dcc.fc.up.pt, below are concise formatting instructions.\n\n" \
            "1. '#' begins a single-line comment.\n" \
            "2. '@Transducer' begins the transducer, and this must be followed by a space-separated " \
@@ -501,8 +537,74 @@ class TransducerFormatFrame(InstructionFrame):
            "3. Transitions are given one per line and must be in the form " \
            "(start state) (input) (output) (next state)\n" \
            "4. The initial state is the start state of the first transition.\n\n"
-           
-    
+        super().__init__(root, text)
+        ttk.Label(self.mainFrame, wraplength=777, text="The below example shows a transducer for the suffix code property over the alphabet {a,b}; this transducer outputs all proper suffixes of a given word.").grid(row=1, column=0, columnspan=2)
+        #label for suffix code transducer example
+        ttk.Label(self.mainFrame, text="@Transducer 2 3\n1 a @epsilon 2\n1 b @epsilon 2\n2 a @epsilon 2\n2 b @epsilon 2\n2 a a 3\n2 b b 3\n3 a a 3\n3 b b 3\n").grid(row=2, column=0)
+        #1-sid example, introduction and transducer
+        ttk.Label(self.mainFrame, wraplength=777, text="Here is a transducer for the 1-sid-detecting property over the alphabet {a,b}: This transducer outputs all words obtained by performing at most one substitution, insertion, or deletion on the input word. Notice the use of '@epsilon', which represents the empty symbol").grid(row=3, column=0, columnspan=2)
+        ttk.Label(self.mainFrame, text="@Transducer 0 1\n0 a a 0\n0 b b 0\n0 a b 1\n0 b a 1\n0 a @epsilon 1\n0 b @epsilon 1\n0 @epsilon a 1\n0 @epsilon b 1\n1 a a 1\n1 b b 1\n").grid(row=4, column=0)
+        ttk.Label(self.mainFrame, text="For more examples, please see the instruction manual.").grid(row=5, column=0, columnspan=2)
+
+class TrajectoryFormatFrame(InstructionFrame):
+
+    def __init__(self, root):
+        text = "Trajectories are provided using regular expressions over the alphabet {1,0}, " \
+               "where 0 indicates \"keep the symbol in this place\" and 1 indicates \"delete the " \
+               "symbol in this place\".\nThe regular expression 1*0* describes the suffix code property " \
+               "(i.e. delete 0 or more symbols, then keep the rest).\n" \
+               "The regular expression 1*0*1* describes the infix code property (i.e. delete some symbols, " \
+               "keep some symbols, delete the rest).\n" \
+               "The regular expression (1*0*) + (0*1*) describes the bifix code property "\
+               "(i.e. both the prefix and suffix code properties)"
+        super().__init__(root, text)
+
+class AntimorphismFormatFrame(InstructionFrame):
+    def __init__(self, root):
+        text = "Theta antimorphisms are used to answer questions about DNA properties. " \
+               "Below is an example of an antimorphism describing the DNA antimorphism over the " \
+               "DNA alphabet. The program will automatically add the inverses."   
+        super().__init__(root, text)
+        ttk.Label(self.mainFrame, text="@Theta\na t\ng c").grid(row=1, column=0) 
+
+class TechNoteFrame(InstructionFrame):
+    def __init__(self, root):
+        text = "The program accepts the description of a regular language via a finite automaton " \
+               "or regular expression, and the description of a language property, and answers " \
+               "yes or no questions regarding satisfaction or maximality of the given property. " \
+               "The maximality question can take exponential time (PSPACE-hard), so an option for " \
+               "approximate maximality is provided. Note that for simpler languages, maximality can " \
+               "be faster to decide than approximate maximality.\n\n" \
+               "There is also an option for Construction, where the program accepts a property " \
+               "description and three positive integers S, N, and K, where 2 ≤ S ≤ 10 and S ≤ L. " \
+               "In this case, it will return a list of up to N words of length K, using alphabet " \
+               "{0,1, ..., s-1}.\n\nFor detailed description of the properties, see the other tabs or " \
+               "the instruction manual." 
+        super().__init__(root,text)
+
+class CreditsFrame(InstructionFrame):
+    def __init__(self, root):
+        text = "Project Initiator: Stavros Konstantinidis (cs.smu.ca/~stavros)\n" \
+               "Backend calculations use the FAdo library, by Stavros Konstantinidis, " \
+               "Nelma Moreira, and Rogerio Reis.\n" \
+               "Local application based on the web version at laser.cs.smu.ca/independence, " \
+               "and built by Baxter Madore using the tkinter library.\n" \
+               "Web version history: \n" \
+               "6. Baxter Madore (August 2024):\n" \
+               "Incorporating the approximate maximality question, and adding time limits to computations.\n" \
+               "5. Matthew Rafuse (January 2018):\n" \
+               "Incorporating satisfaction of DNA properties.\n" \
+               "4. Abisola Adeniran (October 2016):\n" \
+               "Incorporating the Construction question.\n" \
+               "3. Casey Meijer (June 2014):\n" \
+               "Deciding maximality of all properties.\n" \
+               "2. Meng Yang (June 2012):\n" \
+               "Deciding satisfaction of Input-Preserving transducers, Error-detection, and Error-correction.\n" \
+               "1. Krystian Dudzinski (June 2010):\n" \
+               "Deciding satisfaction of Trajectories and Input-Altering transducers.\n"
+        super().__init__(root, text)
+                
+
 
 #code that gets run when the python file runs
 class MainApplication(Tk):
@@ -517,15 +619,15 @@ class MainApplication(Tk):
         data["fixed_type"] = self.FixedSelector.getFixedType()
         data["theta_text"] = self.ThetaInput.get_data()
         data["transducer_text"] = self.TransInput.get_data()
-        try:
-            data["time_limit"] = float(self.timeLimit.get())
-            if data["time_limit"] <= 0:
-                data["time_limit"] = None
-        except ValueError:
-            data["time_limit"] = None
+        data["time_limit"] = self.Submit.get_time_limit()
         self.Result.setResult("Calculating... this may take a while")
         Tk.update(self) #force the "Calculating..." text to appear
         self.Result.setResult(handlers.get_response(data))
+    
+    def clear_data(self):
+        self.AutomatonInput.clear()
+        self.TransInput.clear()
+        self.ThetaInput.clear()
 
     def __init__(self):
         super().__init__()
@@ -552,15 +654,20 @@ class MainApplication(Tk):
 
         #initialize all of the buttons in the same order as I-LaSer website. 
         #they currently have no styling
-        ttk.Button(menuFrame, text="Home").grid(column=0, row=0, sticky=(N)) #home button
-        ttk.Button(menuFrame, text="Automata Format").grid(column=1, row=0, sticky=(N))
-        ttk.Button(menuFrame, text="Transducer Format").grid(column=2, row=0, sticky=(N))
-        ttk.Button(menuFrame, text="Trajectory Format").grid(column=3, row=0, sticky=(N))
-        ttk.Button(menuFrame, text="Antimorphism Format").grid(column=4, row=0, sticky=(N))
-        ttk.Button(menuFrame, text="Technical Notes").grid(column=5, row=0, sticky=(N))
-        ttk.Button(menuFrame, text="Credits").grid(column=6, row=0, sticky=(N))
+        ttk.Button(menuFrame, text="Home", command=lambda: self.frame_show(1)).grid(column=0, row=0, sticky=(N)) #home button
+        ttk.Button(menuFrame, text="Automata Format", command=lambda: self.frame_show(2)).grid(column=1, row=0, sticky=(N))
+        ttk.Button(menuFrame, text="Transducer Format", command=lambda: self.frame_show(3)).grid(column=2, row=0, sticky=(N))
+        ttk.Button(menuFrame, text="Trajectory Format", command=lambda: self.frame_show(4)).grid(column=3, row=0, sticky=(N))
+        ttk.Button(menuFrame, text="Antimorphism Format", command=lambda: self.frame_show(5)).grid(column=4, row=0, sticky=(N))
+        ttk.Button(menuFrame, text="Technical Notes", command=lambda: self.frame_show(6)).grid(column=5, row=0, sticky=(N))
+        ttk.Button(menuFrame, text="Credits", command=lambda: self.frame_show(7)).grid(column=6, row=0, sticky=(N))
         
-        #self.AutomatonInstructions = AutomataFormatFrame(root)
+        self.AutomatonInstructions = AutomataFormatFrame(root)
+        self.TransducerInstructions = TransducerFormatFrame(root)
+        self.TrajectoryInstructions = TrajectoryFormatFrame(root)
+        self.AntimorphismInstructions = AntimorphismFormatFrame(root)
+        self.TechnicalNotes = TechNoteFrame(root)
+        self.Credits = CreditsFrame(root)
 
         
         self.Result = ResultFrame(root, 1)
@@ -572,62 +679,74 @@ class MainApplication(Tk):
         self.FixedSelector = FixedTypeSelectorFrame(root, 7)
         self.TransInput = TransducerFrame(root, 8)
         self.ThetaInput = ThetaFrame(root, 9)
-        
-
-        #submit button and time limit
-        self.submitFrame = ttk.Frame(root, relief="solid", borderwidth=2)
-        self.submitFrame.grid(column=0, row=10, sticky=(EW))
-        self.submitFrame.columnconfigure(0, weight=1)
-        ttk.Button(self.submitFrame, text="Submit Request", default="active", command=self.collect_data).grid(column=0, row=0)
-        ttk.Label(self.submitFrame, text="Time Limit in Seconds:", borderwidth=2).grid(column=1, row=0, sticky=E)
-        self.timeLimit = ttk.Entry(self.submitFrame)
-        self.timeLimit.grid(column=2, row=0, sticky=W)
-        self.timeLimit.insert(0, "60")
+        self.Submit = SubmissionFrame(root, 10, self.clear_data, self.collect_data)
 
         for count in range(11):
-            menuFrame.rowconfigure(count, weight=1)
+            menuFrame.rowconfigure(count, weight=1) #so that things appear normal in terms of horizontal spacing
 
-        self.reactToQuestionChange()
-        self.reactToPropChange()
+        self.frame_show(1)
+
         
 
     def reactToQuestionChange(self, *useless):
         #called whenever the shared variable "question" is modified, to update which 
         #pieces of the program are shown and hidden
-        question = self.Question.getQuestionNumber()
-        self.AutomatonInput.hide() #always hide first so there is no chance of a double-frame
-        if (question in [1,2,4]):
-            self.AutomatonInput.show()
-        self.ConstructionIntegers.hide()
-        if (question == 3):
-            self.ConstructionIntegers.show()
+        try: 
+            question = self.Question.getQuestionNumber()
+        except AttributeError: #caused when the window hasn't fully loaded so self.Question does not exist
+            return
+        self.conditional_show(self.AutomatonInput, (question in [1,2,4]))
+        self.conditional_show(self.ConstructionIntegers, (question == 3))
         self.PropSelector.hide()
+        self.FixedSelector.hide()
+        self.TransInput.hide()
+        self.ThetaInput.hide()
         if (question != 0):
             self.PropSelector.show()
             self.PropSelector.updateOptions(question)
-        self.Approximation.hide()
-        if (question == 4):
-            self.Approximation.show()
-        self.submitFrame.grid_remove()
-        if (question != 0): #do not show the submit button if no question selected
-            self.submitFrame.grid()
+            self.reactToPropChange(question)
+        self.conditional_show(self.Approximation, (question == 4))
+        self.conditional_show(self.Submit, (question != 0))
         self.Result.hide()
     
     def reactToPropChange(self, *useless):
-        property_type = self.PropSelector.getProperty()
-        self.FixedSelector.hide()
-        if (property_type == 1):
-            self.FixedSelector.show()
-        self.TransInput.hide()
-        if (property_type in [2,3,4,5]):
-            self.TransInput.show()
-        self.ThetaInput.hide()
-        if (property_type == 5):
-            self.ThetaInput.show()
+        try: 
+            property_type = self.PropSelector.getProperty()
+        except AttributeError: #caused if the window hasn't fully loaded
+            return
+        self.conditional_show(self.FixedSelector, (property_type == 1))
+        self.conditional_show(self.TransInput, (property_type in [2,3,4,5]))
+        self.conditional_show(self.ThetaInput, (property_type == 5))
         self.Result.hide()
-        
-        
 
+    #shows the frame, if a condition is met, hides it otherwise
+    #requires that frames have show and hide methods
+    def conditional_show(self, frame, condition):
+        frame.hide() #hide first so that there is no chance of a double-draw
+        if (condition):
+            frame.show()
+        
+    def frame_show(self, frame):
+        self.Result.hide()
+        self.Question.hide()
+        self.AutomatonInput.hide()
+        self.ConstructionIntegers.hide()
+        self.Approximation.hide()
+        self.PropSelector.hide()
+        self.FixedSelector.hide()
+        self.TransInput.hide()
+        self.ThetaInput.hide()
+        self.Submit.hide()
+        if (frame == 1):
+            self.Question.show()
+            self.reactToQuestionChange() #shows the required properties and input areas
+        self.conditional_show(self.AutomatonInstructions, (frame == 2))
+        self.conditional_show(self.TransducerInstructions, (frame == 3))
+        self.conditional_show(self.TrajectoryInstructions, (frame == 4))
+        self.conditional_show(self.AntimorphismInstructions, (frame == 5))
+        self.conditional_show(self.TechnicalNotes, (frame == 6))
+        self.conditional_show(self.Credits, (frame == 7))
+        
 
 window = MainApplication()
 window.resizable(width=False, height=True)
