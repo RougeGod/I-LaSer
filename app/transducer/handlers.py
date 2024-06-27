@@ -178,6 +178,22 @@ def check_approx_maximality(automaton, prop, eps, t, disp):
     else: 
         return "No, the language is not maximal with respect to the property.", format_counter_example(witness)
 
+def check_satisfaction(automaton, prop):
+    try:
+        witness = prop.notSatisfiesW(automaton)
+    except TypeError:
+        decision = AUTOMATON_INCORRECT_FORMAT
+        return {'error_message': decision}
+    if witness == (None, None) or witness == (None, None, None):
+        decision = 'YES, the language satisfies the property'
+        proof = ''
+        satisfaction = True
+    else:
+        decision = 'NO, the language does not satisfy the property'
+        proof = format_counter_example(witness)
+        satisfaction = False
+    return {'result':decision, 'proof': proof, "isSatisfied": satisfaction}
+
 
 
 def handle_satisfaction_maximality(
@@ -338,21 +354,13 @@ def handle_satisfaction_maximality(
 
     # Check Satisfaction
     if question == '1':
-        try:
-            witness = prop.notSatisfiesW(aut)
-        except TypeError:
-            decision = AUTOMATON_INCORRECT_FORMAT
-            return {'form':form, 'error_message': decision,
+        sat = check_satisfaction(aut, prop)
+        if sat.get("error_message"):
+            return {'form':form, 'error_message': sat.get("error_message"),
                     'automaton':aut_name, 'transducer':t_name}
-
-        if witness == (None, None) or witness == (None, None, None):
-            decision = 'YES, the language satisfies the property'
-            proof = ''
-        else:
-            decision = 'NO, the language does not satisfy the property'
-            proof = format_counter_example(witness)
-        return {'form':form, 'automaton':aut_name, 'transducer':t_name,
-                'result':decision, 'proof': proof}
+        else: 
+            return {"form": form, "automaton": aut_name, "transducer": t_name, 
+                   "result": sat.get("result"), "proof": sat.get("proof")}
     # Check Maximality
     elif question == '2':
         err = ''
@@ -377,12 +385,20 @@ def handle_satisfaction_maximality(
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                 'result':decision, 'proof': proof}
     elif question == "4":
-        epsi = float(data.get('epsilon', 0.05))
-        t = float(data.get('dirichletT', 2.0001))
-        disp = int(data.get('displacement', 1))
-        decision, proof = check_approx_maximality(aut, prop, epsi, t, disp)
-        if t_name == "":
-            return {'form': form, 'automaton': aut_name, 'result': decision, "proof": proof}
+        sat = check_satisfaction(aut, prop)
+        if (sat.get("error_message")):
+            return {'form':form, 'error_message': sat.get("error_message"),
+                    'automaton':aut_name, 'transducer':t_name}
+        elif not (sat["isSatisfied"]):
+            return {"form": form, "error_message": "ERROR: The language does not satisfy the property", 
+                    "automaton": aut_name, "transducer": t_name}
         else: 
-            return {'form':form, 'automaton':aut_name, 'transducer':t_name,
+            epsi = float(data.get('epsilon', 0.05))
+            t = float(data.get('dirichletT', 2.0001))
+            disp = int(data.get('displacement', 1))
+            decision, proof = check_approx_maximality(aut, prop, epsi, t, disp)
+            if t_name == "":
+                return {'form': form, 'automaton': aut_name, 'result': decision, "proof": proof}
+            else: 
+                return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                     'result':decision, 'proof': proof}

@@ -12,7 +12,7 @@ from app.testing.test_util import openfile
 NFAs = ["test_files/ApproximatelyMaximalOutfix.fa"]
 TRAJs = ["test_files/1#0#+0#1#.traj"]
 
-AMAX_DEFAULTS = {"displacement": '1', "epsilon": "0.03", "dirichletT": 2.0001}
+AMAX_DEFAULTS = {"displacement": '1', "epsilon": "0.03", "dirichletT": "2.0001"}
 
 class MyTestCase(TestCase):
     
@@ -22,7 +22,7 @@ class MyTestCase(TestCase):
         oneTrue = False
         oneFalse = False
         for _ in range(20):
-            if func(): 
+            if func():
                 oneTrue = True
             else:
                 oneFalse = True
@@ -31,10 +31,11 @@ class MyTestCase(TestCase):
         return False
            
     def test_outfix_RNG(self): #about 1 in 1000000 that this fails by pure chance
-        def singleOutfixTest(): #approximately 48% chance of single test returning true. About 1 in 1000000 that
+        def singleOutfixTest(): #approximately 48% chance of single test returning true. 
             aut = openfile(NFAs[0])
             post = {"question": "4", "property_type": "1", "fixed_type": "4"} | AMAX_DEFAULTS
             files = {"automata_file": SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
             result = get_response(post, files, False)
-            return result["result"].startswith("Yes")
+            raise NotImplementedError(result)
+            return result["result"].startswith("YES")
         self.assertTrue(self.random_function_repeater(singleOutfixTest))
