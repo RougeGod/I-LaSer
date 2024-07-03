@@ -509,7 +509,7 @@ class AutomataFormatFrame(InstructionFrame):
         #examples for ab*
         Example1Intro = ttk.Label(self.mainFrame, text="Automaton accepting an a followed by 0 or more b's (a*b):")
         FAdoExample1  = ttk.Label(self.mainFrame, text="FAdo:\n@NFA 2\n1 a 2\n2 b 2")
-        GrailExample1 = ttk.Label(self.mainFrame, anchor="center", text="Grail:\n(START) |- 1\n1 a 2\n2 b 2")
+        GrailExample1 = ttk.Label(self.mainFrame, anchor="center", text="Grail:\n(START) |- 1\n1 a 2\n2 b 2\n2 -| (FINAL)")
         Example2Intro = ttk.Label(self.mainFrame, text="Automaton accepting 0 or more a's followed by one or two nines (a*(9+(99))):")
         FAdoExample2  = ttk.Label(self.mainFrame, 
             text="FAdo:\n@NFA 2 3\n1 a 1\n1 9 2\n2 9 3\n2 a 4\n3 a 4\n3 9 4")
@@ -746,7 +746,10 @@ class MainApplication(Tk):
         self.conditional_show(self.AntimorphismInstructions, (frame == 5))
         self.conditional_show(self.TechnicalNotes, (frame == 6))
         self.conditional_show(self.Credits, (frame == 7))
-        
+       
+#debug info, printing the current Tcl/Tk version
+tcl = Tcl()
+print(tcl.call("info", "patchlevel"))
 
 window = MainApplication()
 window.resizable(width=False, height=True)
