@@ -22,15 +22,19 @@ def create_fixed_property(alphabet, fixed_type):
     Create a property of a fixed variety such as prefix or suffix codes
     """
     result = None
-    if fixed_type in ["1", "PREFIX"]:
+    if fixed_type in ["1", "PREFIX", 1]:
         result = codes.buildPrefixProperty(alphabet)
-    elif fixed_type in ["2", "SUFFIX"]:
+    elif fixed_type in ["2", "SUFFIX", 2]:
         result = codes.buildSuffixProperty(alphabet)
-    elif fixed_type in ["3", "INFIX"]:
+    elif fixed_type in ["3", "BIFIX", 3]:
+        result = codes.buildPrefixProperty(alphabet) & codes.buildSuffixProperty(alphabet)
+    elif fixed_type in ["4", "INFIX", 4]:
         result = IATProp(codes.infixTransducer(alphabet))
-    elif fixed_type in ["4", "OUTFIX"]:
+    elif fixed_type in ["5", "OUTFIX", 5]:
         result = codes.buildOutfixProperty(alphabet)
-    elif fixed_type in ["5", "HYPERCODE"]:
+    elif fixed_type in ["6", "CODE", 6]:
+        result = codes.UDCodeProp(alphabet)
+    elif fixed_type in ["7", "HYPERCODE", 7]:
         result = codes.buildHypercodeProperty(alphabet)
     return result
 

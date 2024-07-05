@@ -238,11 +238,12 @@ def handle_satisfaction_maximality(
             return {'form': form, 'error_message': "No fixed type was entered.",
                 'automaton': aut_name}
             
-        # This method will return a fixed property, or None if it's a UD Code.
+        # This method will return the fixed property based on the parameters given
         prop = create_fixed_property(aut.Sigma, fixed_type)
-        if prop is None:
-            # Create the UD Code Property
-            prop = UDCodeProp(aut.Sigma)
+        #UDCodeProp has no Aut attribute, so as of now, it cannot be checked for approximate 
+        #maximality, and the web limits on transducer size cannot be checked, so we must handle
+        #this seperately. 
+        if type(prop) == UDCodeProp:
             proof = ''
             if question == '1':
                 # Satisfaction
@@ -252,7 +253,7 @@ def handle_satisfaction_maximality(
                 else:
                     decision = "NO, the language does not satisfy the code property"
                     proof = format_counter_example(witness)
-            else:
+            elif question == 2:
                 # Maximality
                 try:
                     if prop.maximalP(aut):
@@ -261,6 +262,8 @@ def handle_satisfaction_maximality(
                         decision = "NO, the language is not a maximal code"
                 except PropertyNotSatisfied:
                     decision = "ERROR: the language doesn't satisfy the property."
+            else: 
+                return error("Approximate Maximality not available for the UD Code Property")
 
             return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
 

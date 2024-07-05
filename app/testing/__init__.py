@@ -1,5 +1,6 @@
 """Contains all the unit tests"""
 #pylint:disable=W0401
+from app.testing.test_approx_maximality import *
 from app.testing.test_laser_program_execution import *
 from app.testing.test_data import *
 from app.testing.test_laser_ABIS import *

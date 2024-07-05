@@ -1,0 +1,62 @@
+\documentclass{article}
+\usepackage{graphicx} % Required for inserting images
+\usepackage{amsmath}
+\usepackage{float}
+\def\ms{\hspace{2px}}
+
+
+\title{I-LaSer GUI Instruction Manual}
+\begin{document}
+
+\section{Introduction}
+\par The Independent Language Server (I-LaSer) is a program, originally built in June 2010 and currently on its sixth feature release, which answers questions relating to the satisfaction and maximality of formal languages. There is also an option to construct a language of a given size using certain parameters. It accepts a description of a regular language, which can be provided by either a regular expression or a finite automaton, and a description of a language property, which can be either a fixed type, provided by a trajectory, or provided by a transducer. 
+
+\section{Motivation for Creating the Local Version}
+\par The I-LaSer web version has some drawbacks, and the creation of a locally-run GUI aims to fix these issues.
+The main issue that the web version of I-LaSer faced was that the behind-the-scenes calculations took a lot of time and computing power. For more complex languages and/or properties, this caused too much strain on the server. Another issue is that the web server faced cyberattacks, resulting in its temporary removal. Having a locally run version protects against any future server downtime, as a user will have their own program available to run without depending on the server, and provides the ability for users to bypass server limits on language complexity and calculation time. A smaller benefit is that the local GUI can be run without Internet access. 
+
+\subsection{Problems with Program Generation}
+\par The web version's drawbacks are partially alleviated by allowing the user to generate a Python program, which, when run, produces the correct answer on the user's machine without forcing the web server to run calculations. However, this is not a perfect solution for a few reasons. Running the program requires the user have a working Python installation, and take the extra steps of unzipping the folder, running the Python program, then deleting the zipped folder and the extracted folder. Due to the newlines in the text areas not translating well to generated programs, the generated program must also encode input strings in base-64 and decode then during program execution. For these reasons, program generation has been intentionally left out of the I-LaSer GUI. Furthermore, if there are future issues resulting in server downtime, this would also prevent access to generating programs.
+
+\section{Independences}
+
+\subsection{Satisfaction}
+\par Roughly speaking, a language is said to \textit{satisfy} an independent property if and only if there does not exist a pair of words $w_1$ and $w_2$ such that $w_2$ can be created by performing operation $T$ on $w_1$. The operation $T$ is defined by the property. If a language satisfies a property, every subset of that language satisfies the same property. An empty language satisfies all independence properties, as there are no words to transform into other words in a language. For similar reasons, a language with only a single word (which may be the empty word) also satisfies all independence properties. 
+
+\subsection{Maximality}
+\par A language $L$ satisfying property $P$ is said to be \textit{maximal} with respect to $P$ if and only if no more words can be added to $L$ without losing its satisfaction of $P$. When testing maximality and approximate maximality using I-LaSer, you will get an error if the language does not satisfy the property, as the (approximate) maximality question is meaningless on such languages, since the language has already lost satisfaction of the property without adding any words. 
+
+\subsection{Approximate Maximality}
+\par Testing maximality, in the worst case, is PSPACE-hard, requiring that every possible word is tested and can only be done in exponential time. The Approximate Maximality feature of I-LaSer GUI alleviates this problem by not testing for complete maximality, but instead, generates a sample of words over the alphabet, testing them to see if they can be added to the language. If the sample includes a word that can be added to the language, then the language is definitely not maximal and I-LaSer will provide the word that can be added. If the sample does not include a word that can be added to the language, I-LaSer will conclude that the language is approximately maximal. Such a statement does not definitively mean that the language is truly maximal with respect to the property, but it can say that the language is close to being maximal. Setting up the random distribution of words takes time, so although calculating approximate maximality is in theory faster than true maximality, in practice it is only faster for complex languages and properties. 
+
+\par I-LaSer uses a polynomial randomized approximation (PRAX) algorithm and the Dirichlet distribution over the positive integers to generate the samples. Due to the randomness involved, questions of approximate maximality may not result in the same output from I-LaSer when run multiple times. For more information on the theory behind approximate maximality, please read https://arxiv.org/pdf/2202.01594. 
+
+%Infix: you cannot make a different word in the language by chipping away from the outsides
+%Outfix: you cannot make a different word in the language by knocking a contiguous piece
+%Hypercode: you cannot make a different word in the language by removing ANY pieces, contiguous or not, internal or external
+%Code: you cannot have ambiguity in parsing an arrangement of words from a continuous stream
+%Bifix: prefix AND suffix
+
+\section{Fixed Properties}
+\subsection{Prefix}
+A language is a \textit{prefix code} if no word in the language is a prefix of another word in the language. The trajectory expression creating a prefix code is 0*1*. Keep 0 or more symbols from the start of each word, and discard the rest. 
+
+\par An example of a language that is a prefix code is \verb-aa*b-, the language with all words containing one or more a's followed by a single b. This is a prefix code since removing the last symbol of any word will remove the b, and make the result a word that is not in the language. This language, however, is not a \textit{maximal} prefix code, since we could add the word "b", and the language would still be a prefix code. 
+
+\par A language that is \textbf{not} a prefix code is \verb-a*b*-, zero or more a's followed by zero or more b's. The empty string, with zero a's and zero b's, is in the language, and if you keep 0 symbols from the start of a different word, and discard the rest, the result will be the empty string. In general, if a language includes the empty string and at least one non-empty word, it will not satisfy any of the fixed code properties shown by I-LaSer. 
+
+\subsection{Suffix}
+A language is a \textit{suffix code} if no word in the language is a suffix of another word in the language. It is very similar to the prefix code. Its trajectory expression is 1*0*. Discard zero or more symbols from the start, and keep the rest, if you end up with another word in the language, then the language is \textbf{not} a suffix code. 
+
+\par One language that is not a suffix code is the language (b+bb)aa*, consisting of words with one or two b's, then one or more a's. This is not a suffix code because you can remove the first b from any word with two b's, and createa another word in the language. 
+
+\subsection{Bifix}
+A language is a \textit{bifix code} if and only if it is both a prefix code and a suffix code. 
+
+\subsection{Infix}
+A language is an \textit{infix code} if no word in the language can be found inside another word in the language, whether at either end or somewhere in the middle. It is necessary for a language to be a bifix code, \textit{i.e} both a prefix code and a suffix code, in order to be an infix code, but this is not a sufficient condition. 
+\section{Input Areas}
+
+\section{Backend Calculations}
+
+\end{document}

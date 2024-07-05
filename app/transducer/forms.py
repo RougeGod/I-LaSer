@@ -17,10 +17,11 @@ PROPERTY_TYPE_CHOICE = (('0', '-Please Select-'),
 
 FIXED_TYPE_CHOICE = (('1', 'Prefix'),
                      ('2', 'Suffix'),
-                     ('3', 'Infix'),
-                     ('4', 'Outfix'),
-                     ('5', 'HyperCode'),
-                     ('6', 'Code'))
+                     ('3', 'Bifix'),
+                     ('4', 'Infix'),
+                     ('5', 'Outfix'),
+                     ('6', 'Code'),
+                     ('7', 'HyperCode'))
 
 QUESTION_CHOICE = (('0', '-Please Select-'),
                    ('1', 'Satisfaction'),

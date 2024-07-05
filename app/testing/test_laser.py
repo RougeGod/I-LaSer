@@ -268,7 +268,7 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
-        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}  # INFIX
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '4'}  # INFIX
         aut = openfile(REGS[3])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
@@ -281,7 +281,7 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertEquals(result['result'][:27], "YES, the language satisfies")
-        post = {'question': '1', 'property_type': '1', 'fixed_type': '4'}  # OUTFIX
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '5'}  # OUTFIX
         aut = openfile(REGS[2])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
@@ -294,7 +294,7 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:23], "NO, the language is not")
-        post = {'question': '2', 'property_type': '1', 'fixed_type': '5'}  # HYPERCODE
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '7'}  # HYPERCODE
         aut = openfile(REGS[7])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
@@ -315,12 +315,12 @@ class MyTestCase(TestCase):
 
 
     def test_FIXED_CODEsatNO(self):
-        post = {'question': '1', 'property_type': '1', 'fixed_type': '6'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '6'} # CODE
         aut = openfile(REGS[6])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
-        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '4'} # INFIX
         aut = openfile(REGS[3])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
@@ -328,12 +328,12 @@ class MyTestCase(TestCase):
 
 
     def test_FIXED_CODEsatYES(self):
-        post = {'question': '1', 'property_type': '1', 'fixed_type': '6'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '6'} #CODE
         aut = openfile(REGS[0])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertEquals(result['result'][:27], "YES, the language satisfies")
-        post = {'question': '1', 'property_type': '1', 'fixed_type': '4'}
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '5'} #OUTFIX
         aut = openfile(REGS[2])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
@@ -346,7 +346,7 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:23], "NO, the language is not")
-        post = {'question': '2', 'property_type': '1', 'fixed_type': '3'}
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '4'}
         aut = openfile(REGS[5])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
@@ -359,7 +359,7 @@ class MyTestCase(TestCase):
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
         self.assertEquals(result['result'][:20], "YES, the language is")
-        post = {'question': '2', 'property_type': '1', 'fixed_type': '4'}
+        post = {'question': '2', 'property_type': '1', 'fixed_type': '5'} #OUTFIX
         aut = openfile(REGS[2])
         files = {'automata_file': SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))}
         result = get_response(post, files, False)
