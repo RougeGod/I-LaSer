@@ -4,7 +4,7 @@ from django.test import TestCase
 from app.transducer.views import get_code
 from app.transducer.laser_gen import program_lines, generate_program_file
 from app.testing.test_data import a_bstar_a, s1ts, a_ab_bb, t1ts, aa_ab_bb, a_ab_ba, a_bb_star
-from app.testing.test_util import hamm_dist, hamm_dist_list, readfile, openfile
+from app.testing.test_util import hamm_dist, hamm_dist_list, readfile, openfile, create_file_dictionary
 import re
 
 #  This program tests methods in the module "laser_gen.py". The

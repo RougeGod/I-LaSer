@@ -4,6 +4,7 @@ from os import path
 import string
 
 from app.transducer.laser_gen import generate_program_file
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 def hamm_dist(str1, str2):
     """Return the hamming distance of two strings"""
@@ -31,6 +32,25 @@ def hamm_dist_list(list_):
                 else:
                     min_dist = min(min_dist, dist)
     return min_dist
+
+def create_file_dictionary(aut_file=None, trans_file=None, theta_file=None):
+    '''get_response wants a dictionary of files, which need to be opened a certain way
+       accepts filenames, returns a dictionary'''
+    output = {}
+    aut = openfile(aut_file) if aut_file is not None else None
+    trans = openfile(trans_file) if trans_file is not None else None
+    theta = openfile(theta_file) if theta_file is not None else None
+    if aut is not None:
+        output['automata_file'] = SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8"))
+    if trans is not None:
+        output['transducer_file'] = SimpleUploadedFile(trans.name, str.encode(trans.read(), encoding="utf-8"))
+    if theta is not None:
+        output['theta_file'] = SimpleUploadedFile(theta.name, str.encode(theta.read(), encoding="utf-8"))
+        
+    return output
+    
+    
+    
 
 def readfile(file_):
     """Return the contents of a file"""

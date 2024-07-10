@@ -1,7 +1,7 @@
 """Online mode unit tests"""
 
 from app.transducer.views import get_response
-from app.testing.test_util import readfile, openfile
+from app.testing.test_util import readfile, openfile, create_file_dictionary
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -22,52 +22,50 @@ class MyTestCase(TestCase):
 
     def test_dna(self):
         """Holds DNA tests"""
-        THETA_STR = readfile(THETA_NAMES[1])
-        aut_file = openfile(THETAS[0])
-        t_text = readfile(TRAJ_NAMES[0])
-        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        post = {'question': '1', 'property_type': '5'}
+        files = create_file_dictionary(aut_file=THETAS[0], trans_file=TRAJ_NAMES[0], theta_file=THETA_NAMES[1])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
-        aut_file = openfile(THETAS[1])
-        t_text = readfile(TRAJ_NAMES[0])
-        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read()))}
+        post = {'question': '1', 'property_type': '5'}
+        files = create_file_dictionary(aut_file=THETAS[1], trans_file=TRAJ_NAMES[0], theta_file=THETA_NAMES[1])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(THETAS[2])
         t_text = readfile(TRAJ_NAMES[0])
-        post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': THETA_STR, 'transducer_text1': t_text}
+        theta_text = readfile(THETA_NAMES[1])
+        post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': theta_text, 'transducer_text1': t_text}
         files = {}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
-        aut_file = openfile(THETAS[0])
         t_text = readfile(TRAJ_NAMES[1])
-        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text}
+        files = create_file_dictionary(aut_file=THETAS[0], theta_file=THETA_NAMES[1])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
-        aut_file = openfile(THETAS[1])
+
+        theta_str = readfile(THETA_NAMES[1])
+
+
         t_text = readfile(TRAJ_NAMES[1])
-        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': theta_str}
+        files = create_file_dictionary(aut_file=THETAS[1])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_text = readfile(THETAS[2])
         t_text = readfile(TRAJ_NAMES[1])
-        post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': THETA_STR, 'transducer_text1': t_text}
+        post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': theta_str, 'transducer_text1': t_text}
         files = {}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_text = readfile(THETAS[3])
         t_text = readfile(TRAJ_NAMES[1])
-        post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': THETA_STR, 'transducer_text1': t_text}
+        post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': theta_str, 'transducer_text1': t_text}
         files = {}
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
@@ -76,58 +74,52 @@ class MyTestCase(TestCase):
         """Holds theta tests"""
         THETA_STR = readfile(THETA_NAMES[0])
 
-        aut_file = openfile(REGS[3])
+
         t_text = readfile(TRAJ_NAMES[1])
         post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(aut_file=REGS[3])
         result = get_response(post, files, False)   
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
-        aut_file = openfile(REGS[0])
         t_text = readfile(TRAJ_NAMES[2])
         post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(aut_file=REGS[0])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(REGS[0])
-        t_file = openfile(TRAJ_NAMES[1])
         post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': THETA_STR}
-        files = {'transducer_file': SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(trans_file=TRAJ_NAMES[1])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(REGS[2])
-        t_file = openfile(TRAJ_NAMES[2])
         post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': THETA_STR}
-        files = {'transducer_file': SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(trans_file=TRAJ_NAMES[2])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         aut_file = openfile(REGS[3])
-        t_text = readfile(TRAJ_NAMES[2])
         post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(trans_file=TRAJ_NAMES[2])
         result = get_response(post, files, False)
         #self.assertTrue(result.get('result', 'FAIL').startswith('NO')) #unsure if this test should actually return true or false (REGS[3] was recently changed due to its unsupported input)
 
-        aut_file = openfile(REGS[0])
         t_text = readfile(TRAJ_NAMES[1])
         post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
-        files = {'automata_file': SimpleUploadedFile(aut_file.name, str.encode(aut_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(aut_file=REGS[0])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(REGS[0])
-        t_file = openfile(TRAJ_NAMES[2])
         post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': THETA_STR}
-        files = {'transducer_file': SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(trans_file=TRAJ_NAMES[2])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('NO'))
 
         aut_text = readfile(REGS[2])
         t_file = openfile(TRAJ_NAMES[1])
         post = {'question': '1', 'property_type': '5', 'automata_text': aut_text, 'theta_text': THETA_STR}
-        files = {'transducer_file': SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))}
+        files = create_file_dictionary(trans_file=TRAJ_NAMES[1])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))

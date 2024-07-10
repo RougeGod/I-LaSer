@@ -29,7 +29,7 @@ def detect_automaton_type(aut_str):
     try:
         readOneFromString(aut_str + "\n")
         return 'readOneFromString'
-    except UnexpectedCharacters:
+    except (UnexpectedCharacters, Exception): #couldn't read the automaton 
         try:
             reex.str2regexp(aut_str).toNFA()
             return 'str2regexp'
