@@ -30,7 +30,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = create_file_dictionary(aut_file=REGS[0], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result') or result.get('error_message').find("should be a subset") != -1)
+        self.assertTrue(result.get('error_message').find("should be a subset") != -1)
 
         aut_str = readfile(REGS[0])
         t_str = readfile(TRAJ_NAMES[0])
@@ -73,7 +73,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = create_file_dictionary(aut_file=REGS[2], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('error_message').startswith("The automaton's alphabet should be a subset")) #again gives the error about the automaton's alphabet not being a subset, which is correct
+        self.assertTrue(result.get('error_message').find("should be a subset") != -1) #again gives the error about the automaton's alphabet not being a subset, which is correct
 
         aut_str = readfile(REGS[1])
         t_str = readfile(TRAJ_NAMES[0])
@@ -92,11 +92,9 @@ class MyTestCase(TestCase):
     def test_4(self):
         th_str = readfile(THETA_NAMES[0])
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
-        aut = openfile(REGS[3])
-        t_file = openfile(TRAJ_NAMES[0])
         files = create_file_dictionary(aut_file=REGS[3], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('error_message'))
+        self.assertTrue(result.get('error_message').find("should be a subset") != -1)
 
         aut_str = readfile(REGS[3])
         t_str = readfile(TRAJ_NAMES[0])
@@ -116,7 +114,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = create_file_dictionary(aut_file=REGS[1], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result') or result.get('error_message').find("should be a subset") != -1)
+        self.assertTrue(result.get('error_message').find("should be a subset") != -1)
 
         aut_str = readfile(REGS[1])
         t_str = readfile(TRAJ_NAMES[1])
@@ -140,7 +138,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = create_file_dictionary(aut_file=REGS[1], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result') or result.get("error_message").find("should be a subset"))
+        self.assertTrue(result.get("error_message").find("should be a subset") != -1)
 
         aut_str = readfile(REGS[0])
         t_str = readfile(TRAJ_NAMES[1])
@@ -159,7 +157,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = create_file_dictionary(aut_file=REGS[4], trans_file=TRAJ_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("NO"))
 
         aut_str = readfile(REGS[1])
         t_str = readfile(TRAJ_NAMES[0])
@@ -176,9 +174,9 @@ class MyTestCase(TestCase):
     def test_8(self):
         th_str = readfile(THETA_NAMES[0])
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
-        files = create_file_dictionary(aut_file=REGS[10], trans_file=TRAJ_NAMES[1])
+        files = create_file_dictionary(aut_file=REGS[10], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('error_message').find("should be a subset") != -1)
 
         aut_str = readfile(REGS[10])
         t_str = readfile(TRAJ_NAMES[0])
@@ -197,7 +195,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5'}
         files = create_file_dictionary(aut_file=THETAS[0], trans_file=TRAJ_NAMES[0], theta_file = THETA_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("YES"))
 
         aut_str = readfile(THETAS[0])
         t_str = readfile(TRAJ_NAMES[0])
@@ -212,19 +210,12 @@ class MyTestCase(TestCase):
         self.assertEquals(prog_vars['answer'], (None, None))
 
     def test_theta_2(self):
-        aut = openfile(THETAS[1])
-        t_file = openfile(TRAJ_NAMES[0])
         th_str = readfile(THETA_NAMES[1])
 
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
-        files = {
-            'automata_file':SimpleUploadedFile(aut.name, str.encode(aut.read(), encoding="utf-8")),
-            'transducer_file':SimpleUploadedFile(t_file.name, str.encode(t_file.read(), encoding="utf-8"))
-        }
+        files = create_file_dictionary(aut_file=THETAS[1], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
-        aut.close()
-        t_file.close()
+        self.assertTrue(result.get('result').startswith("NO"))
 
         aut_str = readfile(THETAS[1])
         t_str = readfile(TRAJ_NAMES[0])
@@ -236,14 +227,13 @@ class MyTestCase(TestCase):
         prog_vars = {}
         #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
         exec(prog, prog_vars, prog_vars)
-        ans = prog_vars['answer'] != (None, None)
-        self.assertTrue(ans)
+        self.assertNotEquals(prog_vars['answer'], (None, None))
 
     def test_theta_3(self):
         post = {'question':'1', 'property_type':'5'}
         files = create_file_dictionary(aut_file=THETAS[3], trans_file=TRAJ_NAMES[0], theta_file=THETA_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("NO"))
 
         aut_str = readfile(THETAS[3])
         t_str = readfile(TRAJ_NAMES[0])
@@ -261,7 +251,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5'}
         files = create_file_dictionary(aut_file=THETAS[3], trans_file=TRAJ_NAMES[0], theta_file=THETA_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("NO"))
 
         aut_str = readfile(THETAS[3])
         t_str = readfile(TRAJ_NAMES[0])
@@ -280,7 +270,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = create_file_dictionary(aut_file=THETAS[0], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("YES"))
 
         aut_str = readfile(THETAS[0])
         t_str = readfile(TRAJ_NAMES[1])
@@ -292,14 +282,13 @@ class MyTestCase(TestCase):
         prog_vars, prog_vars_test = {}, {}
         #store prog variables in global and local dictonaries 'prog_vars'. Both are same otherwise local variables are stored as a class
         exec(prog, prog_vars, prog_vars)
-        ans = prog_vars['answer'] == (None, None)
-        self.assertTrue(ans)
+        self.assertEquals(prog_vars['answer'], (None, None))
 
     def test_theta_6(self):
         post = {'question':'1', 'property_type':'5'}
         files = create_file_dictionary(aut_file=THETAS[1], trans_file=TRAJ_NAMES[1], theta_file=THETA_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("YES"))
 
         aut_str = readfile(THETAS[1])
         t_str = readfile(TRAJ_NAMES[1])
@@ -318,7 +307,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5', 'theta_text':th_str}
         files = create_file_dictionary(aut_file=THETAS[2], trans_file=TRAJ_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("YES"))
 
         aut_str = readfile(THETAS[2])
         t_str = readfile(TRAJ_NAMES[1])
@@ -336,7 +325,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'5'}
         files = create_file_dictionary(aut_file=THETAS[3], trans_file=TRAJ_NAMES[1], theta_file=THETA_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('result'))
+        self.assertTrue(result.get('result').startswith("NO"))
 
         aut_str = readfile(THETAS[3])
         t_str = readfile(TRAJ_NAMES[1])

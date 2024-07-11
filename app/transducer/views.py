@@ -90,7 +90,7 @@ def get_response(data, files, form):
 
     if not question: #User clicked submit without specifying question (question is 0, so not question is true)
         return {'form': form, 'error_message': "Please select a question."}
-    if not property_type: 
+    if not property_type:
         return {"form": form, "error_message": "Please select a property type."}
 
     if question in ['1', '2', '4']:

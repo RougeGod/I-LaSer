@@ -166,6 +166,8 @@ def handle_construction(
     # Input-Preserving Property
     elif property_type == '3':
         result = handle_ipp(n_num, l_num, s_num, t_name, t_str, form)
+    else: 
+        return error("This feature has not yet been implemented.")
 
     return result
     
@@ -210,16 +212,17 @@ def handle_satisfaction_maximality(
     if not aut_str:
         return error('Please provide an automaton file.')
 
-    aut_name = "Language: " + data.get('aut_name', 
-        'Textarea Regex' if detect_automaton_type(aut_str) == "str2regexp" else "Textarea Automaton")
-
     aut_str = parse_aut_str(aut_str) #remove comments and convert from Grail
 
     try:
         aut = construct_automaton(aut_str)
-    except (IncorrectFormat, TypeError): # Automata syntax error
-        return {'form': form, 'error_message':AUTOMATON_INCORRECT_FORMAT,
-                'automaton': aut_name}
+        #get the name of the automaton (web-only)
+        aut_name = "Language: " + data.get('aut_name', 
+            'Textarea Regex' if detect_automaton_type(aut_str) == "str2regexp" else "Textarea Automaton")
+    except (IncorrectFormat, TypeError, Exception): # Automata syntax error, of any type
+        return {'form': form, 'error_message':AUTOMATON_INCORRECT_FORMAT}
+
+
 
     # Check to see if the computation would be too computationally expensive
     try:
@@ -253,16 +256,14 @@ def handle_satisfaction_maximality(
                 else:
                     decision = "NO, the language does not satisfy the code property"
                     proof = format_counter_example(witness)
-            elif question == 2:
-                # Maximality
-                try:
-                    if prop.maximalP(aut):
-                        decision = "YES, the language is a maximal code"
-                    else:
-                        decision = "NO, the language is not a maximal code"
-                except PropertyNotSatisfied:
-                    decision = "ERROR: the language doesn't satisfy the property."
-            else: 
+            elif question == '2': #maximality
+                if prop.notSatisfiesW(aut) != (None, None):
+                    return error("ERROR: The language does not satisfy the property.")
+                if prop.maximalP(aut):
+                    decision = "YES, the language is a maximal code"
+                else:
+                    decision = "NO, the language is not a maximal code"
+            elif question == '4': 
                 return error("Approximate Maximality not available for the UD Code Property")
 
             return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
@@ -309,7 +310,8 @@ def handle_satisfaction_maximality(
                 return {'form':form, 'error_message': PROPERTY_INCORRECT_FORMAT,
                         'automaton':aut_name, 'transducer':t_name}
         elif property_type == '5': # We have to branch off, it is handled differently.
-
+            if (question != '1'): #asking a non-satisfaction question (currently unsupported, this might change in the future)
+                return error("This feature has not yet been implemented.")
             try:
                 prop = IPTProp(readOneFromString(t_str + "\n"))
                 if not is_subset(aut, prop):
@@ -370,7 +372,7 @@ def handle_satisfaction_maximality(
         try:
             witness = prop.notMaximalW(aut)
         except PropertyNotSatisfied:
-            err = 'ERROR: the language does not satisfy the property.'
+            err = 'ERROR: The language does not satisfy the property.'
         except TypeError:
             err = AUTOMATON_INCORRECT_FORMAT
 

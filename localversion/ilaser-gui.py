@@ -109,7 +109,7 @@ class LargeEntryFrame(ttk.Frame):
                 self.userinput["bg"] = LIGHTGREEN #text is OK so make the background light green
                 return True
         except TypeError: #caused by the string being empty and the regex parser complaining
-            print(self.get_data())
+            return False #empty string shouldn't pass validation
     self.userinput["bg"] = "white" #text is not OK, remove colour
     return False
     
@@ -406,7 +406,7 @@ class PropertySelectorFrame(ttk.Frame):
 
 
 class FixedTypeSelectorFrame(ttk.Frame):
-    choices = ["Prefix", "Suffix", "Infix", "Outfix", "HyperCode", "Code"]  
+    choices = ["Prefix", "Suffix", "Bifix", "Infix", "Outfix", "Code", "HyperCode"]  
     #chosenfixedType = StringVar(value="-Please Select-")
     #chosenTypeSave = chosenfixedType.get()
     
@@ -622,7 +622,13 @@ class MainApplication(Tk):
         data["time_limit"] = self.Submit.get_time_limit()
         self.Result.setResult("Calculating... this may take a while")
         Tk.update(self) #force the "Calculating..." text to appear
-        self.Result.setResult(handlers.get_response(data))
+        try:
+            self.Result.setResult(handlers.get_response(data))
+        except Exception as unforseen:
+            #for exceptions that aren't handled earlier in the backend. 
+            #they are the result of bugs, both known and unknown, but the windowed 
+            #executable, the program will hang when getting an unhandled exception
+            self.Result.setResult({'error_message': unforseen})
     
     def clear_data(self):
         self.AutomatonInput.clear()
@@ -748,8 +754,9 @@ class MainApplication(Tk):
         self.conditional_show(self.Credits, (frame == 7))
        
 #debug info, printing the current Tcl/Tk version
-tcl = Tcl()
-print(tcl.call("info", "patchlevel"))
+#if on Mac, and this is 8.5.x, crashes are likely
+#tcl = Tcl()
+#print(tcl.call("info", "patchlevel"))
 
 window = MainApplication()
 window.resizable(width=False, height=True)

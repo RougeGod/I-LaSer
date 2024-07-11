@@ -48,7 +48,7 @@ def write_witness(witness):
 def parse_aut_str(aut_str):
     """
     Cleans up the automata string inputted through a file or textarea, removing
-    commented lines, commented line parts, and normalizing newlines. 
+    commented lines, commented line parts, and normalizing newlines to UNIX format. 
     Will also convert input from Grail to FAdo, if necessary. 
 
     Formerly allowed a property to be input in the NFA area, but this functionality
@@ -58,6 +58,8 @@ def parse_aut_str(aut_str):
     aut_str = re.sub(r'\r', '', aut_str)
     aut_str = re.sub(r'\n#.+\n', '\n', aut_str)
     aut_str = re.sub(r'#.+', '', aut_str)
+
+    aut_str = aut_str.strip()
 
     if aut_str.find("@Transducer") != -1:
         raise IncorrectFormat("Please enter the transducer in its own input area.")
