@@ -21,6 +21,7 @@ from app.transducer.util import create_fixed_property, write_witness, parse_aut_
                                 apply_theta_antimorphism, reverse_theta_antimorphism, parse_transducer_string
 
 from lark import UnexpectedCharacters
+from lark.exceptions import VisitError
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 AUTOMATON_INCORRECT_FORMAT = "The automaton or regular expression appears to be invalid."
@@ -219,9 +220,12 @@ def handle_satisfaction_maximality(
         #get the name of the automaton (web-only)
         aut_name = "Language: " + data.get('aut_name', 
             'Textarea Regex' if detect_automaton_type(aut_str) == "str2regexp" else "Textarea Automaton")
-    except (IncorrectFormat, TypeError, Exception): # Automata syntax error, of any type
-        return {'form': form, 'error_message':AUTOMATON_INCORRECT_FORMAT}
-
+    except (IncorrectFormat, TypeError): # Automata syntax error, of any type
+        return error(AUTOMATON_INCORRECT_FORMAT)
+    except VisitError: #only ever gotten this when putting an NFA and calling it a DFA
+        return error("This should be an NFA, not a DFA")
+    except Exception: #catch-all, just in case of other unforeseen errors
+        return error("Error parsing automaton.")
 
 
     # Check to see if the computation would be too computationally expensive

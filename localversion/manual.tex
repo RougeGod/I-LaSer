@@ -27,7 +27,8 @@ The main issue that the web version of I-LaSer faced was that the behind-the-sce
 \par A language $L$ satisfying property $P$ is said to be \textit{maximal} with respect to $P$ if and only if no more words can be added to $L$ without losing its satisfaction of $P$. When testing maximality and approximate maximality using I-LaSer, you will get an error if the language does not satisfy the property, as the (approximate) maximality question is meaningless on such languages, since the language has already lost satisfaction of the property without adding any words. 
 
 \subsection{Approximate Maximality}
-\par Testing maximality, in the worst case, is PSPACE-hard, requiring that every possible word is tested and can only be done in exponential time. The Approximate Maximality feature of I-LaSer GUI alleviates this problem by not testing for complete maximality, but instead, generates a sample of words over the alphabet, testing them to see if they can be added to the language. If the sample includes a word that can be added to the language, then the language is definitely not maximal and I-LaSer will provide the word that can be added. If the sample does not include a word that can be added to the language, I-LaSer will conclude that the language is approximately maximal. Such a statement does not definitively mean that the language is truly maximal with respect to the property, but it can say that the language is close to being maximal. Setting up the random distribution of words takes time, so although calculating approximate maximality is in theory faster than true maximality, in practice it is only faster for complex languages and properties. 
+\par Testing maximality, in the worst case, is PSPACE-hard, requiring that every possible word is tested and can only be done in exponential time.
+The Approximate Maximality feature of I-LaSer 6 alleviates this problem by not testing for complete maximality, but instead, generates a sample of words over the alphabet, testing them to see if they can be added to the language. If the sample includes a word that can be added to the language, then the language is definitely not maximal and I-LaSer will provide the word that can be added. If the sample does not include a word that can be added to the language, I-LaSer will conclude that the language is approximately maximal. Such a statement does not definitively mean that the language is truly maximal with respect to the property, but it can say that the language is close to being maximal. Setting up the random distribution of words takes time, so although calculating approximate maximality is in theory faster than true maximality, in practice it is only faster for complex languages and properties. 
 
 \par I-LaSer uses a polynomial randomized approximation (PRAX) algorithm and the Dirichlet distribution over the positive integers to generate the samples. Due to the randomness involved, questions of approximate maximality may not result in the same output from I-LaSer when run multiple times. For more information on the theory behind approximate maximality, please read https://arxiv.org/pdf/2202.01594. 
 
@@ -38,24 +39,97 @@ The main issue that the web version of I-LaSer faced was that the behind-the-sce
 %Bifix: prefix AND suffix
 
 \section{Fixed Properties}
+
+This section contains simplified explanations of all fixed properties available to select in I-LaSer
+
 \subsection{Prefix}
-A language is a \textit{prefix code} if no word in the language is a prefix of another word in the language. The trajectory expression creating a prefix code is 0*1*. Keep 0 or more symbols from the start of each word, and discard the rest. 
+A language is a \textit{prefix code} if no word in the language is a prefix of another word in the language. Keep 0 or more symbols from the start of each word, and discard the rest. 
 
 \par An example of a language that is a prefix code is \verb-aa*b-, the language with all words containing one or more a's followed by a single b. This is a prefix code since removing the last symbol of any word will remove the b, and make the result a word that is not in the language. This language, however, is not a \textit{maximal} prefix code, since we could add the word "b", and the language would still be a prefix code. 
 
 \par A language that is \textbf{not} a prefix code is \verb-a*b*-, zero or more a's followed by zero or more b's. The empty string, with zero a's and zero b's, is in the language, and if you keep 0 symbols from the start of a different word, and discard the rest, the result will be the empty string. In general, if a language includes the empty string and at least one non-empty word, it will not satisfy any of the fixed code properties shown by I-LaSer. 
 
 \subsection{Suffix}
-A language is a \textit{suffix code} if no word in the language is a suffix of another word in the language. It is very similar to the prefix code. Its trajectory expression is 1*0*. Discard zero or more symbols from the start, and keep the rest, if you end up with another word in the language, then the language is \textbf{not} a suffix code. 
+A language is a \textit{suffix code} if no word in the language is a suffix of another word in the language. It is very similar to the prefix code. Discard zero or more symbols from the start, and keep the rest, if you end up with another word in the language, then the language is \textbf{not} a suffix code. 
 
-\par One language that is not a suffix code is the language (b+bb)aa*, consisting of words with one or two b's, then one or more a's. This is not a suffix code because you can remove the first b from any word with two b's, and createa another word in the language. 
+\par One language that is not a suffix code is the language \verb-(b+bb)aa*-, consisting of words with one or two b's, then one or more a's. This is not a suffix code because you can remove the first b from any word with two b's, and createa another word in the language. 
 
 \subsection{Bifix}
 A language is a \textit{bifix code} if and only if it is both a prefix code and a suffix code. 
 
 \subsection{Infix}
-A language is an \textit{infix code} if no word in the language can be found inside another word in the language, whether at either end or somewhere in the middle. It is necessary for a language to be a bifix code, \textit{i.e} both a prefix code and a suffix code, in order to be an infix code, but this is not a sufficient condition. 
+A language is an \textit{infix code} if no word in the language can be found inside another word in the language, whether at either end or somewhere in the middle. It is necessary for a language to be a bifix code in order to be an infix code, but this is not a sufficient condition. 
+
+\par One language that is a bifix code but not an infix code is the language \verb-(ab*a)+(bbb)-, which consists of all words containing one a at the beginning and end of the word, and any number of b's in between, and the word "bbb". 
+When looking at the word "abbba", it's a prefix code because you cannot remove only letters from the start of the word to get "bbb", and you cannot remove only letters from the end of the word to get "bbb", but removing letters from both ends of the word at once can result in the word "bbb" and disqualify the language from being an infix code. 
+
+\subsection{Outfix}
+A language is an \textit{outfix code} if no word in the language can be formed by removing a single contiguous block of letters from any other word in the language. This piece may be at the start of the word, the end of the word, or anywhere in between. All outfix codes are also bifix codes. 
+\par A language that is not an outfix code is \verb-ab*a-, since you can remove the block of b's, however long it may be, and get "aa", which is in the language. 
+
+\subsection{UD Code}
+A language is not a \textit{uniquely decodable code} if there exists a string of characters, made up of multiple words concatenated together, has multiple places to put the word breaks, that is, some ambiguity in 'un-concatenating' the words. All prefix, suffix, infix, outfix, and bifix codes are uniquely decodable codes. One example of a language that isn't is \verb-a(aa)*-, all words with an odd number of a's, since, when given a string of 5 a's, it is impossible to tell whether it is a single word, or two "a"s and one "aaa" in some order. 
+
+\subsection{Hypercode}
+A language is a hypercode if it is not possible to remove any symbols from one word in the language to get another word in the language. The removed symbols need not be contiguous, and there is no restriction on the position of the removed symbols. A language satisfying the hypercode property is sufficient to conclude that the same language also satisfies the prefix, suffix, bifix, infix, outfix, and UD code properties. One such language is the language of all four-letter words over a given alphabet, which can be written as \verb-(0+1)^4- or \verb-(0+1)(0+1)(0+1)(0+1)-. Removing any letter from a word makes it a shorter word, so it wouldn't be in the language. 
+
+\subsection{Trajectory Equivalents for Fixed Types}
+\begin{center}
+\begin{tabular}{c c}
+Prefix & 0*1*\\
+Suffix & 1*0*\\
+Bifix & 1*0* + 0*1*\\
+Infix & 1*0*1*\\
+Outfix & 0*1*0*\\
+Hypercode & (0+1)*
+\end{tabular}
+\end{center}
+
 \section{Input Areas}
+
+\subsection{File Input}
+I-LaSer can accept typed input in the large text boxes, for automata, transducers, and theta properties, or can accept file input. Clicking the "Upload File" button will open a file selector, from which you may select a text file. Selecting a text file will replace all input in the text box with the contents of the file. Cancelling file selection will preserve the data in the text area.
+
+\subsection{Validation}
+I-LaSer will attempt to perform validation on the inputs to the text box, no matter if the inputs originated from the keyboard or from a file. If the input passes validation, the text box will turn green. If the input fails validation, the text box will remain white. It is still possible to submit inputs that the validator deems "invalid" and have them run without errors. Similarly, the green text box does not necessarily mean that no errors will occur. 
+\par For the construction question, the user is prompted to enter three integers. Validation depends on all three of the numbers, so either the whole combination passes validation and turns green, or the whole combination fails validation and remains white.
+
+\subsection{Automaton Area}
+See the "automata format" tab of I-LaSer for the basics of what to enter in the automaton area or an automaton file. The set of symbols in the state transitions is considered the alphabet of the language. If the language has symbols in the alphabet which do not cause a state transition, they must be added with a same-state transition. If there is no defined state transition on a symbol from the current state, that symbol cannot appear when the automaton is in the current state.
+
+\par The alphabet of a regex or automaton may consist only of letters, numbers, and @epsilon (the empty word).
+When entering a regex, the only operators allowed are:
+\begin{itemize}
+\item x* - 0 or more of symbol "x"
+\item x+y - either symbol "x" or symbol "y"
+\item (x) - treat x as one symbol
+\item \verb-x^n- - repeat symbol x $n$ times. It is recommended but not required to enclose the entire expression \verb-(x^n)- in parentheses. $n$ must not have seperate parentheses and must be a single number. 
+\end{itemize}
+
+\par Some quantifiers used in computer programming regular expressions that can be expressed in mathematical regular expressions are shown in the below table for convenience.
+\begin{center}
+\begin{tabular}{c c c}
+Programming RegEx & $\Rightarrow$ & Mathematical Regular Expression \\
+\verb-x?- & $\Rightarrow$ & \verb-(x+@epsilon)-\\
+\verb-x+- & $\Rightarrow$ & \verb-xx*- \\
+\verb-x{3,}- & $\Rightarrow$ & \verb-x^3x*- \\
+\verb-x{3,6}- & $\Rightarrow$ & \verb-x^3(x|@epsilon)^3- \\
+\verb-x{,6}- & $\Rightarrow$ & \verb-(x+@epsilon)^6- \\
+\end{tabular}
+\end{center}
+
+When entering a finite automaton, there are two options. @DFA begins a Deterministic Finite Automaton, and comes with more restrictions. DFAs may not have any state transitions caused by @epsilon, and may not have a symbol causing more than one state transitions. The following list of state transitions would be legal as an NFA but illegal as a DFA, because it there are multiple paths from state 1 when symbol a is encountered:
+\begin{center}
+1 a 2
+1 b 3
+1 a 3
+\end{center}
+
+\subsection{Transducer Area}
+See the "transducer format" tab of I-LaSer for the basics of what to include in the transducer area or the transducer file. 
+
+\subsection{Theta Area}
+\section{Examples}
 
 \section{Backend Calculations}
 

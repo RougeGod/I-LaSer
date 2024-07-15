@@ -263,15 +263,15 @@ class ApproximationFrame(ttk.Frame): #should have made ApproximationFrame and Co
     dirichletT = None
 
     def validate(self, *useless):
-        if self.getEpsi() is None:
+        if self.getEpsi() is None or (not 0 < self.getEpsi() < 1):
             self.epsi["style"] = "Invalid.TEntry"
         else:   
             self.epsi["style"] = "Valid.TEntry"
-        if self.getDisp() is None:
+        if self.getDisp() is None or (not self.getDisp() >= 0):
             self.disp["style"] = "Invalid.TEntry"
         else:   
             self.disp["style"] = "Valid.TEntry"
-        if self.getT() is None:
+        if self.getT() is None or (not self.getT() > 1):
             self.dirichletT["style"] = "Invalid.TEntry"
         else:   
             self.dirichletT["style"] = "Valid.TEntry"
@@ -314,18 +314,13 @@ class ApproximationFrame(ttk.Frame): #should have made ApproximationFrame and Co
     def getEpsi(self):
         try:
             val = float(self.epsi_value.get())
-            if (val > 0 and val < 1):
-                return val
-            else: 
-                raise ValueError("Epsilon must be between 0 and 1")
+            return val
         except (TypeError, ValueError):
             return None
 
     def getDisp(self):
         try: 
             d = int(self.disp_value.get())
-            if (d < 0):
-                raise ValueError("Displacement cannot be negative")
             return d
         except (TypeError, ValueError):   
             return None
@@ -333,10 +328,7 @@ class ApproximationFrame(ttk.Frame): #should have made ApproximationFrame and Co
     def getT(self):
         try: 
             val = float(self.t_value.get())
-            if val <= 1.0:
-                raise ValueError("T must be greater than 1")
-            else: 
-                return val
+            return val
         except (TypeError, ValueError):
             return None
 
@@ -488,14 +480,14 @@ class InstructionFrame(ttk.Frame):
 class AutomataFormatFrame(InstructionFrame):
     
     def __init__(self, root):
-        text= "You can use either the Grail or FAdo formats for nondeterministic finite automata" \
-        "(those with non-empty transitions). Some points to take into account when "\
+        text= "You can use either the Grail or FAdo formats for nondeterministic finite automata. " \
+        "Some points to take into account when "\
         "writing files in either format:\n\n"\
         "1. '#' begins a single-line comment\n"\
         "2. Transitions are written one per line and consist of three space-separated fields: "\
         "(start state) (symbol) (next state)\n\n"\
         "How to write files in the FAdo format:\n"\
-        "1. '@NFA' or '@DFA' starts an automaton and determines its type."\
+        "1. '@NFA' or '@DFA' starts an automaton and determines its type. "\
         "It must be followed by a space-separated list of final states on the same line. \n"\
         "2. The initial state of the automaton is the start state of the first transition. \n"\
         "How to write files in the Grail format:\n"\
@@ -601,7 +593,9 @@ class CreditsFrame(InstructionFrame):
                "2. Meng Yang (June 2012):\n" \
                "Deciding satisfaction of Input-Preserving transducers, Error-detection, and Error-correction.\n" \
                "1. Krystian Dudzinski (June 2010):\n" \
-               "Deciding satisfaction of Trajectories and Input-Altering transducers.\n"
+               "Deciding satisfaction of Trajectories and Input-Altering transducers.\n\n\n" \
+               "This program comes with no warranty, and is free software under the terms of GPLv3. " \
+               "See https://www.gnu.org/licenses/gpl-3.0.en.html for more details"
         super().__init__(root, text)
                 
 
