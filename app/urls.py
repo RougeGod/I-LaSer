@@ -18,8 +18,8 @@ urlpatterns = [
     re_path(r'^independence/?$', views.upload_file, name='independence'),
     re_path(r'^others/?$', views_others.upload_file, name='others'),
     re_path(r'^transducer/?$', views.upload_file, name='transducer'),
-    re_path(r'^media/([0-9]+.zip)$', \
-        serve, \
-        {'document_root': settings.MEDIA_ROOT})
+    re_path(r'^media/([0-9]+.zip)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    #regex explanation: assign the matched group to the variable "path", or else Django complains
+    re_path(r'^media/(?P<path>I-LaSer-(?:Windows-Executable\.exe|Linux-Executable))$', serve, {'document_root': settings.MEDIA_ROOT})
 
 ]

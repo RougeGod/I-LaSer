@@ -1,19 +1,18 @@
 <h3>Format for Automata</h3>
 <div class="col-md-12 text-justify">
-    <p>One can use the <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats for nondeterministic finite automata (those with nonempty transitions). The format of <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:</p>
+    <p>One can use the <a href="http://www.csit.upei.ca/~ccampeanu/Grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats for nondeterministic finite automata (those with nonempty transitions). The format of <a href="http://fado.dcc.fc.up.pt/">FAdo</a> files must be as follows:</p>
     <ol>
         <li>'#' begins a comment</li>
         <li><b>@NFA</b>, or <b>@DFA</b>, begins a new automaton (and determines its type) and must be followed by the list of the final states separated by blanks</li>
         <li>Transitions are written one per line and consist of three fields separated by blanks: "state" "symbol" "new state"</li>
-        <li>The source state of the first transition is the initial state.</li>
+        <li>The source state of the first transition is the initial state, or initial states can be specified by listing them after the end states and an asterisk.</li>
     </ol>
-<p>As of version 6&alpha; (released May 2024), Grail automata with multiple starting states are not supported and will cause an error.<p> 
     <div class="col-md-3 text-center"></div>
     <div class="col-md-12 text-justify">
-        <p>Here is an example of an automaton accepting ab* using both, <a href="http://www.csd.uwo.ca/Research/grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats:</p>
+        <p>Here is an example of an automaton accepting ab* using both, <a href="http://www.csit.upei.ca/~ccampeanu/Grail/">Grail</a> and <a href="http://fado.dcc.fc.up.pt/">FAdo</a> formats:</p>
         <pre><code>
 Grail:                  FAdo:
-(START) |- 1            @NFA 2
+(START) |- 1            @NFA 2 * 1
 1 a 2                   1 a 2
 2 b 2                   2 b 2
 2 -| (FINAL)

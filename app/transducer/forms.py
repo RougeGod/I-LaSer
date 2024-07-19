@@ -38,7 +38,7 @@ def file2Text(inputBinary):
 class UploadFileForm(forms.Form):
     """This class is used to declare the file form used on the website to interface with FAdo
        In all cases, JS validates that all required fields have been filled in, so set Required to False
-       If a user disables the JSvalidation they could also disable this."""
+       If a user disables the JSvalidation they could also disable the required attribute."""
     def __init__(self, *args, **kwargs):
         super(UploadFileForm, self).__init__(*args, **kwargs)
         self.aut_name = 'N/A'
@@ -80,7 +80,7 @@ class UploadFileForm(forms.Form):
     fixed_type = forms.ChoiceField(choices=FIXED_TYPE_CHOICE, required=False,
                                    widget=forms.Select(attrs={'class': cls}))
 
-    s_int = forms.IntegerField(required=False, min_value=2, max_value=10) 
+    s_int = forms.IntegerField(required=False)#, min_value=2, max_value=10) 
     n_int = forms.IntegerField(required=False)
     l_int = forms.IntegerField(required=False)
 

@@ -5,6 +5,8 @@ import re
 import FAdo.codes as codes
 from FAdo.codes import IATProp
 
+from .expand_carets import expand_carets
+
 def list_to_string(list_, dict_):
     """turns a list into a string"""
     return "".join([dict_[i] for i in list_])
@@ -68,6 +70,9 @@ def parse_aut_str(aut_str):
         result = convertGrailToFAdo(aut_str.strip())
         return result
 
+    if aut_str.find("@NFA") == aut_str.find("@DFA") == -1:
+        aut_str = expand_carets(aut_str)
+
     result = aut_str.strip()
     return result
 
@@ -86,49 +91,39 @@ def parse_transducer_string(t_str):
 
 def convertGrailToFAdo(grailString):
     '''Converts a Grail-formatted string to a FAdo-formatted string for use in 
-       both generated programs and in-website solving. Limitation: Because FAdo
-       only supports one start state per automaton, the converted Grail string
-       must also only have one start state. The website will use this converted 
+       both generated programs and in-website solving. The website will use this converted
        string in all operations without interacting with the original Grail.
        Accepts String, returns String'''
     splitString = grailString.strip().split("\n")
-    startState = None
+    startStates = set()
     isStartStateInLines = False
     endStates = set()
     otherLines = []
     for line in splitString:
         if line.strip().startswith("(START) |-"):
-            if (startState is None and len(line.strip().split()) == 3): 
-                #make sure that we have no previous start states and only one inputted start state
-                startState = line.strip().split()[2]
+            if (len(line.strip().split()) == 3): 
+                startStates.add(line.strip().split()[2])
             else: 
-                raise IncorrectFormat("The Grail string has too many or improper start states.")
-        elif line.strip().endswith("(FINAL)"):
+                raise IncorrectFormat("The Grail string has an improper start state.")
+        elif line.strip().endswith("-| (FINAL)"):
             if (len(line.strip().split()) == 3):
                 endStates.add(line.strip().split()[0])
             else: 
                 raise IncorrectFormat("The Grail string has an improper final state.")
         else: #intermediate line 
-            if (startState is not None) and (line.strip().split()[0] == startState):
-                otherLines = [line] + otherLines #appends this line to the start of the intermediate lines
-                isStartStateInLines = True
-            else:
-                otherLines.append(line)
-    if startState is None:
+            otherLines.append(line)
+    if len(startStates) == 0:
         raise IncorrectFormat("The start state of the Grail string was not specified.")
     if len(endStates) == 0:
         raise IncorrectFormat("The final state of the Grail string was not specified.")
-    if not isStartStateInLines: #empty language, it never starts, so we can't put any line first
-        firstLine = "@NFA "
-        for state in endStates:
-            firstLine += str(state) + " "
-        return firstLine
-    else: 
-        firstLine = "@NFA "
-        for state in endStates:
-            firstLine += str(state) + " "
-        firstLine = firstLine.strip() + "\n" #remove the last trailing space
-        return firstLine + "\n".join(otherLines)
+    firstLine = "@NFA "
+    for state in endStates:
+        firstLine += str(state) + " "
+    firstLine += "* "
+    for state in startStates:
+        firstLine += str(state) + " "
+    firstLine = firstLine.strip() + "\n" #remove the last trailing space
+    return firstLine + "\n".join(otherLines)
     
 
 # pylint:disable=C0201
@@ -145,8 +140,8 @@ def parse_theta_str(theta_str):
     swaps = match.group(1) #remove the @THETA, which is only used to determine whether 
                            #it's an antimorphism and not used in creating it. 
 
-    initial = {} #The initially entered 
-    reverse = {} 
+    initial = {} #The initially entered swaps
+    reverse = {} #The inverse of each swap
     for swap in swaps.splitlines(): #collect the swap from each of the lines and add those in
         tmp = swap.split(' ')
         initial[tmp[0]] = tmp[1] #contains the entered swaps

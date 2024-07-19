@@ -63,7 +63,7 @@ class QuestionFrame(ttk.Frame):
         self.questionReact = questionChangeFunc
         self.questionVar.trace_add("write", self.questionReact)        
         
-        self.questionFrame = ttk.Frame(root, relief="raised", borderwidth=2)
+        self.questionFrame = ttk.Frame(root, borderwidth=2, relief="solid")
         self.questionFrame.grid(column=0, row=row, sticky="NEW") #result is above it, though if result doesn't exist, it doesn't take up space
         self.questionFrame.columnconfigure(0, weight=1)
         questionLabel = ttk.Label(self.questionFrame, text="What question would you like to solve?")
@@ -150,10 +150,10 @@ class LargeEntryFrame(ttk.Frame):
   
 
 class AutomatonFrame(LargeEntryFrame):
-    REGEX_PATTERN = r"^[0-9A-Za-z()+*]+$" #for the user to input a regex in the NFA area
+    REGEX_PATTERN = r"^[0-9A-Za-z()+*^]+$" #for the user to input a regex in the NFA area
     #a single unrestricted line. the handler will error if it cannot parse the regex. 
     GRAIL_PATTERN = r"^\(START\) +\|- +\d+(?:(?:\r?\n\d+ +[0-9A-Za-z] +\d)|(?:\r?\n\d+ +-\| +\(FINAL\)))+$"
-    FADO_PATTERN = r"^@[ND]FA(?: +\d+)+(?:\r?\n\d+ +[0-9A-Za-z] +\d+)+$"
+    FADO_PATTERN = r"^@[ND]FA(?: +(\d+|\*))+(?:\r?\n\d+ +[0-9A-Za-z] +\d+)+$"
               
     def __init__(self, root, row):
         super().__init__(root, row, "Choose an automaton file", "Select Automaton File", "Or enter an automaton or regex in this text area.", (self.REGEX_PATTERN, self.GRAIL_PATTERN, self.FADO_PATTERN))
@@ -429,7 +429,7 @@ class SubmissionFrame(ttk.Frame):
         self.clear = clearFunc
         #submit button and time limit
         self.submitFrame = ttk.Frame(root, relief="solid", borderwidth=2)
-        self.submitFrame.grid(column=0, row=row, sticky=(EW))
+        self.submitFrame.grid(column=0, row=row, sticky="EWS")
         self.submitFrame.columnconfigure(0, weight=2)
         self.submitFrame.columnconfigure(1, weight=2)
         self.submitFrame.columnconfigure(2, weight=1)
@@ -489,18 +489,18 @@ class AutomataFormatFrame(InstructionFrame):
         "How to write files in the FAdo format:\n"\
         "1. '@NFA' or '@DFA' starts an automaton and determines its type. "\
         "It must be followed by a space-separated list of final states on the same line. \n"\
-        "2. The initial state of the automaton is the start state of the first transition. \n"\
+        "2. The initial state of the automaton is the start state of the first transition. "\
+        "Alternately, you may specify the initial states by putting a *, then listing the start states.\n"
         "How to write files in the Grail format:\n"\
         "1. The start state is specified using the line (START) |- X "\
-        "where X is the number of the start state. " \
-        "Only one start state is permitted per automaton.\n"\
+        "where X is the number of the start state.\n" \
         "2. End states are specified using the line Y -| (FINAL). Multiple end states are permitted.\n\n"\
         "Below are some examples of automata in both formats\n"
         super().__init__(root, text)
 
         #examples for ab*
         Example1Intro = ttk.Label(self.mainFrame, text="Automaton accepting an a followed by 0 or more b's (a*b):")
-        FAdoExample1  = ttk.Label(self.mainFrame, text="FAdo:\n@NFA 2\n1 a 2\n2 b 2")
+        FAdoExample1  = ttk.Label(self.mainFrame, text="FAdo:\n@NFA 2 * 1\n1 a 2\n2 b 2")
         GrailExample1 = ttk.Label(self.mainFrame, anchor="center", text="Grail:\n(START) |- 1\n1 a 2\n2 b 2\n2 -| (FINAL)")
         Example2Intro = ttk.Label(self.mainFrame, text="Automaton accepting 0 or more a's followed by one or two nines (a*(9+(99))):")
         FAdoExample2  = ttk.Label(self.mainFrame, 
@@ -641,19 +641,20 @@ class MainApplication(Tk):
 
         self.columnconfigure(0, weight=1)
         self.rowconfigure(0, weight=1)
-        self.minsize(800,300)
+        self.minsize(800,200)
 
         root = ttk.Frame(self)
         root.grid(column=0, row=0, sticky="nesw")
         root.columnconfigure(0, weight=1)
             
 
-        menuFrame = ttk.Frame(root, relief="solid", borderwidth=2)
+        menuFrame = ttk.Frame(root, relief="raised", borderwidth=2)
         menuFrame.grid(column=0, row=0, sticky="NEW")
         menuFrame.columnconfigure(0, weight=1)
 
         #initialize all of the buttons in the same order as I-LaSer website. 
-        #they currently have no styling
+        #they currently have no styling. lambdas needed because you cannot call
+        #a function with arguments in the "command" parameter
         ttk.Button(menuFrame, text="Home", command=lambda: self.frame_show(1)).grid(column=0, row=0, sticky=(N)) #home button
         ttk.Button(menuFrame, text="Automata Format", command=lambda: self.frame_show(2)).grid(column=1, row=0, sticky=(N))
         ttk.Button(menuFrame, text="Transducer Format", command=lambda: self.frame_show(3)).grid(column=2, row=0, sticky=(N))
@@ -691,6 +692,7 @@ class MainApplication(Tk):
     def reactToQuestionChange(self, *useless):
         #called whenever the shared variable "question" is modified, to update which 
         #pieces of the program are shown and hidden
+        self.resizable(width=False, height=True) #allow the window to expand during this function
         try: 
             question = self.Question.getQuestionNumber()
         except AttributeError: #caused when the window hasn't fully loaded so self.Question does not exist
@@ -708,8 +710,10 @@ class MainApplication(Tk):
         self.conditional_show(self.Approximation, (question == 4))
         self.conditional_show(self.Submit, (question != 0))
         self.Result.hide()
+        self.resizable(width=False, height=False) #do not allow the user to change the window height
     
     def reactToPropChange(self, *useless):
+        self.resizable(width=False, height=True)
         try: 
             property_type = self.PropSelector.getProperty()
         except AttributeError: #caused if the window hasn't fully loaded
@@ -718,6 +722,7 @@ class MainApplication(Tk):
         self.conditional_show(self.TransInput, (property_type in [2,3,4,5]))
         self.conditional_show(self.ThetaInput, (property_type == 5))
         self.Result.hide()
+        self.resizable(width=False, height=False)
 
     #shows the frame, if a condition is met, hides it otherwise
     #requires that frames have show and hide methods
@@ -727,6 +732,7 @@ class MainApplication(Tk):
             frame.show()
         
     def frame_show(self, frame):
+        self.resizable(width=False, height=True)    
         self.Result.hide()
         self.Question.hide()
         self.AutomatonInput.hide()
@@ -746,6 +752,7 @@ class MainApplication(Tk):
         self.conditional_show(self.AntimorphismInstructions, (frame == 5))
         self.conditional_show(self.TechnicalNotes, (frame == 6))
         self.conditional_show(self.Credits, (frame == 7))
+        self.resizable(width=False, height=False)
        
 #debug info, printing the current Tcl/Tk version
 #if on Mac, and this is 8.5.x, crashes are likely
@@ -753,5 +760,5 @@ class MainApplication(Tk):
 #print(tcl.call("info", "patchlevel"))
 
 window = MainApplication()
-window.resizable(width=False, height=True)
+window.resizable(width=False, height=False)
 window.mainloop() #open the actual GUI window and start responding to inputs

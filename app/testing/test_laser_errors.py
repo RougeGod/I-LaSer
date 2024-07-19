@@ -10,7 +10,7 @@ TEST_FILES_FA = ["test_files/NFA-a(aa)#.fa"]
 #the first one shouldn't satisfy any code property
 
 #trajectories and transducers
-TRAJ_FILES = ['test_files/0#1#0#.traj', 'test_files/1#0#.traj', "test_files/P-infix-ipt.fa"]
+TRAJ_FILES = ['test_files/0#1#0#.traj', 'test_files/1#0#.traj', "test_files/P-infix-ipt.fa", "test_files/construction/TR-sub1.01.fa"]
 
 class MyTestCase(TestCase):
 
@@ -26,9 +26,16 @@ class MyTestCase(TestCase):
         result = get_response(post, files, False)
         self.assertEquals(result["error_message"], "ERROR: The language does not satisfy the property.")
 
-
+#test caret operator invalid (multiple)
 
 #test for the automaton's alphabet not being a subset of the transducer's
+
+    #test construction with an S that's too large for the transducer
+    def test_constructionAlphabetMismatch(self):
+        post = {"question": "3", "property_type": "3"}
+        files = create_file_dictionary(trans_file=TRAJ_FILES[3])
+        result = get_response(post, files, False)
+        self.assertEquals(result["error_message"], "The construction alphabet is larger than the transducer's alphabet.")
 
     #test for not having a question or having question 0 selected
     def test_noQuestion(self):
@@ -37,8 +44,13 @@ class MyTestCase(TestCase):
         result = get_response(post, files, False)
         self.assertEquals(result["error_message"], "Please select a question.")
 
-        post = {"property_type": "1", "fixed_type": "2"}
+        post = {"property_type": "1", "fixed_type": "2", "question": "0"}
+        files = create_file_dictionary(aut_file=TEST_FILES_FA[0], trans_file=TRAJ_FILES[3])
+        result = get_response(post, files, False)
+        self.assertEquals(result["error_message"], "Please select a question.")
         
+        
+
 
 #test prop-type == 0 / no prop-type, everything else fine (one for each question)
 
@@ -69,7 +81,7 @@ class MyTestCase(TestCase):
                 'automata_text': readfile("test_files/error/EpsilonDFA.fa")}
         files = {}
         result = get_response(post, files, False)
-        self.assertEquals(result['error_message'], "The automaton or regular expression appears to be invalid.")
+        self.assertEquals(result['error_message'], "This should be an NFA, not a DFA.")
 
     #similar to previous. NFAs may have more than one state transition per input symbol, but
     #DFAs may not. 
@@ -78,5 +90,8 @@ class MyTestCase(TestCase):
                 'automata_text': readfile("test_files/error/NondeterministicDFA.fa")}
         files = {}
         result = get_response(post, files, False)
-        self.assertEquals(result['error_message'], "The automaton or regular expression appears to be invalid.")
+        self.assertEquals(result['error_message'], "This should be an NFA, not a DFA.")
         
+    #user should not be allowed to enter multiple languages in the automaton area
+    def test_multipleAutomaton(self):
+        post = {'question': '2', ''} #TODO

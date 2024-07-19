@@ -25,6 +25,7 @@ from lark.exceptions import VisitError
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 AUTOMATON_INCORRECT_FORMAT = "The automaton or regular expression appears to be invalid."
+ALPHABET_TOO_SMALL = "The construction alphabet is larger than the transducer's alphabet."
 
 TRANSDUCER_TYPES = {
     'InputAltering': '2',
@@ -38,6 +39,10 @@ try:
 except django.core.exceptions.ImproperlyConfigured:
     LIMIT = 500000
     LIMIT_AUTOMATON = 250
+
+def error(err):
+    """Formats an error using the given string"""
+    return {'form': form, 'error_message': err}
 
 def handle_iap(
         n_num, l_num, s_num,
@@ -65,7 +70,7 @@ def handle_iap(
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
-        return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
+        return {'form': form, 'error_message':ALPHABET_TOO_SMALL,
                 'transducer': t_name}
 
     # If successful, return the given words that satisfy it.
@@ -86,6 +91,8 @@ def handle_ipp(
     except AttributeError:
         return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
+    except UnexpectedCharacters:
+        return error("Could not parse transducer. Did you input a trajectory?")
 
     # Check to see if the computation would be too computationally expensive
     if limit_tran_prop({}, prop.Aut.delta, LIMIT, int(n_num)):
@@ -96,7 +103,7 @@ def handle_ipp(
         # Create a language that satisfies the property - witness is the list of words in L
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
     except DFAsymbolUnknown:
-        return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
+        return {'form': form, 'error_message':ALPHABET_TOO_SMALL,
                 'transducer': t_name}
 
     #text_path, text_title = write_witness(witness, filename)
@@ -113,10 +120,6 @@ def handle_construction(
     """
     Handle the construction choice of the website.
     """
-
-    def error(err):
-        """Formats an error using the given string"""
-        return {'form': form, 'error_message': err}
 
     # The post passes the sizes as string, so we need to parse them.
     # This has the added benefit of that if no numbers are given, it defaults to -1,
@@ -136,6 +139,9 @@ def handle_construction(
 
     if err:
         return error(err)
+
+    if not property_type:
+        return error("Please select a property type.")
 
     if property_type == "1":
         # Check to see if the computation will be too expensive
@@ -223,7 +229,7 @@ def handle_satisfaction_maximality(
     except (IncorrectFormat, TypeError): # Automata syntax error, of any type
         return error(AUTOMATON_INCORRECT_FORMAT)
     except VisitError: #only ever gotten this when putting an NFA and calling it a DFA
-        return error("This should be an NFA, not a DFA")
+        return error("This should be an NFA, not a DFA.")
     except Exception: #catch-all, just in case of other unforeseen errors
         return error("Error parsing automaton.")
 

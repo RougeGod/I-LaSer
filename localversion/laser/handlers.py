@@ -37,12 +37,20 @@ from func_timeout import func_timeout, FunctionTimedOut
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 AUTOMATON_INCORRECT_FORMAT = "The automaton or regular expression appears to be invalid."
+ALPHABET_TOO_SMALL = "The construction alphabet is larger than the transducer's alphabet."
+
+def error(err):
+    """Formats an error using the given string"""
+    return {'error_message': err}
+
 
 TRANSDUCER_TYPES = {
     'InputAltering': 2,
     'ErrorDetecting': 3,
     'ErrorCorrecting': 4,
 }
+
+
 
 def get_response(data):
     """
@@ -95,7 +103,7 @@ def handle_iap(
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
-        return {'error_message': PROPERTY_INCORRECT_FORMAT}
+        return {'error_message': ALPHABET_TOO_SMALL}
 
     # If successful, return the given words that satisfy it.
     words = write_witness(witness)
@@ -109,13 +117,14 @@ def handle_ipp(
         prop = buildErrorDetectPropS(t_str + "\n") #directly calls FAdo code so we need to add the newline here
     except AttributeError:
         return {'error_message':PROPERTY_INCORRECT_FORMAT}
+    except UnexpectedCharacters:
+        return error("Failed to parse transducer. Did you input a trajectory?")
     try:
         # Create a language that satisfies the property - witness is the list of words in L
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
     except DFAsymbolUnknown:
-        return {'error_message':PROPERTY_INCORRECT_FORMAT}
+        return {'error_message':ALPHABET_TOO_SMALL}
 
-    #text_path, text_title = write_witness(witness, filename)
     words = write_witness(witness)
     return {'result': words}
 
@@ -124,9 +133,6 @@ def handle_construction(data):
     Handle the construction choice of the website.
     """
 
-    def error(err):
-        """Formats an error using the given string"""
-        return {'error_message': err}
 
     # The post passes the sizes as string, so we need to parse them.
     # This has the added benefit of that if no numbers are given, it defaults to -1,
