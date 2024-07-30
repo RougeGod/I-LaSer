@@ -7,9 +7,8 @@ from django.conf import settings
 
 from FAdo.fio import readOneFromString
 
-import FAdo.codes as codes
 from FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnknown, \
-    ErrCorrectProp, buildErrorDetectPropS
+    ErrCorrectProp, buildErrorDetectPropS, IATProp
 
 from FAdo.prax import GenWordDis, prax_maximal_nfa, Dirichlet
 
@@ -40,9 +39,18 @@ except django.core.exceptions.ImproperlyConfigured:
     LIMIT = 500000
     LIMIT_AUTOMATON = 250
 
-def error(err):
+def error(form, err):
     """Formats an error using the given string"""
     return {'form': form, 'error_message': err}
+
+def check_construction_alphabets(s_num, alphabet):
+    ALPHABET_MISMATCHED = 'The transducer\'s alphabet does not match the construction alphabet.'
+    if (s_num > len(alphabet)):
+        return ALPHABET_TOO_SMALL
+    construction_alf = [str(i) for i in range(s_num)]
+    if not all([i in alphabet for i in construction_alf]):
+        return ALPHABET_MISMATCHED
+    return None
 
 def handle_iap(
         n_num, l_num, s_num,
@@ -57,6 +65,10 @@ def handle_iap(
     # Create the Input Altering Property
     try:
         prop = construct_input_alt_prop(t_str, alphabet)
+        err = check_construction_alphabets(s_num, prop.Aut.Sigma)
+        if err is not None:
+            return {'form': form, 'error_message':err,
+                'transducer': t_name}
     except (IncorrectFormat, TypeError):
         return {'form': form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer': t_name}
@@ -88,11 +100,16 @@ def handle_ipp(
     """Handle Input-preserving properties"""
     try:
         prop = buildErrorDetectPropS(t_str + "\n") #directly calls FAdo code so we need to add the newline here
+        err = check_construction_alphabets(s_num, prop.Aut.Sigma)
+        if err is not None:
+            return {'form':form, 'error_message':err,
+                'transducer':t_name}
     except AttributeError:
         return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
     except UnexpectedCharacters:
-        return error("Could not parse transducer. Did you input a trajectory?")
+        return {'form':form, 'error_message':"Could not parse transducer. Did you input a trajectory?",
+                'transducer':t_name}
 
     # Check to see if the computation would be too computationally expensive
     if limit_tran_prop({}, prop.Aut.delta, LIMIT, int(n_num)):
@@ -120,7 +137,10 @@ def handle_construction(
     """
     Handle the construction choice of the website.
     """
-
+    
+    def error(msg):
+        return {"form": form, 'error_message': msg}
+    
     # The post passes the sizes as string, so we need to parse them.
     # This has the added benefit of that if no numbers are given, it defaults to -1,
     # Which will fail!
@@ -134,9 +154,6 @@ def handle_construction(
         err = "Please enter three positive integers S, N, L."
     elif s_num < 2 or s_num > 10:
         err = "S must be less than 10 and greater than 1"
-    elif s_num > l_num:
-        err = "S must be less than L"
-
     if err:
         return error(err)
 
@@ -160,12 +177,13 @@ def handle_construction(
         return {'form': form, 'construct_path': '',
                 'construct_text': '', 'result': result}
 
+    if not data.get("transducer_text"):
+        return error('Please provide a property file.')
+
     t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
 
     t_name = data.get('trans_name', 'TextareaProperty')
 
-    if not t_str:
-        return error('Please provide a property file.')
 
     # Input Altering Property
     if property_type == '2':
@@ -178,7 +196,13 @@ def handle_construction(
 
     return result
     
-def check_approx_maximality(automaton, prop, eps, t, disp): 
+def check_approx_maximality(automaton, prop, eps, t, disp):
+    if not (0 < eps < 1):
+        return error("Epsilon must be between 0 and 1.")
+    if not (t > 1):
+        return error("T must be greater than 1.")
+    if not (disp >= 0):
+        return error("Displacement must be non-negative.")
     pdist = Dirichlet(t=t, d=disp) #Dirichlet t is the same as the t in this function argument
     wordDist = GenWordDis(pdist, automaton.Sigma, eps)
     witness = prax_maximal_nfa(wordDist, automaton, prop)
@@ -197,6 +221,8 @@ def check_satisfaction(automaton, prop):
         decision = 'YES, the language satisfies the property'
         proof = ''
         satisfaction = True
+    elif (type(prop) == IATProp) and (witness[0] == witness[1]):
+        return {'error_message': "This is an input-preserving property, not an input-altering property."}
     else:
         decision = 'NO, the language does not satisfy the property'
         proof = format_counter_example(witness)
@@ -231,7 +257,7 @@ def handle_satisfaction_maximality(
     except VisitError: #only ever gotten this when putting an NFA and calling it a DFA
         return error("This should be an NFA, not a DFA.")
     except Exception: #catch-all, just in case of other unforeseen errors
-        return error("Error parsing automaton.")
+        return error("Unexpected error parsing automaton.")
 
 
     # Check to see if the computation would be too computationally expensive
@@ -274,7 +300,7 @@ def handle_satisfaction_maximality(
                 else:
                     decision = "NO, the language is not a maximal code"
             elif question == '4': 
-                return error("Approximate Maximality not available for the UD Code Property")
+                return error("Approximate Maximality is not available for the UD Code Property.")
 
             return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
 

@@ -17,13 +17,13 @@
 \tableofcontents
 
 \section{Introduction}
-\par The Independent Language Server (I-LaSer) is a program, originally built in June 2010 and currently on its sixth feature release, which answers questions relating to the satisfaction and maximality of formal languages. There is also an option to construct a language of a given size using certain parameters. It accepts a description of a regular language, which can be provided by either a regular expression or a finite automaton, and a description of a language property, which can be either a fixed type, provided by a trajectory, or provided by a transducer.
+\par The Independent Language Server (I-LaSer) is a program, originally built in June 2010 and currently on its sixth feature release, which answers questions relating to the satisfaction and maximality of formal languages.\cite{Properties} There is also an option to construct a language of a given size using certain parameters. It accepts a description of a regular language, which can be provided by either a regular expression or a finite automaton, and a description of a language property, which can be either a fixed type, provided by a trajectory, or provided by a transducer.\cite{LaSer}
 I-LaSer uses the formal languages library \href{https://fado.dcc.fc.up.pt/}{FAdo}\cite{FAdo}, created by Rogério Reis and Nelma Moreira, to perform all of its backend calculations.
 
 \begin{center}
 \begin{figure}[htb]
 \includegraphics[width=\textwidth]{./ilaser-ss.jpg}
-\caption{Example usage of the I-LaSer GUI (Ubuntu)}
+\caption{Example usage of I-LaSer GUI (Ubuntu)}
 \end{figure}
 \end{center}
 
@@ -31,32 +31,33 @@ I-LaSer uses the formal languages library \href{https://fado.dcc.fc.up.pt/}{FAdo
 \par The I-LaSer web version has some drawbacks, and the creation of a locally-run GUI aims to fix these issues.
 The main issue that the web version of I-LaSer faced was that the behind-the-scenes calculations took a lot of time and computing power. For more complex languages and/or properties, this caused too much strain on the server. Another issue is that the web server faced cyberattacks, resulting in its temporary removal. Having a locally run version protects against any future server downtime, as a user will have their own program available to run without depending on the server, and provides the ability for users to bypass server limits on language complexity and calculation time. A smaller benefit is that the local GUI can be run without Internet access. 
 
-\subsection{Time Limit}
-All submissions will disable further access to the form controls, so setting a proper time limit will help the function time out as quickly as necessary and return control. 
+\subsection{Problems with Program Generation}
+\par The web version's drawbacks are partially alleviated by allowing the user to generate a Python program, which, when run, produces the correct answer on the user's machine without forcing the web server to run calculations. However, this is not a perfect solution for a few reasons. Running the program requires the user have a working Python installation, and take the extra steps of unzipping the folder, running the Python program, then deleting the zipped folder and the extracted folder. Due to the newlines in the text areas not translating well to generated programs, the generated program must also encode input strings in base-64 and decode then during program execution. For these reasons, program generation has been intentionally left out of the I-LaSer GUI. Furthermore, if there are future issues resulting in server downtime, this would also prevent access to generating programs.
+
+\section{Time Limit}
+All submissions will disable further access to the form controls until the calculation either completes or times out. This will lock all buttons and textboxes. 
+Setting a good time limit will help the function time out as quickly as necessary and return control. 
 By default, the time limit is 60 seconds for the calculation. This limit can be lowered in the case of a simple query which should not take very long, raised for complicated queries intended to run for a long time, or eliminated entirely.
 To eliminate the time limit, enter a non-positive number or a non-number in the Time Limit field.
 Non-integer numbers of seconds are permitted to be used as the time limit.
 
-\subsection{Problems with Program Generation}
-\par The web version's drawbacks are partially alleviated by allowing the user to generate a Python program, which, when run, produces the correct answer on the user's machine without forcing the web server to run calculations. However, this is not a perfect solution for a few reasons. Running the program requires the user have a working Python installation, and take the extra steps of unzipping the folder, running the Python program, then deleting the zipped folder and the extracted folder. Due to the newlines in the text areas not translating well to generated programs, the generated program must also encode input strings in base-64 and decode then during program execution. For these reasons, program generation has been intentionally left out of the I-LaSer GUI. Furthermore, if there are future issues resulting in server downtime, this would also prevent access to generating programs.
-
 \section{Independences}
 
 \subsection{Satisfaction}
-\par Roughly speaking, a language is said to \textit{satisfy} an independent property if and only if there does not exist a pair of words $w_1$ and $w_2$ such that $w_2$ can be created by performing operation $T$ on $w_1$. The operation $T$ is defined by the property. If a language satisfies a property, every subset of that language satisfies the same property. An empty language satisfies all independence properties, as there are no words to transform into other words in a language. For similar reasons, a language with only a single word (which may be the empty word) also satisfies all independence properties. 
+\par Roughly speaking, a language is said to \textit{satisfy} an independence property if and only if there does not exist a pair of words $w_1$ and $w_2$ such that $w_2$ can be created by performing operation $T$ on $w_1$. The operation $T$ is defined by the property. If a language satisfies a property, every subset of that language satisfies the same property. An empty language satisfies all independence properties, as there are no words to transform into other words in a language. For similar reasons, a language with only a single word (which may be the empty word) also satisfies all independence properties. %needs citation???
 
 \subsection{Maximality}
 \par A language $L$ satisfying property $P$ is said to be \textit{maximal} with respect to $P$ if and only if no more words can be added to $L$ without losing its satisfaction of $P$. When testing maximality and approximate maximality using I-LaSer, you will get an error if the language does not satisfy the property, as the (approximate) maximality question is meaningless on such languages, since the language has already lost satisfaction of the property without adding any words. 
 
 \subsection{Approximate Maximality}
-\par Testing code maximality is PSPACE-hard, and in the worst case takes exponential time.
+\par Testing code maximality is PSPACE-hard, and in the worst case takes exponential time.\cite{Approx}
 The Approximate Maximality feature of I-LaSer 6 alleviates this problem by not testing for complete maximality, but instead, generates a sample of words over the alphabet, testing them to see if they can be added to the language.
 If the sample includes a word that can be added to the language, then the language is definitely not maximal and I-LaSer will provide the word that can be added to the language.
 If the sample does not include a word that can be added to the language, I-LaSer will conclude that the language is approximately maximal.
 Such a statement does not definitively mean that the language is truly maximal with respect to the property, but it can say that the language is close to being maximal.
 Setting up the random distribution of words takes time, so although calculating approximate maximality is in theory faster than true maximality, in practice it is only faster for complex languages and properties. 
 
-\par I-LaSer uses a polynomial randomized approximation (PRAX) algorithm and the Dirichlet distribution over the positive integers to generate the samples. Due to the randomness involved, questions of approximate maximality may not result in the same output from I-LaSer when run multiple times. For more information on the theory behind approximate maximality, please read https://arxiv.org/pdf/2202.01594. 
+\par I-LaSer uses a polynomial randomized approximation (PRAX) algorithm and the Dirichlet distribution over the positive integers to generate the samples. Due to the randomness involved, questions of approximate maximality may not result in the same output from I-LaSer when run multiple times. For more information on the theory behind approximate maximality, please read \cite{Approx}.
 
 %Infix: you cannot make a different word in the language by chipping away from the outsides
 %Outfix: you cannot make a different word in the language by knocking a contiguous piece
@@ -107,17 +108,18 @@ I-LaSer can accept typed input in the large text boxes, for automata, transducer
 \subsection{Validation}
 I-LaSer will attempt to perform validation on the inputs to the text box, no matter if the inputs originated from the keyboard or from a file. If the input passes validation, the text box will turn green. If the input fails validation, the text box will remain white. It is still possible to submit inputs that the validator deems "invalid" and have them run without errors. Similarly, the green text box does not necessarily mean that no errors will occur. 
 The validation is a guide, indicating which inputs are likely to result in an unsuccessful computation.
-\par For the construction question, the user is prompted to enter three integers. Validation depends on all three of the numbers, so either the whole combination passes validation and turns green, or the whole combination fails validation and remains white.
-Conversely, all of the parameters input for approximate maximality are independent of each other, in terms of validation, so there may be some green areas and some white areas.
+\par For the construction question, the user is prompted to enter three integers, each of which are validated seperately.
+Similarly, all of the parameters for approximate maximality are independent of each other, in terms of validation, so there may be some green areas and some white areas.
+For these two input areas, if they don't pass validation (with all three input areas green), the calculation will not succeed and there will be an error.
 
 \subsection{Acceptable Characters}
 When entering an automaton, transducer, regular expression, or theta property, the alphabets are limited to the digits 0-9 and the Latin letters A-Z.
 I-LaSer alphabets are case-sensitive, so A is a different symbol than a.
-In most cases, the string "@epsilon" can be used to indicate the empty symbol.
+In most cases, the string "@epsilon" can be used to indicate the empty word.
 This is useful when entering regular expressions and allowing a variable quantity of a certain symbol, or in a transducer to either insert an output symbol without any input, or to remove an input symbol without creating output.
 
 \subsection{Automaton Area}
-See the "automata format" tab of I-LaSer for the basics of what to enter in the automaton area or an automaton file. The set of symbols in the state transitions is considered the alphabet of the language. If the language has symbols in the alphabet which do not cause a state transition, they must be added with a same-state transition. If there is no defined state transition on a symbol from the current state, that symbol cannot appear when the automaton is in the current state.
+See the ``automata format'' tab of I-LaSer for the basics of what to enter in the automaton area or an automaton file. The set of symbols in the state transitions is considered the alphabet of the language, unless an alphabet is otherwise specified. If there is no defined state transition on a symbol from the current state, that symbol cannot appear when the automaton is in the current state.
 \par The first line of an automaton is the declaration line. The declaration line consists of the following fields, separated by spaces, where anything enclosed in square brackets is optional.\\
 Automaton Type (@NFA or @DFA), Final States, [ * Initial States], [\$Alphabet].
 The below example shows a delcaration line for an NFA which can start at states 0 or 5, can end at states 7 and 12, and uses the alphabet {a, b, c, 0, 1}.
@@ -125,23 +127,25 @@ If the automaton uses symbols outside the defined alphabet, they are implicitly 
 \begin{center}
 \verb-@NFA 7 12 * 0 5 $abc01-
 \end{center}
+If a language has an explicitly defined start state, and the language does not have any state transitions coming from that state, the language is empty.
+Similarly, if there is no series of state transitions from a start state to any defined end state, the language will also be empty.
 The list of initial states is only permitted when entering an NFA.
 A DFA must only have one start state, so the start state is defined as the initial state of the first transition and listing the start state is unnecessary. 
 
 \par When entering a finite automaton, there are two options.
 @DFA begins a Deterministic Finite Automaton, and comes with more restrictions.
 DFAs may not have any state transitions caused by @epsilon, and may not have a symbol causing more than one state transition.
-The following list of state transitions would be legal as an NFA but illegal as a DFA, because it there are multiple paths from state 1 when symbol a is encountered:
+The following list of state transitions would be legal as an NFA but illegal as a DFA, because there are multiple paths from state 1 when symbol a is encountered:
 \begin{center}
 1 a 2\\
 1 b 3\\
 1 a 3\\
 \end{center}
 
-\par For a more detailed description of the grammar behind FAdo automata parsing, read \href{https://www.dcc.fc.up.pt/~rvr/FAdo.pdf}{the FAdo instruction manual}
+\par For a more detailed description of the grammar behind FAdo automata parsing, read \href{https://www.dcc.fc.up.pt/~rvr/FAdo.pdf}{the FAdo instruction manual}.\cite{FAdoManual}
 
 \subsection{Regular Expressions}
-Regular expressions are a simpler way to express regular languages, and can be entered in the automaton area to describe a language.
+Regular expressions are a simpler way to express regular languages, and can be entered in the language input area to describe a language.
 When entering a mathematical (Kleene) regular expression, the only operators allowed are:
 %cite Kleene paper?
 \begin{itemize}
@@ -184,15 +188,15 @@ For example, the below transducer, when given the word "001", outputs "001", "10
 0 1 0 1\\
 \end{center}
 The above transducer is also \textit{input-preserving}, because any input may produce itself when run through the transducer. 
-A transducer can also be \textit{input-altering}, where there exist some inputs that cannot output themselves when run through the transducer.
+A transducer which is not input-preserving is said to be \textit{input-altering}, where every word output from the transducer is different from its input, for all input words.
 
 \subsection{Trajectories}
-It is also possible to input a trajectory in the area for transducers, if the property "Trajectory or Input-Altering Transducer" is selected.
+It is also possible to input a trajectory in the area for transducers, if the property type "Trajectory or Input-Altering Transducer" is selected.
 Trajectories have the same operator set as regular expressions, %link to regular expression section
-though their alphabet is restricted to ${0, 1}$
+though their alphabet is restricted to $\{0, 1\}$
 Trajectories offer more property options than fixed types, though considerably less than transducers.
 For instance, a language satisfies the trajectory property (01)* if and only if it is impossible to make one word in the language using all of the symbols in the odd-numbered positions of another word..
-For more detail on trajectory expressions, see %cite the Domaratzki paper
+For more detail on trajectory expressions, see \cite{traj}.
 
 \subsection{Trajectory Equivalents for Fixed Types}
 \begin{center}
@@ -207,16 +211,17 @@ Hypercode & (0+1)*
 \end{center}
 
 \subsection{Theta Properties}
+See the Antimorphism tab in the I-LaSer GUI for basic information about theta properties.
 Theta properties are used for DNA computing, and the only question that I-LaSer currently supports using theta-properties for is the Satisfaction question.
-Antimorphic "swaps" are specified in the theta text area, and may include any symbols legal in languages, including @epsilon. 
+Antimorphic ``swaps'' are specified in the theta text area, and may include any symbols legal in languages.
 
 Theta properties start with the string "@THETA", followed by a newline, and a list of swaps to be made. 
 Satisfaction for theta-properties is handled quite differently than satisfaction for non-antimorphic properties.
 Before testing to see whether a word operation leads to another word in the language, the word first needs to be permuted.
 The permutation of the word involves reversing its symbols, then applying each of the specified swaps. 
 
-For example, on the DNA alphabet with swaps {a, t} and {c, g}, the word "gcct" would be reversed to "tccg", then the swaps would be performed, turning the original word into "aggc".
-%what paper was it? I know it came from a paper
+For example, on the DNA alphabet with swaps {a, t} and {c, g}, the word ``gcct'' would be reversed to `tccg'', then the swaps would be performed, turning the original word into ``aggc''.
+%what paper was it? I know it came from a paper. needs to be cited
 That would then be compared to the other words in the language via the operation for the property.
 \pagebreak
 \section{Language, Property, and Theta Examples}
@@ -249,11 +254,13 @@ Grail:
 \item $t$ - The Dirichlet distribution that the approximate maximality calculations use requires a parameter $t$. 
 This is used in the creation of the word sample space and correlates to the uniformity of the distribution of word lengths across the sample space. A smaller value of $t$ means that the sample will be more uniform in terms of word length, but will also take much longer to set up. 
 $t$ must be greater than 1.
-\item Displacement - No words will be included in the sample if they are shorter than $d$ characters.
+\item Displacement - No words will be included in the sample if they have fewer than $d$ characters.
 This is useful when a language has a few uninteresting short words which violate the property.
 \end{itemize}
 
 \section{Construction}
+The construction question allows I-LaSer to accept a language property and build a block language of a given size which satisfies that property.\cite{Construction}
+A block language is one where the words in the language are of a uniform length.
 \subsection{Parameters}
 \begin{itemize}
 \item $S$ - The number of symbols in the construction alphabet. There is currently no way to set the construction alphabet to anything other than the digits 0 to $S-1$, and since there are only 10 digits, construction alphabet size has a strict maximum of 10.
@@ -273,7 +280,7 @@ It does mean that the generated language is close to being block maximal.
 \par The requirement that the construction alphabet must be a subset of the transducer's prohibits transducers with only letters in their input alphabet, or a numerical alphabet that does not contain 0 or other digits less than $S$.
 
 \par Fixed types and trajectories are not useful as properties for language construction, as any langauge made up of words which all have the same length will satisfy every fixed type and every trajectory, and the construction option only creates words of a uniform length, so in practice, using either of these property options will simply generate arbitrary words over the alphabet.
-
+\section{References}
 \printbibliography
 
 \end{document}

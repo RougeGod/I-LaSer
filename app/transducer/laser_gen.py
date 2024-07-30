@@ -205,8 +205,8 @@ def program_lines(
         if BUILD_NAME[ptype][2] == 1:
             string = ''
             if t_str:
-                list_.append("tx = %s\n" % base64.b64encode(t_str.encode(encoding="utf-8")))
-                list_.append("t = str(base64.b64decode(tx).decode(encoding='utf-8'))" + (".strip()" if ptype=="TRAJECT" else "") + "\n")
+                list_.append("tx = %s\n" % base64.b64encode((t_str + "\n").encode(encoding="utf-8")))
+                list_.append("t = str(base64.b64decode(tx).decode(encoding='utf-8'))" + (".strip()" if ptype=="TRAJECT" else "+ \"\\n\"") + "\n")
             else:
                 string += "alp = set()\nfor i in range(int(s_num)):\n    alp.add(str(i))\n"
                 string += "ssigma = alp\n"
@@ -251,7 +251,7 @@ def program_lines(
         if BUILD_NAME[ptype][2] == 1:
             if t_str:
                 list_.extend(["tx = %s\n" % base64.b64encode(t_str.encode(encoding='utf-8')).strip(),
-                              "t = str(base64.b64decode(tx).decode(encoding='utf-8'))" + (".strip()" if ptype == "TRAJECT" else "") + "\n"])
+                              "t = str(base64.b64decode(tx).decode(encoding='utf-8'))" + (".strip()" if ptype == "TRAJECT" else "+ \"\\n\"") + "\n"])
             string = "ssigma = a.Sigma\n"
             string += "p = " + BUILD_NAME[ptype][0] + "("
             for s_1 in BUILD_NAME[ptype][1]:
