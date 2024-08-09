@@ -14,7 +14,7 @@ from FAdo.prax import GenWordDis, prax_maximal_nfa, Dirichlet
 
 from app.transducer.laser_shared import construct_automaton, detect_automaton_type, IncorrectFormat, \
      construct_input_alt_prop, limit_aut_prop, limit_tran_prop, format_counter_example, \
-     make_block_code, limit_theta_prop, is_subset, convertToCorrectType
+     make_block_code, limit_theta_prop, is_subset, convertToCorrectType, check_construction_alphabets
 
 from app.transducer.util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, \
                                 apply_theta_antimorphism, reverse_theta_antimorphism, parse_transducer_string
@@ -43,15 +43,6 @@ def error(form, err):
     """Formats an error using the given string"""
     return {'form': form, 'error_message': err}
 
-def check_construction_alphabets(s_num, alphabet):
-    ALPHABET_MISMATCHED = 'The transducer\'s alphabet does not match the construction alphabet.'
-    if (s_num > len(alphabet)):
-        return ALPHABET_TOO_SMALL
-    construction_alf = [str(i) for i in range(s_num)]
-    if not all([i in alphabet for i in construction_alf]):
-        return ALPHABET_MISMATCHED
-    return None
-
 def handle_iap(
         n_num, l_num, s_num,
         t_name, t_str, form=True
@@ -75,8 +66,7 @@ def handle_iap(
 
     # Check to see if the computation would be too computationally expensive
     if limit_tran_prop({}, prop.Aut.delta, LIMIT, int(n_num)):
-        return {'form':form, 'error_message':
-                "Size of request exceeds limit! (See 'Technical Notes')"}
+        raise LimitExceeded("Construction: IAP")
 
     # Attempt to create the code, that satisfies the given property.
     try:
@@ -113,8 +103,7 @@ def handle_ipp(
 
     # Check to see if the computation would be too computationally expensive
     if limit_tran_prop({}, prop.Aut.delta, LIMIT, int(n_num)):
-        return {'form':form, 'error_message':
-                'Size of request exceeds limit! (See "Technical Notes")'}
+        raise LimitExceeded("Input-Preserving Property")
 
     try:
         # Create a language that satisfies the property - witness is the list of words in L
@@ -163,7 +152,7 @@ def handle_construction(
     if property_type == "1":
         # Check to see if the computation will be too expensive
         if (n_num * l_num) > LIMIT:
-            return error("Size of request exceeds limit! (See 'Technical Notes')")
+            raise LimitExceeded("Construction: Fixed Type")
         try:
             _, witness = make_block_code(n_num, l_num, s_num)
         except DFAsymbolUnknown:
@@ -244,8 +233,10 @@ def handle_satisfaction_maximality(
 
     if not aut_str:
         return error('Please provide an automaton file.')
-
-    aut_str = parse_aut_str(aut_str) #remove comments and convert from Grail
+    try:
+        aut_str = parse_aut_str(aut_str) #remove comments and convert from Grail
+    except ValueError as ex:
+        return error(str(ex))
 
     try:
         aut = construct_automaton(aut_str)
@@ -263,9 +254,7 @@ def handle_satisfaction_maximality(
     # Check to see if the computation would be too computationally expensive
     try:
         if limit_aut_prop(aut, LIMIT_AUTOMATON):
-            return {'form':form, 'error_message':
-                    'Size of the automaton exceeds limit! (See "Technical Notes")',
-                    'automaton':aut_name}
+            raise LimitExceeded("Automaton")
     except AttributeError:
         if type(aut) == list: #When parsing, if there are multiple NFAs, FAdo returns a list
             return error("Only one automaton may be inputted at a time.")
@@ -307,7 +296,7 @@ def handle_satisfaction_maximality(
     # User-Input Property
     else:
         if (data.get('transducer_text') is None):
-            return error("Please provide a property type.")
+            return error("Please provide a property.")
         t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
         t_name = 'Property: ' + data.get('trans_name', 'Textarea-defined property.')
 
@@ -367,9 +356,7 @@ def handle_satisfaction_maximality(
                         'automaton': aut_name, 'transducer': t_name}
 
             if limit_theta_prop(aut.delta, prop.Aut.delta, theta, LIMIT):
-                return {'form':form, 'error_message':
-                        'Sizes of the automaton, transducer and theta exceed limit! (See "Technical Notes")',
-                        'automaton':aut_name, 'transducer':t_name}
+                raise LimitExceeded("Theta")
 
             theta_aut = apply_theta_antimorphism(aut, theta)
 
@@ -387,11 +374,14 @@ def handle_satisfaction_maximality(
             return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                     'result':decision, 'proof': proof}
 
-    # Check to see if the computation would be too computationally expensive
-    if limit_tran_prop(aut.delta, prop.Aut.delta, LIMIT):
+    try:# Check to see if the computation would be too computationally expensive
+        if limit_tran_prop(aut.delta, prop.Aut.delta, LIMIT):
+            raise LimitExceeded("Satisfaction/Maximality")
+    except AttributeError: #caused when there is no prop (user error), or there is no prop.Aut (UD Code)
         return {'form':form, 'error_message':
-                'Sizes of the automaton and transducer exceed limit! (See "Technical Notes")',
-                'automaton':aut_name, 'transducer':t_name}
+        'Error creating property.',
+        'automaton':aut_name, 'transducer':t_name}
+        
 
     # Check Satisfaction
     if question == '1':
@@ -431,15 +421,28 @@ def handle_satisfaction_maximality(
             return {'form':form, 'error_message': sat.get("error_message"),
                     'automaton':aut_name, 'transducer':t_name}
         elif not (sat["isSatisfied"]):
-            return {"form": form, "error_message": "ERROR: The language does not satisfy the property", 
+            return {"form": form, "error_message": "ERROR: The language does not satisfy the property.", 
                     "automaton": aut_name, "transducer": t_name}
         else: 
-            epsi = float(data.get('epsilon', 0.05))
-            t = float(data.get('dirichletT', 2.0001))
-            disp = int(data.get('displacement', 1))
+            try: 
+                epsi = float(data.get('epsilon'))
+                t = float(data.get('dirichletT'))
+                disp = int(data.get('displacement'))
+                if (t <= 1.0):
+                    return error("t must be > 1.")
+                if not (0.0 < epsi < 1.0):
+                    return error("Epsilon must be between 0 and 1.")
+                if disp < 0:
+                    return error("Displacement must not be negative")
+            except (ValueError, TypeError):
+                return error("Invalid Approximation Parameters")
             decision, proof = check_approx_maximality(aut, prop, epsi, t, disp)
             if t_name == "":
                 return {'form': form, 'automaton': aut_name, 'result': decision, "proof": proof}
             else: 
                 return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                     'result':decision, 'proof': proof}
+
+class LimitExceeded(Exception): #define a new error type for when an automaton or property is too complex
+    pass                        #to even attempt quick calculation
+    

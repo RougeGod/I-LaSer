@@ -1,6 +1,6 @@
 \documentclass{article}
-\usepackage{graphicx} % Required for inserting images
-\usepackage[backend=biber, style=numeric]{biblatex}
+\usepackage{graphicx}
+\usepackage[maxbibnames=7]{biblatex}
 \addbibresource{citations.bib}
 \usepackage{amsmath}
 \usepackage{float}
@@ -17,7 +17,7 @@
 \tableofcontents
 
 \section{Introduction}
-\par The Independent Language Server (I-LaSer) is a program, originally built in June 2010 and currently on its sixth feature release, which answers questions relating to the satisfaction and maximality of formal languages.\cite{Properties} There is also an option to construct a language of a given size using certain parameters. It accepts a description of a regular language, which can be provided by either a regular expression or a finite automaton, and a description of a language property, which can be either a fixed type, provided by a trajectory, or provided by a transducer.\cite{LaSer}
+\par The Independent Language Server (I-LaSer) is a program, originally built in June 2010 and currently on its sixth feature release, which answers questions relating to the satisfaction and maximality of formal languages \cite{Properties}. There is also an option to construct a language of a given size using certain parameters. It accepts a description of a regular language, which can be provided by either a regular expression or a finite automaton, and a description of a language property, which can be either a fixed type, provided by a trajectory, or provided by a transducer \cite{LaSer}.
 I-LaSer uses the formal languages library \href{https://fado.dcc.fc.up.pt/}{FAdo}\cite{FAdo}, created by Rogério Reis and Nelma Moreira, to perform all of its backend calculations.
 
 \begin{center}
@@ -50,7 +50,7 @@ Non-integer numbers of seconds are permitted to be used as the time limit.
 \par A language $L$ satisfying property $P$ is said to be \textit{maximal} with respect to $P$ if and only if no more words can be added to $L$ without losing its satisfaction of $P$. When testing maximality and approximate maximality using I-LaSer, you will get an error if the language does not satisfy the property, as the (approximate) maximality question is meaningless on such languages, since the language has already lost satisfaction of the property without adding any words. 
 
 \subsection{Approximate Maximality}
-\par Testing code maximality is PSPACE-hard, and in the worst case takes exponential time.\cite{Approx}
+\par Testing code maximality is PSPACE-hard, and in the worst case takes exponential time \cite{Approx}.
 The Approximate Maximality feature of I-LaSer 6 alleviates this problem by not testing for complete maximality, but instead, generates a sample of words over the alphabet, testing them to see if they can be added to the language.
 If the sample includes a word that can be added to the language, then the language is definitely not maximal and I-LaSer will provide the word that can be added to the language.
 If the sample does not include a word that can be added to the language, I-LaSer will conclude that the language is approximately maximal.
@@ -103,7 +103,7 @@ A language is a hypercode if it is not possible to remove any symbols from one w
 \section{Input Areas}
 
 \subsection{File Input}
-I-LaSer can accept typed input in the large text boxes, for automata, transducers, and theta properties, or can accept file input. Clicking the "Upload File" button will open a file selector, from which you may select a text file. Selecting a text file will replace all input in the text box with the contents of the file. Cancelling file selection will preserve the data in the text area.
+I-LaSer can accept typed input in the large text boxes, for automata, transducers, and theta properties, or can accept file input. Clicking the "Upload File" button will open a file selector, from which you may select a text file. Selecting a text file will replace all input in the text box with the contents of the file. Selecting a non-text file or an unreadable file will result in the input area turning red and displaying an error. Cancelling file selection will preserve the data in the text area. 
 
 \subsection{Validation}
 I-LaSer will attempt to perform validation on the inputs to the text box, no matter if the inputs originated from the keyboard or from a file. If the input passes validation, the text box will turn green. If the input fails validation, the text box will remain white. It is still possible to submit inputs that the validator deems "invalid" and have them run without errors. Similarly, the green text box does not necessarily mean that no errors will occur. 
@@ -142,7 +142,20 @@ The following list of state transitions would be legal as an NFA but illegal as 
 1 a 3\\
 \end{center}
 
-\par For a more detailed description of the grammar behind FAdo automata parsing, read \href{https://www.dcc.fc.up.pt/~rvr/FAdo.pdf}{the FAdo instruction manual}.\cite{FAdoManual}
+\par For a more detailed description of the grammar behind FAdo automata parsing, read \href{https://www.dcc.fc.up.pt/~rvr/FAdo.pdf}{the FAdo instruction manual} \cite{FAdoManual}.
+
+\subsection{Grail Automata}
+Along with the preferred FAdo syntax, automata in the Grail\cite{Grail} format are also supported. 
+The state transition lines are written identically to FAdo's format, with the source state, the symbol, and the state to advance to. 
+The differences between the two formats are in defining the start and end states.
+In Grail, the start state is defined with the string \verb=(START) |- N=, where N is a start state.
+Final states are defined with the string \verb=F -| (FINAL)=, where F is a final state.
+For languages with more than one start state and/or more than one final state, these lines may be repeated as many times as necessary.
+Start and end state lines may be declared anywhere before, in between, or after the state transitions lines.
+It is not possible to define an alphabet in Grail syntax with symbols that do not cause a state transition, FAdo format must be directly used in that case.
+
+Grail-formatted automata are implicitly converted to FAdo format before being processed and are always treated as NFAs.
+
 
 \subsection{Regular Expressions}
 Regular expressions are a simpler way to express regular languages, and can be entered in the language input area to describe a language.
@@ -153,8 +166,9 @@ When entering a mathematical (Kleene) regular expression, the only operators all
 \item x* - 0 or more of symbol "x" (Kleene star)
 \item x+y - either symbol "x" or symbol "y"
 \item (x) - treat x as one symbol
-\item \verb-x^n- - repeat symbol x $n$ times. It is recommended but not required to enclose the entire expression \verb-(x^n)- in parentheses. $n$ must not have seperate parentheses and must be a single number. 
+\item \verb-x^n- - repeat symbol x $n$ times. It is recommended but not required to enclose the entire expression \verb-(x^n)- in parentheses. $n$ must not have seperate parentheses and must be a single number (e.g. The expression \verb-a^(2)- is not permitted). This operator has the highest precedence.
 \end{itemize}
+
 
 \par Some quantifiers used in computer programming regular expressions that can be expressed in mathematical regular expressions are shown in the below table for convenience.
 \begin{center}
@@ -188,14 +202,14 @@ For example, the below transducer, when given the word "001", outputs "001", "10
 0 1 0 1\\
 \end{center}
 The above transducer is also \textit{input-preserving}, because any input may produce itself when run through the transducer. 
-A transducer which is not input-preserving is said to be \textit{input-altering}, where every word output from the transducer is different from its input, for all input words.
+A transducer which is not input-preserving is said to be \textit{input-altering}. An input-alterng transducer is one in which every word output from the transducer is different from its input, for all input words.
 
 \subsection{Trajectories}
 It is also possible to input a trajectory in the area for transducers, if the property type "Trajectory or Input-Altering Transducer" is selected.
 Trajectories have the same operator set as regular expressions, %link to regular expression section
-though their alphabet is restricted to $\{0, 1\}$
+though their alphabet is restricted to $\{0, 1\}$.
 Trajectories offer more property options than fixed types, though considerably less than transducers.
-For instance, a language satisfies the trajectory property (01)* if and only if it is impossible to make one word in the language using all of the symbols in the odd-numbered positions of another word..
+For instance, a language satisfies the trajectory property (01)* if and only if it is impossible to make one word in the language using all of the symbols in the odd-numbered positions of another word.
 For more detail on trajectory expressions, see \cite{traj}.
 
 \subsection{Trajectory Equivalents for Fixed Types}
@@ -224,9 +238,10 @@ For example, on the DNA alphabet with swaps {a, t} and {c, g}, the word ``gcct''
 %what paper was it? I know it came from a paper. needs to be cited
 That would then be compared to the other words in the language via the operation for the property.
 \pagebreak
-\section{Language, Property, and Theta Examples}
+\section{Language and Property Examples}
 \subsection{Automaton Examples}
 \begin{center}
+\raggedright
 \begin{multicols}{2}
 [Automaton accepting aaa(aaa)*b + aa(ba)*a(aa(ba)*a)*b:]
 FAdo:\\
@@ -243,23 +258,62 @@ FAdo:\\
 7 a 5\\
 7 b 8\\
 \columnbreak
-Grail:
-(START) |- 1\\1 a 2\\2 a 3\\3 b 2\\3 a 4\\4 a 2\\4 b 8\\1 a 5\\5 a 6\\6 a 7\\7 a 5\\7 b 8\\8 -| (FINAL)
+Grail:\\
+(START) \verb`|-` 1\\1 a 2\\2 a 3\\3 b 2\\3 a 4\\4 a 2\\4 b 8\\1 a 5\\5 a 6\\6 a 7\\7 a 5\\7 b 8\\8 \verb`-|` (FINAL)
 \end{multicols}
 \end{center}
 
-\subsection{Approximate Maximality Parameters}
+\begin{center}
+\raggedright
+\begin{multicols}{2}
+[Automaton accepting all words with an odd number of A's and an odd number of B's]
+FAdo:\\@NFA 3\\0 A 1\\0 B 2\\1 A 0\\1 B 3\\2 A 3\\2 B 0\\3 B 1\\3 A 2\\
+\columnbreak
+Grail:\\(START) \verb`|-` 0\\3 \verb`-|` (FINAL)\\0 A 1\\0 B 2\\1 A 0\\1 B 3\\2 A 3\\2 B 0\\3 B 1\\3 A 2\\
+\end{multicols}
+\end{center}
+
+\pagebreak
+
+\begin{center}
+\raggedright
+\begin{multicols}{2}
+[Deterministic automaton accepting all 3-symbol words over the alphabet $\{a, b\}$ with an even number of b's:]
+FAdo:\\
+@DFA 5\\0 a 2\\0 b 1\\1 a 3\\1 b 4\\2 a 4\\2 b 3\\3 b 5\\4 a 5\\
+\columnbreak
+Grail:\\
+(START) \verb=|-= 0\\0 a 2\\0 b 1\\1 a 3\\1 b 4\\2 a 4\\2 b 3\\3 b 5\\4 a 5\\5 \verb=-|= (FINAL)\\
+\end{multicols}
+\end{center}
+
+\subsection{Transducer Examples}
+Input-altering transducer describing the \textit{thin} property, where all words must be of different lengths, over the alphabet $\{8, 9\}$. This transducer will output every word that is not the input, but is the same length as the input.
+\raggedright
+\begin{center}
+@Transducer 2\\1 8 8 1\\1 9 9 1\\1 8 9 2\\1 9 8 2\\2 8 8 2\\2 9 9 2\\2 8 9 2\\2 9 8 2\\
+\end{center}
+Input-preserving transducer describing the \textit{1-substitution-detecting} property over the alphabet $\{a, b, c\}$. When word $w$ is input, the transducer will output $w$ and any word created by changing one symbol in $w$. To make this an input-altering transducer which does not output $w$ and only words formed by substituting a symbol, remove the 0 from the list of final states.
+\begin{center}
+@Transducer 0 1\\0 a a 0\\0 b b 0\\0 c c 0\\0 a b 1\\0 a c 1\\0 b a 1\\0 b c 1\\0 c a 1\\0 c b 1\\1 a a 1\\1 b b 1\\1 c c 1\\
+\end{center}
+
+Input-preserving transducer which outputs all words formed by transposing two adjacent bits of its input word:
+\begin{center}
+@Transducer 4 * 1\\1 0 0 1\\1 1 1 1\\1 0 @epsilon 2\\1 1 @epsilon 3\\2 1 1 5\\5 @epsilon 0 4\\3 0 0 6\\6 @epsilon 1 4\\4 0 0 4\\4 1 1 4\\
+\end{center}
+\section{Approximate Maximality Parameters}
 \begin{itemize}
 \item Epsilon - A higher epsilon value correlates to more error tolerance, and fewer words being sampled over the distribution. Epsilon must be greater than 0 and less than 1.
 \item $t$ - The Dirichlet distribution that the approximate maximality calculations use requires a parameter $t$. 
 This is used in the creation of the word sample space and correlates to the uniformity of the distribution of word lengths across the sample space. A smaller value of $t$ means that the sample will be more uniform in terms of word length, but will also take much longer to set up. 
 $t$ must be greater than 1.
 \item Displacement - No words will be included in the sample if they have fewer than $d$ characters.
-This is useful when a language has a few uninteresting short words which violate the property.
+This is useful when a language has a few uninteresting short words which could be added to the language.
 \end{itemize}
 
 \section{Construction}
-The construction question allows I-LaSer to accept a language property and build a block language of a given size which satisfies that property.\cite{Construction}
+The construction question allows I-LaSer to accept a language property and build a block language of a given size which satisfies that property \cite{Construction}.
 A block language is one where the words in the language are of a uniform length.
 \subsection{Parameters}
 \begin{itemize}
@@ -280,7 +334,10 @@ It does mean that the generated language is close to being block maximal.
 \par The requirement that the construction alphabet must be a subset of the transducer's prohibits transducers with only letters in their input alphabet, or a numerical alphabet that does not contain 0 or other digits less than $S$.
 
 \par Fixed types and trajectories are not useful as properties for language construction, as any langauge made up of words which all have the same length will satisfy every fixed type and every trajectory, and the construction option only creates words of a uniform length, so in practice, using either of these property options will simply generate arbitrary words over the alphabet.
+
+\par If I-Laser generates 40 or more words of Construction output, they will not fit neatly on the screen, so a file dialog will appear, propmting for a directory to save the result in. The file saved in that directory will be named ``I-LaSer-Result-[Timestamp]'', and I-LaSer will display the name of the file in the result display.
+\pagebreak
 \section{References}
 \printbibliography
-
+%\bibliography{citations}
 \end{document}

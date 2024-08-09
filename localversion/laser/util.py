@@ -44,7 +44,7 @@ def create_fixed_property(alphabet, fixed_type):
 def write_witness(witness):
     """Creates the witness for a given error"""
     string = ''
-    for line in witness:
+    for line in set(witness):
         string += line + '\n'
     return string
 
@@ -67,14 +67,14 @@ def parse_aut_str(aut_str):
 
     aut_str = aut_str.strip()
 
-    if aut_str.find("@Transducer") != -1:
+    if "@Transducer" in aut_str:
         raise IncorrectFormat("Please enter the transducer in its own input area.")
     
-    if aut_str.strip().find('(START)') != -1:
+    if "(START)" in aut_str:
         result = convertGrailToFAdo(aut_str.strip())
         return result
 
-    if aut_str.find("@NFA") == aut_str.find("@DFA") == -1:
+    if not ("@DFA" in aut_str or "@NFA" in aut_str):
         aut_str = expand_carets(aut_str)
 
     result = aut_str.strip()
@@ -90,6 +90,10 @@ def parse_transducer_string(t_str):
     t_str = re.sub(r'\r', '', t_str.strip())
     t_str = re.sub(r'\n#.+\n', '\n', t_str)
     t_str = re.sub(r'#.+', '', t_str)
+    
+    if "@Transducer" not in t_str: #trajectory inputted
+        t_str = expand_carets(t_str)
+
     result["t_str"] = t_str.strip()
     return result
 

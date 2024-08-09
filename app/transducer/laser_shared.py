@@ -9,7 +9,15 @@ from lark import UnexpectedCharacters
 
 from app.transducer.util import list_to_string, long_to_base
 
-FIXED = ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']
+def check_construction_alphabets(s_num, alphabet):
+    ALPHABET_MISMATCHED = 'The transducer\'s alphabet does not match the construction alphabet.'
+    ALPHABET_TOO_SMALL = "The construction alphabet is larger than the transducer's alphabet."
+    if (s_num > len(alphabet)):
+        return ALPHABET_TOO_SMALL
+    construction_alf = [str(i) for i in range(s_num)]
+    if not all([i in alphabet for i in construction_alf]):
+        return ALPHABET_MISMATCHED
+    return None
 
 def construct_automaton(aut_str):
     """construct an automaton from a string"""

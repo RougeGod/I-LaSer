@@ -126,7 +126,7 @@
                         {{ form.fixed_type.errors }}
                     </div>
                     <div class="col-md-12">
-                        <label for="id_a" style="margin-top: 15px;">Select the fixed property (If not specified in the file above):</label>
+                        <label for="id_a" style="margin-top: 15px;">Select the fixed property:</label>
                     </div>
                     <div class="col-lg-4 col-lg-offset-4">
                         {{ form.fixed_type }}
@@ -179,7 +179,7 @@
                         Given property P and integers N,k>0, return a language of N words of length k satisfying P.
                     </li>
                     <li><b> Approximate Maximality question: </b>
-                        Given language L and property P, is the proportion of words in L least 1-&epsi;?
+                        Given language L, property P, and &epsi; is the language (1-&epsi;) close to being maximal? 
                     </li>
                 </ul>
                 <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 2 &le; s &le; 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 
@@ -191,18 +191,7 @@
         </div> 
 
         <div id="about" class="tab-pane fade">
-            <h3>ABOUT I-LaSer</h3>  
-            <h5>(Names of I-LaSer versions are those of research students who contributed to their implementation)</h5>
-            <div class="col-md-12 text-justify">
-                <p><b>Project initiator</b>: Stavros Konstantinidis (<a href="http://cs.smu.ca/~stavros/">http://cs.smu.ca/~stavros/</a>)</p>
-                <h4><b>Significant contributors</b>:</h4>
-                <p><a href="http://www.dcc.fc.up.pt/~nam/">Nelma Moreira</a> &amp <a href="http://www.dcc.fc.up.pt/~rvr/">Rogerio Reis</a>: as of version 3, LaSer's back end is based on <a href="http://fado.dcc.fc.up.pt/">FAdo</a></p>
-                <p>5: Matthew Rafuse (January 2018, <b>current version</b>) <br> Incorporating into LaSer satisfaction of DNA properties, introducing text areas for entering user input, and making the views.py code modular.</p>
-                <p>4: Abisola Adeniran (October 2016) <br> Incorporating into LaSer the construction problem.</p>
-                <p>3: Casey Meijer (June 2014) <br> Deciding maximality of all available properties, generation of executable code</p>
-                <p>2: Meng Yang (June 2012) <br> Deciding satisfaction of: Input-preserving transducer, Error-detection, and Error-correction properties </p>
-                <p>1: Krystian Dudzinski (June 2010) <br> Deciding satisfaction of: Trajectory and Input-altering transducer properties</p>
-            </div>
+            {% include "tabs/about.html" %}
         </div>
 
         <div id="automaton" class="tab-pane fade">
@@ -214,23 +203,7 @@
         </div>
 
         <div id="trajectory" class="tab-pane fade">
-            <div class="col-md-12 text-center">
-                <h3>Format for Trajectory Expressions</h3>
-            </div>
-            <div class="col-md-12 text-justify">
-                <p>
-                    Regular trajectory properties can be described by regular expressions in the
-                    <a href="http://fado.dcc.fc.up.pt/">FAdo</a> format. For example, 
-                    <br>
-                    the regular expression 1*0*
-                    describes the <i>suffix code</i> property;
-                    <br> 
-                    the regular expression 1*0*1* describes the <i>infix code</i> property;
-                    <br>
-                    the regular expression 0*1* + 1*0* describes the bifix code property 
-                    (being prefix and suffix code).
-                </p>
-            </div>
+            {% include "tabs/trajectory.html" %}
         </div>
 
         <div id="theta" class="tab-pane fade">

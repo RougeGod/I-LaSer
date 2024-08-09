@@ -19,7 +19,7 @@ import re
 from .FAdo.fio import readOneFromString
 
 from .FAdo.codes import UDCodeProp, PropertyNotSatisfied, IPTProp, DFAsymbolUnknown, \
-    ErrCorrectProp, buildErrorDetectPropS
+    ErrCorrectProp, buildErrorDetectPropS, IATProp
 
 from .FAdo.prax import GenWordDis, prax_maximal_nfa, Dirichlet
 
@@ -49,8 +49,6 @@ TRANSDUCER_TYPES = {
     'ErrorDetecting': 3,
     'ErrorCorrecting': 4,
 }
-
-
 
 def get_response(data):
     """
@@ -82,8 +80,16 @@ def get_response(data):
             return func_timeout(time_limit, handle_construction, args=(data,))
         except FunctionTimedOut: 
             return {"error_message": "The function timed out."}
-        
 
+def check_construction_alphabets(s_num, alphabet):
+    ALPHABET_MISMATCHED = 'The transducer\'s alphabet does not match the construction alphabet.'
+    if (s_num > len(alphabet)):
+        return ALPHABET_TOO_SMALL
+    construction_alf = [str(i) for i in range(s_num)]
+    if not all([i in alphabet for i in construction_alf]):
+        return ALPHABET_MISMATCHED
+    return None
+        
 def handle_iap(
         n_num, l_num, s_num, t_str
     ):
@@ -96,6 +102,9 @@ def handle_iap(
     # Create the Input Altering Property
     try:
         prop = construct_input_alt_prop(t_str, alphabet)
+        err = check_construction_alphabets(s_num, prop.Aut.Sigma)
+        if err is not None:
+            return error(err)
     except (IncorrectFormat, TypeError):
         return {'error_message': PROPERTY_INCORRECT_FORMAT}
 
@@ -103,7 +112,7 @@ def handle_iap(
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
-        return {'error_message': ALPHABET_TOO_SMALL}
+        return error(ALPHABET_TOO_SMALL) #probably not necessary
 
     # If successful, return the given words that satisfy it.
     words = write_witness(witness)
@@ -115,6 +124,9 @@ def handle_ipp(
     """Handle Input-preserving properties"""
     try:
         prop = buildErrorDetectPropS(t_str + "\n") #directly calls FAdo code so we need to add the newline here
+        err = check_construction_alphabets(s_num, prop.Aut.Sigma)
+        if err is not None:
+            return error(err)
     except AttributeError:
         return {'error_message':PROPERTY_INCORRECT_FORMAT}
     except UnexpectedCharacters:
@@ -130,10 +142,8 @@ def handle_ipp(
 
 def handle_construction(data):
     """
-    Handle the construction choice of the website.
+    Handle the construction choice of the application.
     """
-
-
     # The post passes the sizes as string, so we need to parse them.
     # This has the added benefit of that if no numbers are given, it defaults to -1,
     # Which will fail!
@@ -145,28 +155,27 @@ def handle_construction(data):
     err = ''
     # Checking number's validity
     if n_num <= 0 or s_num <= 0 or l_num <= 0:
-        err += "Please enter three positive integers S, N, L.\n"
+        err += "Please enter three positive integers S, N, L."
     elif s_num < 2 or s_num > 10:
         err += "S must be less than 10 and greater than 1"
-    elif s_num > l_num:
-        err += "S must be less than L"
-
     if err:
         return error(err)
+
+    if not property_type:
+        return error('Please select a property type.')
 
     if property_type == 1:
         try:
             _, witness = make_block_code(n_num, l_num, s_num)
         except DFAsymbolUnknown:
             return error("Could not construct examples (Construction, fixed type).")
-        #text_path, text_title = write_witness(witness, filename)
         words = write_witness(witness)
         return {'result': words}
 
-    t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
-
-    if not t_str:
+    if not data.get("transducer_text"):
         return error('Please provide a property file.')
+
+    t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
 
     # Input Altering Property
     if property_type == 2:
@@ -174,6 +183,8 @@ def handle_construction(data):
     # Input-Preserving Property
     elif property_type == 3:
         result = handle_ipp(n_num, l_num, s_num, t_str)
+    else:
+        return error("Please select a supported question/property pair.")
 
     return result
     
@@ -194,6 +205,8 @@ def check_satisfaction(automaton, prop):
     if witness == (None, None) or witness == (None, None, None):
         decision = 'YES, the language satisfies the property'
         proof = ''
+    elif (type(prop) == IATProp) and (witness[0] == witness[1]):
+        return error("This is an input-preserving property, not an input-altering property.")
     else:
         decision = 'NO, the language does not satisfy the property'
         proof = format_counter_example(witness)
@@ -221,9 +234,10 @@ def handle_satisfaction_maximality(data):
 
     try:
         aut = construct_automaton(aut_str)
+        print(aut)
     except (IncorrectFormat, TypeError): # Automata syntax error
         return error(AUTOMATON_INCORRECT_FORMAT)
-    except VisitError:
+    except VisitError: #multiple paths, or multiple start states for a DFA
         return error("This should be an NFA, not a DFA")
     except Exception: 
         return error("Unexpected error parsing automaton.")
@@ -245,7 +259,8 @@ def handle_satisfaction_maximality(data):
             prop = UDCodeProp(aut.Sigma)
             proof = ''
             if question == 1:
-                # Satisfaction
+                # Satisfaction. UDCode does not have a Prop.Aut, so we need
+                #to handle satisfaction seperately.
                 witness = prop.notSatisfiesW(aut)
                 if witness == (None, None):
                     decision = "YES, the language satisfies the code property"
@@ -262,7 +277,7 @@ def handle_satisfaction_maximality(data):
                     decision = "NO, the language is not a maximal code"
             elif question == 4:
                 #approximate maximality
-                return error("Approximate Maximality not yet available for UD Code Property")
+                return error("Approximate Maximality is not available for the UD Code Property.")
             return {'result': decision, 'proof': proof}    
                 
 
@@ -284,7 +299,7 @@ def handle_satisfaction_maximality(data):
                 if not is_subset(aut, prop):
                     return error("The automaton's alphabet should be a subset of the transducer's")
             except (IncorrectFormat, TypeError):
-                return {'error_message': PROPERTY_INCORRECT_FORMAT}
+                return error(PROPERTY_INCORRECT_FORMAT)
 
         # Error-Detection
         elif property_type == 3:
@@ -293,7 +308,7 @@ def handle_satisfaction_maximality(data):
                 if not is_subset(aut, prop):
                     return error("The automaton's alphabet should be a subset of the transducer's")
             except Exception: #catch-all, likely AttributeError or UnexpectedCharacters
-                return {'error_message': PROPERTY_INCORRECT_FORMAT,}
+                return {'error_message': PROPERTY_INCORRECT_FORMAT}
 
         # Error-Correction
         elif property_type == 4:
@@ -304,7 +319,7 @@ def handle_satisfaction_maximality(data):
             except Exception: #catch-all, likely AttributeError or UnexpectedCharacters
                 return error(PROPERTY_INCORRECT_FORMAT)
 
-        elif property_type == 5: # We have to branch off, it is handled differently.
+        elif property_type == 5 and question == 1: # We have to branch off, it is handled differently.
             try:
                 prop = IPTProp(readOneFromString(t_str + "\n"))
                 if not is_subset(aut, prop):
@@ -335,6 +350,8 @@ def handle_satisfaction_maximality(data):
 
                 proof = format_counter_example(witness, True)
             return {'result':decision, 'proof': proof}
+        else:
+             return {"error_message": "Please select a valid property/question combination."}
 
     # Check Satisfaction
     if question == 1:
@@ -345,7 +362,7 @@ def handle_satisfaction_maximality(data):
         try:
             witness = prop.notMaximalW(aut)
         except PropertyNotSatisfied:
-            err = 'ERROR: the language does not satisfy the property.'
+            err = 'ERROR: The language does not satisfy the property.'
         except TypeError:
             err = AUTOMATON_INCORRECT_FORMAT
         if err:

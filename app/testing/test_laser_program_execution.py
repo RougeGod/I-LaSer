@@ -102,7 +102,7 @@ class MyTestCase(TestCase):
         post = {'question':'1', 'property_type':'4'}
         files = create_file_dictionary(aut_file=REGS[9], trans_file=IP_TRANSDUCER_NAMES[1])
         result = get_response(post, files, False)
-        self.assertTrue(result.get('error_message').startswith("Sizes"))
+        self.assertTrue(result.get('result').startswith("This query is too complex"))
 
 
     def test_TRAJmaxNO(self):

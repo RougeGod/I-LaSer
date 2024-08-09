@@ -12,7 +12,8 @@ from django.conf import settings
 ZIP_PROG = "zip"
 UNZIP_PROG = "unzip"
 
-BUILD_NAME = {"CODE": ("buildUDCodeProperty", ["ssigma"], 1),
+BUILD_NAME = {"BIFIX": ("buildPrefixProperty(ssigma) & buildSuffixProperty", ["ssigma"], 1), #jank but it requires 2 different properties to be built
+              "CODE": ("buildUDCodeProperty", ["ssigma"], 1),
               "EDITDIST": ("editDistanceW", ["a"], 0),
               "ERRCORR": ("buildErrorCorrectPropS", ["t"], 1),
               "ERRDET": ("buildErrorDetectPropS", ["t"], 1),
@@ -118,20 +119,17 @@ def theta_helper_methods(theta_str, list_):
     """Add the helper methods for theta-transducer properties."""
     list_.append("""
 def parse_theta_str(theta_str):
-    match = re.search(r'^@THETA *\\n(([\\w\\d] +[\\w\\d]\\s*)+)', theta_str, re.IGNORECASE)
-
+    match = re.search(r'^@THETA *\\n(([\w\d] +[\w\d]\s*)+)', theta_str, re.IGNORECASE)
     swaps = match.group(1)
-
-    result = {}
-    output = {}
+    initial = {}
+    reverse = {}
     for swap in swaps.splitlines():
         tmp = swap.split(' ')
-        result[tmp[0]] = tmp[1]
-
-    for key in result.keys():
-        output[result[key]] = key
-
-    return result | output""")
+        initial[tmp[0]] = tmp[1]
+    for key in initial.keys():
+        reverse[initial[key]] = key
+    return initial | reverse 
+    """)
 
     list_.append("""
 def apply_theta_antimorphism(aut, theta):
@@ -229,7 +227,6 @@ def program_lines(
             list_.append(string)
         return list_
     else:
-
         if aut_str and not aut_str.endswith('\n'):
             aut_str = aut_str + '\n'
 
@@ -260,11 +257,17 @@ def program_lines(
                 else:
                     string += "%s," % expand(s_1)
             string = string[:-1] + ")\n"
-            
+                       
             if (test == "AMAX"): #approximate maximality code has very different syntax so gets a special case
-                ans = "answer = %s(GenWordDis(Dirichlet(t=%s, d=%s), ssigma, %s), a, p)" % (TESTS["AMAX"], dirichletT, displacement, epsi)
-            else: 
+                ans = "if p.notSatisfiesW(a) == (None, None):\n"                
+                ans += "    answer = %s(GenWordDis(Dirichlet(t=%s, d=%s), ssigma, %s), a, p)\n" % (TESTS["AMAX"], dirichletT, displacement, epsi)
+                ans += "else:\n    answer = 'Property not satisfied.'\n"
+            elif (test == "MAXP"): #UD Code maximality needs a seperate check for non-satisfied property, same as AMAX
+                ans = "if p.notSatisfiesP(a):\n    print('Property not Satisfied')\n    exit()\n"
+                ans += "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
+            else:
                 ans = "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
+
             
 
             list_.extend([string, ans, "print(answer) \n"])

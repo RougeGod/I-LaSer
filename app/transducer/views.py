@@ -13,11 +13,12 @@ from FAdo.fio import readOneFromString, NFA, DFA
 import FAdo.codes as codes
 from FAdo.codes import IPTProp, ErrCorrectProp, regexpInvalid
 
-from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop, convertToCorrectType, is_subset
+from app.transducer.laser_shared import construct_automaton, IncorrectFormat, construct_input_alt_prop, detect_automaton_type, construct_input_alt_prop, convertToCorrectType, is_subset, check_construction_alphabets
 from app.transducer.laser_gen import gen_program
 from app.transducer.forms import UploadFileForm
-from app.transducer.handlers import handle_construction, handle_satisfaction_maximality
+from app.transducer.handlers import handle_construction, handle_satisfaction_maximality, LimitExceeded
 from app.transducer.util import parse_aut_str, parse_transducer_string
+from app.transducer.expand_carets import expand_carets
 
 from lark import UnexpectedCharacters
 
@@ -42,8 +43,8 @@ If no, return a witness; else return Nones.', #Satisfaction
             '2': DECIDE_REQUEST+'is maximal.',#Maximality
             '3': 'Construct set of words satisfying the given property.', #Construction
             '4': DECIDE_REQUEST + 'is epsilon-maximal.'} #Approximate Maximality
-FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'INFIX',
-              '4': 'OUTFIX', '5': 'HYPERCODE', '6': 'CODE'}
+FIXED_DICT = {'1': 'PREFIX', '2': 'SUFFIX', '3': 'BIFIX', '4': 'INFIX',
+              '5': 'OUTFIX', '6': 'CODE', '7': 'HYPERCODE'}
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 
@@ -97,14 +98,18 @@ def get_response(data, files, form):
         try:
             return func_timeout(TIME_LIMIT, handle_satisfaction_maximality, args=(property_type, question, data, files, form))
         except FunctionTimedOut:
-            return get_code(data, files, form=form, sentFromTimeout=True)
+            return get_code(data, files, form=form, sentFrom="Timeout")
+        except LimitExceeded:
+            return get_code(data, files, form=form, sentFrom="Limit")
     elif question == '3':
         try: 
             return func_timeout(TIME_LIMIT, handle_construction, args=(property_type, data, files, form))
         except FunctionTimedOut: 
-            return get_code(data, files, form=form, sentFromTimeout=True)
+            return get_code(data, files, form=form, sentFrom="Timeout")
+        except LimitExceeded:
+            return get_code(data, files, form=form, sentFrom="Limit")
 
-def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
+def get_code(data, files, form=True, test_mode=None, sentFrom=None):
     """
     If a computation is too expensive to be run in due time on the server,
     the user can generate code and allow the download of that. This method
@@ -150,6 +155,11 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
 
         try:
             aut_type = detect_automaton_type(aut_str)
+            if (aut_type == "str2regexp"):
+                try:
+                    aut_str = expand_carets(aut_str)
+                except ValueError as err:
+                    return error(str(err))
             aut = construct_automaton(aut_str)
         except IncorrectFormat:
             return {'form': form, 'error_message':
@@ -163,8 +173,6 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
             return error('Please enter three positive integers S, N, L.')
         elif s_num < 2 or s_num > 10:
             return error('S must be less than 10 and greater than 1')
-        elif s_num > l_num:
-            return error('S must be less than L')
     if not property_type:
         return error('Please provide a property type.')
     # Get Fixed Type, or get Transducer String
@@ -175,14 +183,20 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
             return error("Please select a fixed type.")
         prop = FIXED_DICT[str(fixed_type)]
     else:
+        if not data.get("transducer_text"):
+            return error('Please provide a property.')
         t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
-        if not t_str:
-            return error('Please provide a property file.')
 
     theta = None
     if property_type == '2':  # Input-Altering Property (given as trajectory or transducer)
         if question in ['1', '2', '4']:
-            sigma = aut.Sigma
+            try:
+                sigma = aut.Sigma
+            except AttributeError:
+                if type(aut) == list:
+                    return error("Only one automaton may be inputted at a time.")
+                else:
+                    return error("The automaton appears to be incorrectly formatted.")
         elif question == '3':
             sigma = set()
             for i in range(s_num):
@@ -190,11 +204,18 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
         try:
             result = construct_input_alt_prop(t_str, sigma)
             prop = construct_input_alt_prop(t_str, sigma, True)
+            if (prop == "TRAJECT"):
+                try:
+                    prop = expand_carets(prop)
+                except ValueError as err:
+                    return error(str(err))
             try: 
                 if not is_subset(aut, result):
                     return error("The automaton's alphabet should be a subset of the transducer's")
-            except UnboundLocalError: #there is no automaton (construction Question), so checking it is nonsensical
-                pass
+            except UnboundLocalError: #there is no automaton (construction Question), so checking it is nonsensical     
+                err = check_construction_alphabets(s_num, result.Aut.Sigma)
+                if err is not None:
+                    return error(err)
         except IncorrectFormat:
             return error(PROPERTY_INCORRECT_FORMAT)
 
@@ -206,7 +227,9 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
                 if not is_subset(aut, prop):
                     return error("The automaton's alphabet should be a subset of the transducer's")
             except UnboundLocalError:
-                pass
+                err = check_construction_alphabets(s_num, prop.Aut.Sigma)
+                if err is not None:
+                    return error(err)
         except AttributeError:
             return error(PROPERTY_INCORRECT_FORMAT)
 
@@ -255,10 +278,12 @@ def get_code(data, files, form=True, test_mode=None, sentFromTimeout=False):
         return prog_lines
 
     url_params = (settings.MEDIA_URL, name)
-    if sentFromTimeout:
+    if sentFrom == "Timeout":
         decision = "The computation took too long!<br>Would you like to <a href=%s%s.zip>download your code</a>?<br>" % url_params
-    else: 
+    elif sentFrom == "Limit": 
+        decision = "This query is too complex for the web server. <br>Would you like to <a href=%s%s.zip>download your code</a>?<br>" % url_params
         # The code has now been placed in the media folder, to download.
+    else:
         decision = '<a href="%s%s.zip"> Download your code </a></br> (See "Technical notes")' % url_params
     return {'form': form, 'result': decision}
 

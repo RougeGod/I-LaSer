@@ -22,10 +22,9 @@ class MyTestCase(TestCase):
     def test_p_transpose_constr(self):
         files = {}
         trans_text = readfile('test_files/P-transpose1.01.ia.fa')
-        post = {'question': '3', 'property_type': '2', 'transducer_text1': trans_text, 'n_int': 20, 'l_int': 10, 's_int': 10}
+        post = {'question': '3', 'property_type': '2', 'transducer_text1': trans_text, 'n_int': 20, 'l_int': 10, 's_int': 2}
         result = get_code(post, files, False)
-
-        self.assertTrue(result.get('result').startswith('<a'))
+        self.assertTrue(result.get('result').startswith('<a')) #code download link
 
     def test_CORRsatNO(self):
         lines = "".join(program_lines(ptype="ERRCORR", test="SATW", aut_str=a_bstar_a,
@@ -81,7 +80,8 @@ class MyTestCase(TestCase):
                                       strexp=None, sigma=None, t_str=None, s_num=None,
                                       l_num=None, n_num=None)).split("\n")
         should_be = (lines[FIXED_LINE-1] == 'p = buildUDCodeProperty(ssigma)') and \
-                    (lines[FIXED_LINE] == 'answer = p.maximalP(a)')
+                    (lines[FIXED_LINE+3] == 'answer = p.maximalP(a)')
+        #3 lines in between these for special check on maximality of UD Codes
         self.assertTrue(should_be)
 
 

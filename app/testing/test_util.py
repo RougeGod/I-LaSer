@@ -4,7 +4,10 @@ from os import path
 import string
 
 from app.transducer.laser_gen import generate_program_file
+from app.transducer.views import get_code
 from django.core.files.uploadedfile import SimpleUploadedFile
+
+PROGRAM_PRELUDE = "import sys\n" + "sys.stdout = open('/dev/null', 'w')\nfrom FAdo.prax import *\nfrom FAdo.codes import *\nfrom FAdo.reex import *\nfrom FAdo.fio import *\nimport base64\nimport copy\n" #lines that go at the start of every program generated
 
 def hamm_dist(str1, str2):
     """Return the hamming distance of two strings"""
@@ -49,6 +52,14 @@ def create_file_dictionary(aut_file=None, trans_file=None, theta_file=None):
         
     return output
     
+def exec_program(post, files):
+    generated = "".join(get_code(post, files, None, True, None))
+    if type(generated) == dict: #if there is a form error message, the return type is a dict
+        return generated
+    prog = PROGRAM_PRELUDE + generated
+    execvars = {}
+    exec(prog, execvars, execvars) #may also raise an exception
+    return execvars
     
     
 

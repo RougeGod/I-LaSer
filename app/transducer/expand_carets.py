@@ -36,7 +36,7 @@ def find_matching_left_bracket(input_string, right_bracket_pos):
             left_brackets += 1
         if (left_brackets == right_brackets):
             return position
-    raise ValueError("There was no matching left bracket.")
+    raise ValueError("Could not find the matching left bracket.")
 
 #finds the largest legal number starting from a certain position in the string
 

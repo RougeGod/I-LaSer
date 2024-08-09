@@ -3,13 +3,6 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 import re
 from laser import handlers
-#put a laser folder beneath current directory and put all non-views files from transducer there
-#will need to create a specific code_gen file which can handle the get_code method inside views
-#without  using HTML/Django code. 
-
-#also need to put all FAdo files in a subfolder of laser folder to be locally imported with no need
-#for extra installations on user's computer. 
-
 
 LIGHTGREEN = "#d5fc99"
 LIGHTRED = "#ff7979"
@@ -92,15 +85,20 @@ class LargeEntryFrame(ttk.Frame):
     
   userinput = None
   validation = None
+  BAD_FILE_ERROR = "Error: Not a text file."
 
   def remove_comments(self, enteredString):
     enteredString = re.sub(r'\r', '', enteredString)
     enteredString = re.sub(r'\n#.+\n', '\n', enteredString)
     enteredString = re.sub(r'#.*', '', enteredString)
-    return enteredString
+    enteredString = re.sub(r'^#.+\n', '', enteredString)
+    return enteredString.strip()
 
   def validate(self, *uselessArgs):
     self.userinput.edit_modified(False) #clear the modified flag so it can fire again
+    if self.get_data() == self.BAD_FILE_ERROR:
+        self.userinput["bg"] = LIGHTRED
+        return False
     for pattern in self.validation: 
         #make sure that you put an iterable in the validation_regex argument
         #even if there is only one regex pattern to be matched
@@ -123,6 +121,9 @@ class LargeEntryFrame(ttk.Frame):
             self.userinput.insert(1.0, input_file.read())
     except AttributeError: #file selection cancelled
         pass
+    except UnicodeDecodeError: #user selected a non-text file
+        self.userinput['bg'] = LIGHTRED
+        self.userinput.insert(1.0, self.BAD_FILE_ERROR)
 
   def __init__(self, root, row, file_request_text, file_button_text, textbox_label, validation_regex):
     self.validation = validation_regex
@@ -150,10 +151,10 @@ class LargeEntryFrame(ttk.Frame):
   
 
 class AutomatonFrame(LargeEntryFrame):
-    REGEX_PATTERN = r"^[0-9A-Za-z()+*^]+$" #for the user to input a regex in the NFA area
+    REGEX_PATTERN = r"^(?:[0-9A-Za-z()+*^]|@epsilon)+$" #for the user to input a regex in the NFA area
     #a single unrestricted line. the handler will error if it cannot parse the regex. 
-    GRAIL_PATTERN = r"^\(START\) +\|- +\d+(?:(?:\r?\n\d+ +[0-9A-Za-z] +\d)|(?:\r?\n\d+ +-\| +\(FINAL\)))+$"
-    FADO_PATTERN = r"^@[ND]FA(?: +(\d+|\*))+(?:\r?\n\d+ +[0-9A-Za-z] +\d+)+$"
+    GRAIL_PATTERN = r"^(?:\(START\) +\|- +\d+)|(?:(?:\r?\n\d+ +(?:[0-9A-Za-z]|@epsilon) +\d)|(?:\r?\n\d+ +-\| +\(FINAL\)))+$"
+    FADO_PATTERN = r"^@[ND]FA(?: +(\d+|\*))+(?:\r?\n\d+ +(?:[0-9A-Za-z]|@epsilon) +\d+)+$"
               
     def __init__(self, root, row):
         super().__init__(root, row, "Choose an automaton file", "Select Automaton File", "Or enter an automaton or regex in this text area.", (self.REGEX_PATTERN, self.GRAIL_PATTERN, self.FADO_PATTERN))
@@ -163,7 +164,7 @@ class AutomatonFrame(LargeEntryFrame):
         super().show(self)
 
 class TransducerFrame(LargeEntryFrame):
-    TRANS_PATTERN = r"^(?:(@InputAltering|@ErrorDetecting|@ErrorCorrecting)\r?\n)?@Transducer(?: \d+)+(?:\r?\n\d+ +[0-9A-Za-z] +[0-9A-Za-z] +\d+)+$"
+    TRANS_PATTERN = r"^(?:(@InputAltering|@ErrorDetecting|@ErrorCorrecting)\r?\n)?@Transducer(?: \d+|\*)+(?:\r?\n\d+ +(?:[0-9A-Za-z]|@epsilon) +(?:@epsilon|[0-9A-Za-z]) +\d+)+$"
     TRAJ_PATTERN = r"^[01*+)( ]+$"
 
     def __init__(self, root, row):
@@ -176,6 +177,7 @@ class ThetaFrame(LargeEntryFrame):
     
     def __init__(self, root, row):
         super().__init__(root, row, "Choose a Theta File", "Select Theta File", "Or enter an antimorphism here", (self.THETA_PATTERN,))
+        #THETA_PATTERN must be in an iterable, even though there's only one pattern, because LargeEntryFrame wants an iterable.
 
     #@Override
     def show(self):
@@ -236,26 +238,19 @@ class ConstructionFrame(ttk.Frame):
   def show(self):
         self.constructionFrame.grid()
 
-  def set_backgrounds(self, valid):
-    if valid:
-        self.n_entry["style"] = "Valid.TEntry"
-        self.l_entry["style"] = "Valid.TEntry"
-        self.s_entry["style"] = "Valid.TEntry"
-    else:
-        self.n_entry["style"] = "Invalid.TEntry"
-        self.l_entry["style"] = "Invalid.TEntry"
-        self.s_entry["style"] = "Invalid.TEntry"
-
   def validate(self, *uselessArgs):
-        try: 
-            if ((2 <= self.getS() <= 10) and (self.getS() <= self.getL()) and (self.getL() >= 1) and (self.getN() >= 1)):
-                self.set_backgrounds(True)
-                return True
-        except TypeError:
-            self.set_backgrounds(False)
-            return False
-        self.set_backgrounds(False)
-        return False
+        if (self.getS() is not None) and (2 <= self.getS() <= 10):
+            self.s_entry["style"] = "Valid.TEntry"
+        else: 
+            self.s_entry["style"] = "Invalid.TEntry"
+        if (self.getL() is not None) and (self.getL() >= 1):
+            self.l_entry["style"] = "Valid.TEntry"
+        else: 
+            self.l_entry["style"] = "Invalid.TEntry"
+        if (self.getN() is not None) and (self.getN() >= 1):
+            self.n_entry["style"] = "Valid.TEntry"
+        else: 
+            self.n_entry["style"] = "Invalid.TEntry"
 
 class ApproximationFrame(ttk.Frame): #should have made ApproximationFrame and ConstructionFrame subclasses of a larger class. Perhaps I should do that in the future if there's time
     epsi = None
@@ -399,8 +394,7 @@ class PropertySelectorFrame(ttk.Frame):
 
 class FixedTypeSelectorFrame(ttk.Frame):
     choices = ["Prefix", "Suffix", "Bifix", "Infix", "Outfix", "Code", "HyperCode"]  
-    #chosenfixedType = StringVar(value="-Please Select-")
-    #chosenTypeSave = chosenfixedType.get()
+
     
     def __init__(self, root, row):
         self.fixedTypeFrame = ttk.Frame(root, relief="solid", borderwidth=2)
@@ -434,7 +428,7 @@ class SubmissionFrame(ttk.Frame):
         self.submitFrame.columnconfigure(1, weight=2)
         self.submitFrame.columnconfigure(2, weight=1)
         self.submitFrame.columnconfigure(3, weight=1)
-
+        self.submitFrame.columnconfigure(4, weight=1)
 
         ttk.Button(self.submitFrame, text="Submit Request", default="active", command=self.collect_data).grid(column=0, row=0, sticky=E)
         ttk.Button(self.submitFrame, text="Clear Data", command=self.clear).grid(column=1, row=0)
@@ -485,7 +479,7 @@ class AutomataFormatFrame(InstructionFrame):
         "writing files in either format:\n\n"\
         "1. '#' begins a single-line comment\n"\
         "2. Transitions are written one per line and consist of three space-separated fields: "\
-        "(start state) (symbol) (next state)\n\n"\
+        "(start state) (symbol) (next state).\n\n"\
         "How to write files in the FAdo format:\n"\
         "1. '@NFA' or '@DFA' starts an automaton and determines its type. "\
         "It must be followed by a space-separated list of final states on the same line. \n"\
@@ -527,14 +521,14 @@ class TransducerFormatFrame(InstructionFrame):
            "2. '@Transducer' begins the transducer, and this must be followed by a space-separated " \
            "list of final states.\n" \
            "3. Transitions are given one per line and must be in the form " \
-           "(start state) (input) (output) (next state)\n" \
+           "(start state) (input) (output) (next state).\n" \
            "4. The initial state is the start state of the first transition.\n\n"
         super().__init__(root, text)
         ttk.Label(self.mainFrame, wraplength=777, text="The below example shows a transducer for the suffix code property over the alphabet {a,b}; this transducer outputs all proper suffixes of a given word.").grid(row=1, column=0, columnspan=2)
         #label for suffix code transducer example
         ttk.Label(self.mainFrame, text="@Transducer 2 3\n1 a @epsilon 2\n1 b @epsilon 2\n2 a @epsilon 2\n2 b @epsilon 2\n2 a a 3\n2 b b 3\n3 a a 3\n3 b b 3\n").grid(row=2, column=0)
         #1-sid example, introduction and transducer
-        ttk.Label(self.mainFrame, wraplength=777, text="Here is a transducer for the 1-sid-detecting property over the alphabet {a,b}: This transducer outputs all words obtained by performing at most one substitution, insertion, or deletion on the input word. Notice the use of '@epsilon', which represents the empty symbol").grid(row=3, column=0, columnspan=2)
+        ttk.Label(self.mainFrame, wraplength=777, text="Here is a transducer for the 1-sid-detecting property over the alphabet {a,b}: This transducer outputs all words obtained by performing at most one substitution, insertion, or deletion on the input word. Notice the use of '@epsilon', which represents the empty symbol.").grid(row=3, column=0, columnspan=2)
         ttk.Label(self.mainFrame, text="@Transducer 0 1\n0 a a 0\n0 b b 0\n0 a b 1\n0 b a 1\n0 a @epsilon 1\n0 b @epsilon 1\n0 @epsilon a 1\n0 @epsilon b 1\n1 a a 1\n1 b b 1\n").grid(row=4, column=0)
         ttk.Label(self.mainFrame, text="For more examples, please see the instruction manual.").grid(row=5, column=0, columnspan=2)
 
@@ -543,10 +537,10 @@ class TrajectoryFormatFrame(InstructionFrame):
     def __init__(self, root):
         text = "Trajectories are provided using regular expressions over the alphabet {1,0}, " \
                "where 0 indicates \"keep the symbol in this place\" and 1 indicates \"delete the " \
-               "symbol in this place\".\nThe regular expression 1*0* describes the suffix code property " \
-               "(i.e. delete 0 or more symbols, then keep the rest).\n" \
+               "symbol in this place\".\n\nThe regular expression 1*0* describes the suffix code property " \
+               "(i.e. delete 0 or more symbols, then keep the rest).\n\n" \
                "The regular expression 1*0*1* describes the infix code property (i.e. delete some symbols, " \
-               "keep some symbols, delete the rest).\n" \
+               "keep some symbols, delete the rest).\n\n" \
                "The regular expression (1*0*) + (0*1*) describes the bifix code property "\
                "(i.e. both the prefix and suffix code properties)"
         super().__init__(root, text)
@@ -602,8 +596,22 @@ class CreditsFrame(InstructionFrame):
 
 #code that gets run when the python file runs
 class MainApplication(Tk):
+    
+    def writeResultToFile(self, res):
+        from time import time #to avoid file collisions, use a unique timestamp in the file name
+        folder = fd.askdirectory(title="Select Folder for Result:")
+        try:
+            fileName = "/I-LaSer-Result-" + str(int(time()))
+            with open(folder + fileName, mode="w", encoding="utf-8") as outFile:
+                outFile.write(res)
+                self.Result.setResult("Result has been written to " + fileName)
+        except:
+            self.Result.setResult({"error_message": "File could not be written to."})
+    
+    def wordsToCreate(self, data):
+        return min(data["n_int"], data["s_int"] ** data["l_int"])
       
-    def collect_data(self):
+    def collect_data(self, toFile=False):
         data = {}
         data["question"] = self.Question.getQuestionNumber()
         data["automata_text"] = self.AutomatonInput.get_data()
@@ -616,11 +624,17 @@ class MainApplication(Tk):
         data["time_limit"] = self.Submit.get_time_limit()
         self.Result.setResult("Calculating... this may take a while")
         Tk.update(self) #force the "Calculating..." text to appear
-        try:
-            self.Result.setResult(handlers.get_response(data))
+        try: 
+            res = handlers.get_response(data)
+            if ((data["question"] == 3) and (res.get("result", "").count("\n") >= 40)):
+            #check if Construction output has a result with 40 or more lines.
+            #if so, save the result in a file
+                self.writeResultToFile(res.get("result", "ERROR: " + res.get("error_message", '')))
+            else:
+                self.Result.setResult(res)
         except Exception as unforseen:
             #for exceptions that aren't handled earlier in the backend. 
-            #they are the result of bugs, both known and unknown, but the windowed 
+            #they are the result of bugs, both known and unknown, but in the windowed 
             #executable, the program will hang when getting an unhandled exception
             self.Result.setResult({'error_message': unforseen})
     
@@ -754,11 +768,10 @@ class MainApplication(Tk):
         self.conditional_show(self.Credits, (frame == 7))
         self.resizable(width=False, height=False)
        
-#debug info, printing the current Tcl/Tk version
-#if on Mac, and this is 8.5.x, crashes are likely
-#tcl = Tcl()
-#print(tcl.call("info", "patchlevel"))
-
-window = MainApplication()
-window.resizable(width=False, height=False)
-window.mainloop() #open the actual GUI window and start responding to inputs
+if __name__ ==  '__main__':
+    try:
+        window = MainApplication()
+        window.resizable(width=False, height=False)
+        window.mainloop() #open the actual GUI window and start responding to inputs
+    except SystemExit as ex:
+        print("Fatal error: " + ex)

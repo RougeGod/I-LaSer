@@ -88,25 +88,6 @@ def format_counter_example(witness, theta=False):
         return "Witness: The word '%s' can be added to the language" % witness
 
 
-def isLimitExceedForEditDist(automaton):
-    """Decide if the size of automaton exceeds the limit.
-       Number of transitions of automaton is denoted as N;
-       If N*N*N*N exceeds 100000000, return False, else return True.
-    """
-    size = 0
-    if isinstance(automaton, DFA):
-        for key in automaton.delta.keys():
-            for _ in automaton.delta[key]:
-                size = size + 1
-    elif isinstance(automaton, NFA):
-        for key in automaton.delta.keys():
-            for str_ in automaton.delta[key]:
-                size = size + len(automaton.delta[key][str_])
-    else:
-        return size
-    return size*size*len(automaton.Sigma) > 1000000
-
-
 def is_subset(aut, transducer):
     '''Tests whether the automaton's alphabet is a subset of the transducer's
        Returns "trajectory" if the property is a trajectory, which will evaluate
@@ -116,23 +97,6 @@ def is_subset(aut, transducer):
     else:
         return all([(letter in transducer.Sigma) for letter in aut.Sigma])
     
-def limit_tran_prop(aut_delta, tran_delta, limit, lang_size=0):
-    """Find if the calculation would be too long to do on the server"""
-    size = lang_size
-    if size == 0:
-        for key in aut_delta:
-            for key_2 in aut_delta[key]:
-                if isinstance(aut_delta[key][key_2], int):
-                    size += 1
-                else:
-                    size += len(aut_delta[key][key_2])
-
-    size_2 = 0
-    for key in tran_delta:
-        for key2 in tran_delta[key]:
-            size_2 += len(tran_delta[key][key2])
-
-    return size*size*size_2 > limit
 
 def make_block_code(list_length, word_length, alphabet_size):
     """Returns an NFA and a list W of up to N words of length word_length, such that the NFA

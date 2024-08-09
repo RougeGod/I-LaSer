@@ -217,6 +217,11 @@ class MyTestCase(TestCase):
         files = create_file_dictionary(aut_file=REGS[3])
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
+    
+        post = {"question": "1", "property_type": "1", "fixed_type": "3"} # BIFIX
+        files = create_file_dictionary(aut_file=REGS[3])
+        result = get_response(post, files, False)
+        self.assertTrue(result['result'][:26], "NO, the language does not")
 
 
     def test_FIXED_IATsatYES(self):
@@ -226,6 +231,10 @@ class MyTestCase(TestCase):
         self.assertEquals(result['result'][:27], "YES, the language satisfies")
         post = {'question': '1', 'property_type': '1', 'fixed_type': '5'}  # OUTFIX
         files = create_file_dictionary(aut_file=REGS[2])
+        result = get_response(post, files, False)
+        self.assertEquals(result['result'][:27], "YES, the language satisfies")
+        post = {'question': '1', 'property_type': '1', 'fixed_type': '3'}  # OUTFIX
+        files = create_file_dictionary(aut_file=REGS[7])
         result = get_response(post, files, False)
         self.assertEquals(result['result'][:27], "YES, the language satisfies")
 

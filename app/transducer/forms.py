@@ -87,7 +87,7 @@ class UploadFileForm(forms.Form):
     EPS = 1e-5
     epsilon = forms.DecimalField(required=False, min_value=EPS, max_value=1-EPS, initial=0.01)
     dirichletT = forms.DecimalField(required=False, min_value=1, initial=2.001)
-    displacement = forms.IntegerField(required=False, min_value=1, initial=1)
+    displacement = forms.IntegerField(required=False, min_value=0, initial=1)
 
     def clean_theta_file(self):
         """Clean the data of the automata file"""
@@ -153,9 +153,6 @@ class UploadFileForm(forms.Form):
 
         if not data.get('automata_text') and data.get('question') != '3':
             raise forms.ValidationError('You did not supply an automaton.')
-
-        result = parse_aut_str(data.get('automata_text'))
-
 
         if not data.get('theta_text'):
             pass
