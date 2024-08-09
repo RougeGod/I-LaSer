@@ -56,9 +56,6 @@ def parse_aut_str(aut_str):
 
     If the string is a regular expresssion, it also expands exponential notation, 
     so that a string such as (0+1)^2 is replaced with (0+1)(0+1)
-
-    Formerly allowed a property to be input in the NFA area, but this functionality
-    has been removed as of Version 6. 
     """
 
     aut_str = re.sub(r'\r', '', aut_str)
@@ -85,7 +82,8 @@ def parse_transducer_string(t_str):
     "t_str": None,
     #add more fields if necessary
     }    
-    
+    if t_str is None:
+        return None
     #removes comments and normalizes newlines
     t_str = re.sub(r'\r', '', t_str.strip())
     t_str = re.sub(r'\n#.+\n', '\n', t_str)
@@ -99,50 +97,39 @@ def parse_transducer_string(t_str):
 
 def convertGrailToFAdo(grailString):
     '''Converts a Grail-formatted string to a FAdo-formatted string for use in 
-       both generated programs and in-website solving. Limitation: Because FAdo
-       only supports one start state per automaton, the converted Grail string
-       must also only have one start state. The website will use this converted 
+       both generated programs and in-website solving. The website will use this converted
        string in all operations without interacting with the original Grail.
        Accepts String, returns String'''
     splitString = grailString.strip().split("\n")
-    startState = None
+    startStates = set()
     isStartStateInLines = False
     endStates = set()
     otherLines = []
     for line in splitString:
         if line.strip().startswith("(START) |-"):
-            if (startState is None and len(line.strip().split()) == 3): 
-                #make sure that we have no previous start states and only one inputted start state
-                startState = line.strip().split()[2]
+            if (len(line.strip().split()) == 3): 
+                startStates.add(line.strip().split()[2])
             else: 
-                raise IncorrectFormat("The Grail string has too many or improper start states.")
-        elif line.strip().endswith("(FINAL)"):
+                raise IncorrectFormat("The Grail string has an improper start state.")
+        elif line.strip().endswith("-| (FINAL)"):
             if (len(line.strip().split()) == 3):
                 endStates.add(line.strip().split()[0])
             else: 
                 raise IncorrectFormat("The Grail string has an improper final state.")
         else: #intermediate line 
-            if (startState is not None) and (line.strip().split()[0] == startState):
-                otherLines = [line] + otherLines #appends this line to the start of the intermediate lines
-                isStartStateInLines = True
-            else:
-                otherLines.append(line)
-    if startState is None:
+            otherLines.append(line)
+    if len(startStates) == 0:
         raise IncorrectFormat("The start state of the Grail string was not specified.")
     if len(endStates) == 0:
         raise IncorrectFormat("The final state of the Grail string was not specified.")
-    if not isStartStateInLines: #empty language, it never starts, so we can't put any line first
-        firstLine = "@NFA "
-        for state in endStates:
-            firstLine += str(state) + " "
-        return firstLine
-    else: 
-        firstLine = "@NFA "
-        for state in endStates:
-            firstLine += str(state) + " "
-        firstLine = firstLine.strip() + "\n" #remove the last trailing space
-        return firstLine + "\n".join(otherLines)
-    
+    firstLine = "@NFA "
+    for state in endStates:
+        firstLine += str(state) + " "
+    firstLine += "* "
+    for state in startStates:
+        firstLine += str(state) + " "
+    firstLine = firstLine.strip() + "\n" #remove the last trailing space
+    return firstLine + "\n".join(otherLines)    
 
 # pylint:disable=C0201
 def parse_theta_str(theta_str):

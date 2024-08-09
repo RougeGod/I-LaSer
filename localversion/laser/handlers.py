@@ -1,16 +1,6 @@
 '''Code mostly copy-pasted with a few modifications from the original LaSer web version
    for the LaSer local (installable) version which does not use any web technologies. 
 
-   Code copied from the June 11, 2024 git commit of handlers.py
-
-   In particular: 
-   - All references to the form have been removed.
-   - All limit checks have been removed as we don't need to protect the web server 
-     from huge calculations and the user can set their own time limit
-   - Transducers and automata are now all nameless, we only care about their content.
-   - Wrapper code from the former views.py has been moved here, since we removed that file
-   - Question number and property_type are both coming in as integers, not strings. 
-
    The returned result is still a dict, as I would like the local version to 
    be able to distinguish errors from regular results.'''
 
@@ -25,7 +15,7 @@ from .FAdo.prax import GenWordDis, prax_maximal_nfa, Dirichlet
 
 from .laser_shared import construct_automaton, detect_automaton_type, IncorrectFormat, \
      construct_input_alt_prop, format_counter_example, \
-     make_block_code, is_subset, convertToCorrectType
+     make_block_code, is_subset, convertToCorrectType, check_construction_alphabets
 
 from .util import create_fixed_property, write_witness, parse_aut_str, parse_theta_str, \
                                 apply_theta_antimorphism, reverse_theta_antimorphism, parse_transducer_string
@@ -37,18 +27,11 @@ from func_timeout import func_timeout, FunctionTimedOut
 
 PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 AUTOMATON_INCORRECT_FORMAT = "The automaton or regular expression appears to be invalid."
-ALPHABET_TOO_SMALL = "The construction alphabet is larger than the transducer's alphabet."
 
 def error(err):
     """Formats an error using the given string"""
     return {'error_message': err}
 
-
-TRANSDUCER_TYPES = {
-    'InputAltering': 2,
-    'ErrorDetecting': 3,
-    'ErrorCorrecting': 4,
-}
 
 def get_response(data):
     """
@@ -80,15 +63,6 @@ def get_response(data):
             return func_timeout(time_limit, handle_construction, args=(data,))
         except FunctionTimedOut: 
             return {"error_message": "The function timed out."}
-
-def check_construction_alphabets(s_num, alphabet):
-    ALPHABET_MISMATCHED = 'The transducer\'s alphabet does not match the construction alphabet.'
-    if (s_num > len(alphabet)):
-        return ALPHABET_TOO_SMALL
-    construction_alf = [str(i) for i in range(s_num)]
-    if not all([i in alphabet for i in construction_alf]):
-        return ALPHABET_MISMATCHED
-    return None
         
 def handle_iap(
         n_num, l_num, s_num, t_str
@@ -112,7 +86,8 @@ def handle_iap(
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
-        return error(ALPHABET_TOO_SMALL) #probably not necessary
+        return error("The transducer's alphabet does not match the construction alphabet.") 
+        #probably not necessary, check_construction_alphabet
 
     # If successful, return the given words that satisfy it.
     words = write_witness(witness)
@@ -135,7 +110,7 @@ def handle_ipp(
         # Create a language that satisfies the property - witness is the list of words in L
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
     except DFAsymbolUnknown:
-        return {'error_message':ALPHABET_TOO_SMALL}
+        return {'error_message':"Unexpected issue with construction alphabet."}
 
     words = write_witness(witness)
     return {'result': words}
@@ -184,11 +159,17 @@ def handle_construction(data):
     elif property_type == 3:
         result = handle_ipp(n_num, l_num, s_num, t_str)
     else:
-        return error("Please select a supported question/property pair.")
+        return error("This feature has not yet been implemented.")
 
     return result
     
 def check_approx_maximality(automaton, prop, eps, t, disp): 
+    if not (0 < eps < 1):
+        return error("Epsilon must be between 0 and 1.")
+    if not (t > 1):
+        return error("T must be greater than 1.")
+    if not (disp >= 0):
+        return error("Displacement must be non-negative.")
     pdist = Dirichlet(t=t, d=disp) #Dirichlet t is the same as the t in this function argument
     wordDist = GenWordDis(pdist, automaton.Sigma, eps)
     witness = prax_maximal_nfa(wordDist, automaton, prop)
@@ -201,16 +182,19 @@ def check_satisfaction(automaton, prop):
     try:
         witness = prop.notSatisfiesW(automaton)
     except TypeError:
-        return error(AUTOMATON_INCORRECT_FORMAT)
+        decision = AUTOMATON_INCORRECT_FORMAT
+        return {'error_message': decision}
     if witness == (None, None) or witness == (None, None, None):
         decision = 'YES, the language satisfies the property'
         proof = ''
+        satisfaction = True
     elif (type(prop) == IATProp) and (witness[0] == witness[1]):
-        return error("This is an input-preserving property, not an input-altering property.")
+        return {'error_message': "This is an input-preserving property, not an input-altering property."}
     else:
         decision = 'NO, the language does not satisfy the property'
         proof = format_counter_example(witness)
-    return {'result':decision, 'proof': proof}
+        satisfaction = False
+    return {'result':decision, 'proof': proof, "isSatisfied": satisfaction}
     
 
 
@@ -230,11 +214,13 @@ def handle_satisfaction_maximality(data):
     if not aut_str:
         return error('Please provide an automaton file.')
 
-    aut_str = parse_aut_str(aut_str) #remove comments and convert from Grail
+    try:
+        aut_str = parse_aut_str(aut_str) #remove comments and convert from Grail
+    except ValueError as ex:
+        return error(str(ex))
 
     try:
         aut = construct_automaton(aut_str)
-        print(aut)
     except (IncorrectFormat, TypeError): # Automata syntax error
         return error(AUTOMATON_INCORRECT_FORMAT)
     except VisitError: #multiple paths, or multiple start states for a DFA
@@ -284,7 +270,7 @@ def handle_satisfaction_maximality(data):
     # User-Input Property
     else:
         if (data.get('transducer_text') is None):
-            return error("Please provide a property type.")
+            return error("Please provide a property.")
         t_str = parse_transducer_string(data.get('transducer_text'))["t_str"]
 
         if not t_str:
@@ -319,7 +305,9 @@ def handle_satisfaction_maximality(data):
             except Exception: #catch-all, likely AttributeError or UnexpectedCharacters
                 return error(PROPERTY_INCORRECT_FORMAT)
 
-        elif property_type == 5 and question == 1: # We have to branch off, it is handled differently.
+        elif property_type == 5: # We have to branch off, it is handled differently.
+            if (question != 1):
+                return error("This feature has not yet been implemented.")
             try:
                 prop = IPTProp(readOneFromString(t_str + "\n"))
                 if not is_subset(aut, prop):
@@ -381,19 +369,13 @@ def handle_satisfaction_maximality(data):
         sat = check_satisfaction(aut, prop)
         if (sat.get('error_message')):
             return error(sat.get('error_message'))
-        elif (sat["result"].startswith("NO")):
+        elif not (sat["isSatisfied"]):
             return error("ERROR: The language does not satisfy the property.")
         else:
             try: 
                 epsi = float(data.get('epsilon'))
                 t = float(data.get('dirichletT'))
                 disp = int(data.get('displacement'))
-                if (t <= 1.0):
-                    return error("t must be > 1.")
-                if not (0.0 < epsi < 1.0):
-                    return error("Epsilon must be between 0 and 1.")
-                if disp < 0:
-                    return error("Displacement must not be negative")
             except (ValueError, TypeError):
                 return error("Invalid Approximation Parameters")
             decision, proof = check_approx_maximality(aut, prop, epsi, t, disp)

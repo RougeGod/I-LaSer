@@ -53,8 +53,8 @@ def parse_aut_str(aut_str):
     commented lines, commented line parts, and normalizing newlines to UNIX format. 
     Will also convert input from Grail to FAdo, if necessary. 
 
-    Formerly allowed a property to be input in the NFA area, but this functionality
-    has been removed as of Version 6. 
+    If the string is a regular expresssion, it also expands exponential notation, 
+    so that a string such as (0+1)^2 is replaced with (0+1)(0+1)
     """
 
     aut_str = re.sub(r'\r', '', aut_str)
@@ -81,12 +81,16 @@ def parse_transducer_string(t_str):
     "t_str": None,
     #add more fields if necessary
     }    
-    if (t_str is None):
+    if t_str is None:
         return None
     #removes comments and normalizes newlines
     t_str = re.sub(r'\r', '', t_str.strip())
     t_str = re.sub(r'\n#.+\n', '\n', t_str)
     t_str = re.sub(r'#.+', '', t_str)
+    
+    if "@Transducer" not in t_str: #trajectory inputted
+        t_str = expand_carets(t_str)
+
     result["t_str"] = t_str.strip()
     return result
 

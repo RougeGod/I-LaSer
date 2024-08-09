@@ -26,12 +26,6 @@ PROPERTY_INCORRECT_FORMAT = 'The property appears to be incorrectly formatted.'
 AUTOMATON_INCORRECT_FORMAT = "The automaton or regular expression appears to be invalid."
 ALPHABET_TOO_SMALL = "The construction alphabet is larger than the transducer's alphabet."
 
-TRANSDUCER_TYPES = {
-    'InputAltering': '2',
-    'ErrorDetecting': '3',
-    'ErrorCorrecting': '4',
-}
-
 try:
     LIMIT = settings.LIMIT
     LIMIT_AUTOMATON = settings.LIMIT_AUTOMATON
@@ -72,11 +66,12 @@ def handle_iap(
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
-        return {'form': form, 'error_message':ALPHABET_TOO_SMALL,
+        return {'form': form, 'error_message':"The transducer's alphabet does not match the construction alphabet.",
                 'transducer': t_name}
 
     # If successful, return the given words that satisfy it.
     words = write_witness(witness)
+    #create the special text area for construction output
     result = '<div class="text-center" style="font-size: 14px; color: #999999; \
     margin-bottom: 10px;"> Your Output</div><div><textarea class="text-center" \
     rows="6" cols="50" readonly>'+ words +'</textarea></div>'
@@ -98,7 +93,7 @@ def handle_ipp(
         return {'form':form, 'error_message':PROPERTY_INCORRECT_FORMAT,
                 'transducer':t_name}
     except UnexpectedCharacters:
-        return {'form':form, 'error_message':"Could not parse transducer. Did you input a trajectory?",
+        return {'form':form, 'error_message':"Failed to parse transducer. Did you input a trajectory?",
                 'transducer':t_name}
 
     # Check to see if the computation would be too computationally expensive
@@ -109,7 +104,7 @@ def handle_ipp(
         # Create a language that satisfies the property - witness is the list of words in L
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
     except DFAsymbolUnknown:
-        return {'form': form, 'error_message':ALPHABET_TOO_SMALL,
+        return {'form': form, 'error_message':"Unexpected issue with construction alphabet.",
                 'transducer': t_name}
 
     #text_path, text_title = write_witness(witness, filename)
@@ -156,7 +151,7 @@ def handle_construction(
         try:
             _, witness = make_block_code(n_num, l_num, s_num)
         except DFAsymbolUnknown:
-            return error("Something went wrong (views.py: construction, fixed property).")
+            return error("Could not construct examples (Construction, fixed type).")
         #text_path, text_title = write_witness(witness, filename)
         words = write_witness(witness)
         result = '<div class="text-center" style="font-size: 14px; \
@@ -401,7 +396,6 @@ def handle_satisfaction_maximality(
             err = 'ERROR: The language does not satisfy the property.'
         except TypeError:
             err = AUTOMATON_INCORRECT_FORMAT
-
         if err:
             return {'form':form, 'error_message': err,
                     'automaton':aut_name, 'transducer':t_name}
@@ -416,6 +410,7 @@ def handle_satisfaction_maximality(
         return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                 'result':decision, 'proof': proof}
     elif question == "4":
+        #check satisfaction (maximality without satisfaction makes no sense)
         sat = check_satisfaction(aut, prop)
         if (sat.get("error_message")):
             return {'form':form, 'error_message': sat.get("error_message"),
@@ -428,12 +423,6 @@ def handle_satisfaction_maximality(
                 epsi = float(data.get('epsilon'))
                 t = float(data.get('dirichletT'))
                 disp = int(data.get('displacement'))
-                if (t <= 1.0):
-                    return error("t must be > 1.")
-                if not (0.0 < epsi < 1.0):
-                    return error("Epsilon must be between 0 and 1.")
-                if disp < 0:
-                    return error("Displacement must not be negative")
             except (ValueError, TypeError):
                 return error("Invalid Approximation Parameters")
             decision, proof = check_approx_maximality(aut, prop, epsi, t, disp)

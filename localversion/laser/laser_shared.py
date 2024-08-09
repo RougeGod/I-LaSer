@@ -14,8 +14,6 @@ from lark import UnexpectedCharacters
 
 from .util import list_to_string, long_to_base
 
-FIXED = ['PREFIX', 'SUFFIX', 'INFIX', 'OUTFIX', 'HYPERCODE', 'CODE']
-
 def construct_automaton(aut_str):
     """construct an automaton from a string"""
     aut_str = str(aut_str).strip()
@@ -33,7 +31,7 @@ def detect_automaton_type(aut_str):
     try:
         readOneFromString(aut_str + "\n")
         return 'readOneFromString'
-    except UnexpectedCharacters:
+    except (UnexpectedCharacters, Exception): #could not read the automaton first try
         try:
             reex.str2regexp(aut_str).toNFA()
             return 'str2regexp'
@@ -96,6 +94,17 @@ def is_subset(aut, transducer):
         return "trajectory"
     else:
         return all([(letter in transducer.Sigma) for letter in aut.Sigma])
+
+
+def check_construction_alphabets(s_num, alphabet):
+    ALPHABET_MISMATCHED = 'The transducer\'s alphabet does not match the construction alphabet.'
+    ALPHABET_TOO_SMALL = "The construction alphabet is larger than the transducer's alphabet."
+    if (s_num > len(alphabet)):
+        return ALPHABET_TOO_SMALL
+    construction_alf = [str(i) for i in range(s_num)]
+    if not all([i in alphabet for i in construction_alf]):
+        return ALPHABET_MISMATCHED
+    return None
     
 
 def make_block_code(list_length, word_length, alphabet_size):

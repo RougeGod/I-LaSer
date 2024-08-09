@@ -1,5 +1,5 @@
-import unittest
-from expand_carets import expand_carets
+from django.test import TestCase
+from app.transducer.expand_carets import expand_carets
 
 inputs = ["5^35", "(a+b)^2", "hello^2", "((x+y)^2+z)^2", "33^4", 
           "a^1", "(x^2+y)^3", "0^5", "(1+2+3)^2", "a^0", 
@@ -13,7 +13,7 @@ outputs = ["5" * 35, "(a+b)(a+b)", "helloo", "((x+y)(x+y)+z)((x+y)(x+y)+z)", "33
            "ERROR", "ERROR", "helloobob", "(a+bbb)(a+bbb)", "abbccc", 
            "aaaa", "ERROR", "(aa)(aa)", "xxyyy"]
 
-class TestExpansion(unittest.TestCase):
+class TestExpansion(TestCase):
     def test_nonbracket(self):
         for test in (0, 2, 4, 5, 7, 9, 17, 19, 20, 23):
             self.assertEqual(expand_carets(inputs[test]), outputs[test])
