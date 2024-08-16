@@ -29,7 +29,7 @@ static/ - contains the static css/js files that help run the webpage
 ### `app/transducer/views.py`
 
 Contains the interface between the django frontend and the actual logic behind LaSer. It also currently contains the get_code method, which partially handles code generation. Function timeouts are also in here, stopping calculations that take longer than 15 seconds. The GUI in localversion/laser does not use views.py
-`
+
 ### `app/transducer/handlers.py`
 
 Contains the methods that handle `get_response` - that is, the code that parses the user's input choices into automata and calculate the answer to the query on the server. Important methods in handlers.py include: 
@@ -87,6 +87,6 @@ This file contains all code for the frontend and interactivity of the GUI progra
 
 In order to run the python unit tests, navigate to the root of the directory and run `python manage.py test`. This will tell django to run all the unit tests in the project.
 
-##Further Reading
+## Further Reading
 
 The file /localversion/manual.pdf contains detailed property descriptions and formatting instructions. While the manual is tailored specifically for the local GUI, the web version and the GUI are very similar, so the instruction manual is still useful even for users of the web version who never touch the GUI.
