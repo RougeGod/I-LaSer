@@ -4,9 +4,11 @@
     <title>I-Laser</title>
     {% load static %}
     <meta name="viewport" content="width=device-width, initial-scale: 1.0"/>
+    <link rel="icon" href='{% static "laser-logo.png" %}' />
     <link rel="stylesheet" href="{% static 'css/bootstrap-select.css' %}" />
     <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}" />
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+
 
     <script src="{% static 'js/jquery-2.1.4.min.js' %}"></script>
     <script src="{% static 'js/bootstrap.js' %}"></script>
@@ -16,8 +18,7 @@
 
 <body>
 <div class="container text-center">
-    <h2>I-LaSer</h2> <h4>(Independent Language Server, v.6&beta;)</h4>
-    <h5><i>v.5 released in Jan. 2018; some things need to be fixed</i></h5>
+    <h2>I-LaSer</h2> <h4>(Independent Language Server, v.6, web version)</h4>
     <ul class="nav nav-tabs">
         <li class="active"><a data-toggle="tab" href="#home">Home</a></li>
         <li><a data-toggle="tab" href="#automaton">Format for ...automata</a></li>
@@ -179,16 +180,16 @@
                         Given property P and integers N,k>0, return a language of N words of length k satisfying P.
                     </li>
                     <li><b> Approximate Maximality question: </b>
-                        Given language L, property P, and &epsi; is the language (1-&epsi;) close to being maximal? 
+                        Given language L, property P, and &epsi; is the language (1-&epsi;) close to being maximal?
                     </li>
                 </ul>
-                <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 2 &le; s &le; 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited. 
+                <i>Quick Notes (click on the "Technical Notes" tab for details):</i> Languages are provided by automata; properties are either fixed, or provided by transducers or trajectory expressions. The <u>alphabets</u> of the given property and the language involved <u>must be the same</u>. The computation of the Construction question produces languages over an alphabet of the form {0,1,...,s} with 2 &le; s &le; 10. For online-computation (via "Submit Request") the sizes of the automata and transducers involved are limited.
             </div>
         </div>
 
         <div id="notes" class="tab-pane fade">
             {% include "tabs/notes.html" %}
-        </div> 
+        </div>
 
         <div id="about" class="tab-pane fade">
             {% include "tabs/about.html" %}
