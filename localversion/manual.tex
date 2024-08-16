@@ -309,7 +309,7 @@ Input-preserving transducer which outputs all words formed by transposing two ad
 This is used in the creation of the word sample space and correlates to the uniformity of the distribution of word lengths across the sample space. A smaller value of $t$ means that the sample will be more uniform in terms of word length, but will also take much longer to set up.
 $t$ must be greater than 1.
 \item Displacement - No words will be included in the sample if they have fewer than $d$ characters.
-This is useful when a language has a few uninteresting short words which could be added to the language.
+This is useful when a language has a few uninteresting short words which could be added to the language. Displacement must be a non-negative integer.
 \end{itemize}
 
 \section{Construction}
