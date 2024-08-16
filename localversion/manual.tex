@@ -72,7 +72,7 @@ This section contains simplified explanations of all fixed properties available 
 \subsection{Prefix}
 A language is a \textit{prefix code} if no word in the language is a prefix of another word in the language. If one word in the language can be formed by removing symbols from the end of another word in that language, then the language is not a prefix code.
 
-\par An example of a language that is a prefix code is \verb-aa*b-, the language with all words containing one or more a's followed by a single b. This is a prefix code since removing the last symbol of any word will remove the b, and make the result a word that is not in the language. This language, however, is not a \textit{maximal} prefix code, since we could add the word "b", and the language would still be a prefix code.
+\par An example of a language that is a prefix code is \verb-aa*b-, the language with all words containing one or more a's followed by a single b. This is a prefix code since removing the last symbol of any word will remove the b, and make the result a word that is not in the language. This language, however, is not a \textit{maximal} prefix code, since we could add the word ``b'', and the language would still be a prefix code.
 
 \par A language that is \textbf{not} a prefix code is \verb-a*b*-, zero or more a's followed by zero or more b's. The empty string, with zero a's and zero b's, is in the language, and if you keep 0 symbols from the start of a different word, and discard the rest, the result will be the empty string. In general, if a language includes the empty string and at least one non-empty word, it will not satisfy any of the fixed code properties shown by I-LaSer.
 
@@ -87,15 +87,15 @@ A language is a \textit{bifix code} if and only if it is both a prefix code and 
 \subsection{Infix}
 A language is an \textit{infix code} if no word in the language can be found inside another word in the language, whether at either end or somewhere in the middle. It is necessary for a language to be a bifix code in order to be an infix code, but this is not a sufficient condition.
 
-\par One language that is a bifix code but not an infix code is the language \verb-(ab*a)+(bbb)-, which consists of all words containing one a at the beginning and end of the word, and any number of b's in between, and the word "bbb".
-When looking at the word "abbba", it's a prefix code because you cannot remove only letters from the start of the word to get "bbb", and you cannot remove only letters from the end of the word to get "bbb", but removing letters from both ends of the word at once can result in the word "bbb" and disqualify the language from being an infix code.
+\par One language that is a bifix code but not an infix code is the language \verb-(ab*a)+(bbb)-, which consists of all words containing one a at the beginning and end of the word, and any number of b's in between, and the word ``bbb''.
+When looking at the word ``abbba'', it's a prefix code because you cannot remove only letters from the start of the word to get `bbb'', and you cannot remove only letters from the end of the word to get ``bbb'', but removing letters from both ends of the word at once can result in the word ``bbb'' and disqualify the language from being an infix code.
 
 \subsection{Outfix}
 A language is an \textit{outfix code} if no word in the language can be formed by removing a single contiguous block of letters from any other word in the language. This piece may be at the start of the word, the end of the word, or anywhere in between. All outfix codes are also bifix codes.
-\par A language that is not an outfix code is \verb-ab*a-, since you can remove the block of b's, however long it may be, and get "aa", which is in the language.
+\par A language that is not an outfix code is \verb-ab*a-, since you can remove the block of b's, however long it may be, and get ``aa'', which is in the language.
 
 \subsection{UD Code}
-A language is not a \textit{uniquely decodable code} if there exists a string of characters, made up of multiple words concatenated together, has multiple places to put the word breaks, that is, some ambiguity in 'un-concatenating' the words. All prefix, suffix, infix, outfix, and bifix codes are uniquely decodable codes. One example of a language that isn't is \verb-a(aa)*-, all words with an odd number of a's, since, when given a string of 5 a's, it is impossible to tell whether it is a single word, or two "a"s and one "aaa" in some order.
+A language is not a \textit{uniquely decodable code} if there exists a string of characters, made up of multiple words concatenated together, has multiple places to put the word breaks, that is, some ambiguity in ``un-concatenating'' the words. All prefix, suffix, infix, outfix, and bifix codes are uniquely decodable codes. One example of a language that isn't is \verb-a(aa)*-, all words with an odd number of a's, since, when given a string of 5 a's, it is impossible to tell whether it is a single word, or two ``a''s and one `aaa'' in some order.
 
 \subsection{Hypercode}
 A language is a hypercode if it is not possible to remove any symbols from one word in the language to get another word in the language. The removed symbols need not be contiguous, and there is no restriction on the position of the removed symbols. A language satisfying the hypercode property is sufficient to conclude that the same language also satisfies the prefix, suffix, bifix, infix, outfix, and UD code properties. One such language is the language of all four-letter words over a given alphabet, which can be written as \verb-(0+1)^4- or \verb-(0+1)(0+1)(0+1)(0+1)-. Removing any letter from a word makes it a shorter word, so it wouldn't be in the language.
@@ -103,10 +103,10 @@ A language is a hypercode if it is not possible to remove any symbols from one w
 \section{Input Areas}
 
 \subsection{File Input}
-I-LaSer can accept typed input in the large text boxes, for automata, transducers, and theta properties, or can accept file input. Clicking the "Upload File" button will open a file selector, from which you may select a text file. Selecting a text file will replace all input in the text box with the contents of the file. Selecting a non-text file or an unreadable file will result in the input area turning red and displaying an error. Cancelling file selection will preserve the data in the text area.
+I-LaSer can accept typed input in the large text boxes, for automata, transducers, and theta properties, or can accept file input. Clicking the ``Upload File'' button will open a file selector, from which you may select a text file. Selecting a text file will replace all input in the text box with the contents of the file. Selecting a non-text file or an unreadable file will result in the input area turning red and displaying an error. Cancelling file selection will preserve the data in the text area.
 
 \subsection{Validation}
-I-LaSer will attempt to perform validation on the inputs to the text box, no matter if the inputs originated from the keyboard or from a file. If the input passes validation, the text box will turn green. If the input fails validation, the text box will remain white. It is still possible to submit inputs that the validator deems "invalid" and have them run without errors. Similarly, the green text box does not necessarily mean that no errors will occur.
+I-LaSer will attempt to perform validation on the inputs to the text box, no matter if the inputs originated from the keyboard or from a file. If the input passes validation, the text box will turn green. If the input fails validation, the text box will remain white. It is still possible to submit inputs that the validator deems ``invalid'' and have them run without errors. Similarly, the green text box does not necessarily mean that no errors will occur.
 The validation is a guide, indicating which inputs are likely to result in an unsuccessful computation.
 \par For the construction question, the user is prompted to enter three integers, each of which are validated seperately.
 Similarly, all of the parameters for approximate maximality are independent of each other, in terms of validation, so there may be some green areas and some white areas.
@@ -115,7 +115,7 @@ For these two input areas, if they don't pass validation (with all three input a
 \subsection{Acceptable Characters}
 When entering an automaton, transducer, regular expression, or theta property, the alphabets are limited to the digits 0-9 and the Latin letters A-Z.
 I-LaSer alphabets are case-sensitive, so A is a different symbol than a.
-In most cases, the string "@epsilon" can be used to indicate the empty word.
+In most cases, the string ``@epsilon'' can be used to indicate the empty word.
 This is useful when entering regular expressions and allowing a variable quantity of a certain symbol, or in a transducer to either insert an output symbol without any input, or to remove an input symbol without creating output.
 
 \subsection{Automaton Area}
@@ -163,8 +163,8 @@ When entering a mathematical (Kleene) regular expression, the only operators all
 %cite Kleene paper?
 \begin{itemize}
 \item xy - the concatenation of symbols x and y
-\item x* - 0 or more of symbol "x" (Kleene star)
-\item x+y - either symbol "x" or symbol "y"
+\item x* - 0 or more of symbol ``x'' (Kleene star)
+\item x+y - either symbol ``x'' or symbol ``y''
 \item (x) - treat x as one symbol
 \item \verb-x^n- - repeat symbol x $n$ times. It is recommended but not required to enclose the entire expression \verb-(x^n)- in parentheses. $n$ must not have seperate parentheses and must be a single number (e.g. The expression \verb-a^(2)- is not permitted). This operator has the highest precedence.
 \end{itemize}
@@ -185,7 +185,7 @@ Programming RegEx & $\Rightarrow$ & Mathematical Regular Expression \\
 
 
 \subsection{Transducer Area}
-See the "transducer format" tab of I-LaSer for the basics of what to include in the transducer area or the transducer file.
+See the ``transducer format'' tab of I-LaSer for the basics of what to include in the transducer area or the transducer file.
 %transducers are similar to non-deterministic automata, but they have output
 A transducer can be thought of as a non-deterministic automaton, with an output attached to each state transition.
 
@@ -193,7 +193,7 @@ Similarly to the automaton format, the transducer input starts with the word @Tr
 When entering a transducer, the (input) alphabet of the transducer must cover all symbols in the language, or else I-LaSer will throw an error.
 
 A language is said to satisfy a transducer property if and only if no word in the language, when inputted to the transducer, outputs another word in the language.
-For example, the below transducer, when given the word "001", outputs "001", "101", "011", and "111", so a language including "001" and "111" would not satisfy the property defined by that transducer.
+For example, the below transducer, when given the word ``001'', outputs ``001'', ``101'', ``011'', and ``111'', so a language including ``001'' and ``111'' would not satisfy the property defined by that transducer.
 \begin{center}
 @Transducer 0\\
 0 0 0 0\\
@@ -205,7 +205,7 @@ The above transducer is also \textit{input-preserving}, because any input may pr
 A transducer which is not input-preserving is said to be \textit{input-altering}. An input-alterng transducer is one in which every word output from the transducer is different from its input, for all input words.
 
 \subsection{Trajectories}
-It is also possible to input a trajectory in the area for transducers, if the property type "Trajectory or Input-Altering Transducer" is selected.
+It is also possible to input a trajectory in the area for transducers, if the property type ``Trajectory or Input-Altering Transducer'' is selected.
 Trajectories have the same operator set as regular expressions, %link to regular expression section
 though their alphabet is restricted to $\{0, 1\}$.
 Trajectories offer more property options than fixed types, though considerably less than transducers.
@@ -229,7 +229,7 @@ See the Antimorphism tab in the I-LaSer GUI for basic information about theta pr
 Theta properties are used for DNA computing, and the only question that I-LaSer currently supports using theta-properties for is the Satisfaction question.
 Antimorphic ``swaps'' are specified in the theta text area, and may include any symbols legal in languages.
 
-Theta properties start with the string "@THETA", followed by a newline, and a list of swaps to be made.
+Theta properties start with the string ``@THETA'', followed by a newline, and a list of swaps to be made.
 Satisfaction for theta-properties is handled quite differently than satisfaction for non-antimorphic properties.
 Before testing to see whether a word operation leads to another word in the language, the word first needs to be permuted.
 The permutation of the word involves reversing its symbols, then applying each of the specified swaps.
