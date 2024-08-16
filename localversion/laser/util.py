@@ -51,10 +51,10 @@ def write_witness(witness):
 def parse_aut_str(aut_str):
     """
     Cleans up the automata string inputted through a file or textarea, removing
-    commented lines, commented line parts, and normalizing newlines to UNIX format. 
-    Will also convert input from Grail to FAdo, if necessary. 
+    commented lines, commented line parts, and normalizing newlines to UNIX format.
+    Will also convert input from Grail to FAdo, if necessary.
 
-    If the string is a regular expresssion, it also expands exponential notation, 
+    If the string is a regular expresssion, it also expands exponential notation,
     so that a string such as (0+1)^2 is replaced with (0+1)(0+1)
     """
 
@@ -66,7 +66,7 @@ def parse_aut_str(aut_str):
 
     if "@Transducer" in aut_str:
         raise IncorrectFormat("Please enter the transducer in its own input area.")
-    
+
     if "(START)" in aut_str:
         result = convertGrailToFAdo(aut_str.strip())
         return result
@@ -81,14 +81,14 @@ def parse_transducer_string(t_str):
     result = {
     "t_str": None,
     #add more fields if necessary
-    }    
+    }
     if t_str is None:
         return None
     #removes comments and normalizes newlines
     t_str = re.sub(r'\r', '', t_str.strip())
     t_str = re.sub(r'\n#.+\n', '\n', t_str)
     t_str = re.sub(r'#.+', '', t_str)
-    
+
     if "@Transducer" not in t_str: #trajectory inputted
         t_str = expand_carets(t_str)
 
@@ -96,7 +96,7 @@ def parse_transducer_string(t_str):
     return result
 
 def convertGrailToFAdo(grailString):
-    '''Converts a Grail-formatted string to a FAdo-formatted string for use in 
+    '''Converts a Grail-formatted string to a FAdo-formatted string for use in
        both generated programs and in-website solving. The website will use this converted
        string in all operations without interacting with the original Grail.
        Accepts String, returns String'''
@@ -107,16 +107,16 @@ def convertGrailToFAdo(grailString):
     otherLines = []
     for line in splitString:
         if line.strip().startswith("(START) |-"):
-            if (len(line.strip().split()) == 3): 
+            if (len(line.strip().split()) == 3):
                 startStates.add(line.strip().split()[2])
-            else: 
+            else:
                 raise IncorrectFormat("The Grail string has an improper start state.")
         elif line.strip().endswith("-| (FINAL)"):
             if (len(line.strip().split()) == 3):
                 endStates.add(line.strip().split()[0])
-            else: 
+            else:
                 raise IncorrectFormat("The Grail string has an improper final state.")
-        else: #intermediate line 
+        else: #intermediate line
             otherLines.append(line)
     if len(startStates) == 0:
         raise IncorrectFormat("The start state of the Grail string was not specified.")
@@ -129,7 +129,7 @@ def convertGrailToFAdo(grailString):
     for state in startStates:
         firstLine += str(state) + " "
     firstLine = firstLine.strip() + "\n" #remove the last trailing space
-    return firstLine + "\n".join(otherLines)    
+    return firstLine + "\n".join(otherLines)
 
 # pylint:disable=C0201
 def parse_theta_str(theta_str):
@@ -142,11 +142,11 @@ def parse_theta_str(theta_str):
 
     match = re.search(r'^@THETA *\n(([\w\d] +[\w\d]\s*)+)', theta_str, re.IGNORECASE)
 
-    swaps = match.group(1) #remove the @THETA, which is only used to determine whether 
-                           #it's an antimorphism and not used in creating it. 
+    swaps = match.group(1) #remove the @THETA, which is only used to determine whether
+                           #it's an antimorphism and not used in creating it.
 
-    initial = {} #The initially entered 
-    reverse = {} 
+    initial = {} #The initially entered
+    reverse = {}
     for swap in swaps.splitlines(): #collect the swap from each of the lines and add those in
         tmp = swap.split(' ')
         initial[tmp[0]] = tmp[1] #contains the entered swaps

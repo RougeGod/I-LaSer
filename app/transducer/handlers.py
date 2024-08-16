@@ -65,8 +65,8 @@ def handle_iap(
     # Attempt to create the code, that satisfies the given property.
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
-    except DFAsymbolUnknown:
-        return {'form': form, 'error_message':"The transducer's alphabet does not match the construction alphabet.",
+    except:
+        return {'form': form, 'error_message':"Unexpected issue constructing language.",
                 'transducer': t_name}
 
     # If successful, return the given words that satisfy it.
@@ -103,8 +103,8 @@ def handle_ipp(
     try:
         # Create a language that satisfies the property - witness is the list of words in L
         _, witness = prop.makeCode(int(n_num), int(l_num), int(s_num))
-    except DFAsymbolUnknown:
-        return {'form': form, 'error_message':"Unexpected issue with construction alphabet.",
+    except:
+        return {'form': form, 'error_message':"Unexpected issue constructing language.",
                 'transducer': t_name}
 
     #text_path, text_title = write_witness(witness, filename)
@@ -121,10 +121,10 @@ def handle_construction(
     """
     Handle the construction choice of the website.
     """
-    
+
     def error(msg):
         return {"form": form, 'error_message': msg}
-    
+
     # The post passes the sizes as string, so we need to parse them.
     # This has the added benefit of that if no numbers are given, it defaults to -1,
     # Which will fail!
@@ -175,11 +175,11 @@ def handle_construction(
     # Input-Preserving Property
     elif property_type == '3':
         result = handle_ipp(n_num, l_num, s_num, t_name, t_str, form)
-    else: 
+    else:
         return error("This feature has not yet been implemented.")
 
     return result
-    
+
 def check_approx_maximality(automaton, prop, eps, t, disp):
     if not (0 < eps < 1):
         return error("Epsilon must be between 0 and 1.")
@@ -192,7 +192,7 @@ def check_approx_maximality(automaton, prop, eps, t, disp):
     witness = prax_maximal_nfa(wordDist, automaton, prop)
     if witness is None:
         return "Yes, the language is approximately maximal with respect to the property.", ""
-    else: 
+    else:
         return "No, the language is not maximal with respect to the property.", format_counter_example(witness)
 
 def check_satisfaction(automaton, prop):
@@ -236,7 +236,7 @@ def handle_satisfaction_maximality(
     try:
         aut = construct_automaton(aut_str)
         #get the name of the automaton (web-only)
-        aut_name = "Language: " + data.get('aut_name', 
+        aut_name = "Language: " + data.get('aut_name',
             'Textarea Regex' if detect_automaton_type(aut_str) == "str2regexp" else "Textarea Automaton")
     except (IncorrectFormat, TypeError): # Automata syntax error, of any type
         return error(AUTOMATON_INCORRECT_FORMAT)
@@ -260,12 +260,12 @@ def handle_satisfaction_maximality(
         if fixed_type is None:
             return {'form': form, 'error_message': "No fixed type was entered.",
                 'automaton': aut_name}
-            
+
         # This method will return the fixed property based on the parameters given
         prop = create_fixed_property(aut.Sigma, fixed_type)
-        #UDCodeProp has no Aut attribute, so as of now, it cannot be checked for approximate 
+        #UDCodeProp has no Aut attribute, so as of now, it cannot be checked for approximate
         #maximality, and the web limits on transducer size cannot be checked, so we must handle
-        #this seperately. 
+        #this seperately.
         if type(prop) == UDCodeProp:
             proof = ''
             if question == '1':
@@ -283,7 +283,7 @@ def handle_satisfaction_maximality(
                     decision = "YES, the language is a maximal code"
                 else:
                     decision = "NO, the language is not a maximal code"
-            elif question == '4': 
+            elif question == '4':
                 return error("Approximate Maximality is not available for the UD Code Property.")
 
             return {'form': form, 'automaton': aut_name, 'result': decision, 'proof': proof}
@@ -376,7 +376,7 @@ def handle_satisfaction_maximality(
         return {'form':form, 'error_message':
         'Error creating property.',
         'automaton':aut_name, 'transducer':t_name}
-        
+
 
     # Check Satisfaction
     if question == '1':
@@ -384,8 +384,8 @@ def handle_satisfaction_maximality(
         if sat.get("error_message"):
             return {'form':form, 'error_message': sat.get("error_message"),
                     'automaton':aut_name, 'transducer':t_name}
-        else: 
-            return {"form": form, "automaton": aut_name, "transducer": t_name, 
+        else:
+            return {"form": form, "automaton": aut_name, "transducer": t_name,
                    "result": sat.get("result"), "proof": sat.get("proof")}
     # Check Maximality
     elif question == '2':
@@ -416,10 +416,10 @@ def handle_satisfaction_maximality(
             return {'form':form, 'error_message': sat.get("error_message"),
                     'automaton':aut_name, 'transducer':t_name}
         elif not (sat["isSatisfied"]):
-            return {"form": form, "error_message": "ERROR: The language does not satisfy the property.", 
+            return {"form": form, "error_message": "ERROR: The language does not satisfy the property.",
                     "automaton": aut_name, "transducer": t_name}
-        else: 
-            try: 
+        else:
+            try:
                 epsi = float(data.get('epsilon'))
                 t = float(data.get('dirichletT'))
                 disp = int(data.get('displacement'))
@@ -428,7 +428,7 @@ def handle_satisfaction_maximality(
             decision, proof = check_approx_maximality(aut, prop, epsi, t, disp)
             if t_name == "":
                 return {'form': form, 'automaton': aut_name, 'result': decision, "proof": proof}
-            else: 
+            else:
                 return {'form':form, 'automaton':aut_name, 'transducer':t_name,
                     'result':decision, 'proof': proof}
 

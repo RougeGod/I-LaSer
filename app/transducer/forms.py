@@ -29,8 +29,8 @@ QUESTION_CHOICE = (('0', '-Please Select-'),
                    ('3', 'Construction'),
                    ('4', 'Approximate Maximality'))
 
-#takes in an uploaded file and properly converts it to text. Returns the text of the file. 
-#required because uploaded files are automatically stored as binary data. In Python 2, this 
+#takes in an uploaded file and properly converts it to text. Returns the text of the file.
+#required because uploaded files are automatically stored as binary data. In Python 2, this
 #wasn't an issue because all data was binary, but now the two types of data are seperate
 def file2Text(inputBinary):
     return bytes.decode(inputBinary)
@@ -80,7 +80,7 @@ class UploadFileForm(forms.Form):
     fixed_type = forms.ChoiceField(choices=FIXED_TYPE_CHOICE, required=False,
                                    widget=forms.Select(attrs={'class': cls}))
 
-    s_int = forms.IntegerField(required=False)#, min_value=2, max_value=10) 
+    s_int = forms.IntegerField(required=False)#, min_value=2, max_value=10)
     n_int = forms.IntegerField(required=False)
     l_int = forms.IntegerField(required=False)
 
@@ -110,7 +110,7 @@ class UploadFileForm(forms.Form):
 
         if data:
             self.aut_name = data.name
-            newdata = data.read() 
+            newdata = data.read()
             data.close()
             return newdata
 

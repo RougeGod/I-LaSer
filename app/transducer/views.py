@@ -33,10 +33,10 @@ except django.core.exceptions.ImproperlyConfigured:
     LIMIT = 500000
     LIMIT_AUTOMATON = 250
 
-name = str(int(time()*1000)) #the name of the ZIP file, which is the current millisecond. 
+name = str(int(time()*1000)) #the name of the ZIP file, which is the current millisecond.
 
 DECIDE_REQUEST = 'Decide whether the given language '
-#These next two dictionaries are used in the code generation but do not appear on the website. 
+#These next two dictionaries are used in the code generation but do not appear on the website.
 TEST_DICT = {'1': 'SATW', '2': 'MAXW', '3': 'MKCO', '4':'AMAX'}
 DESCRIBE = {'1': DECIDE_REQUEST + 'satisfies the given property. \
 If no, return a witness; else return Nones.', #Satisfaction
@@ -68,9 +68,15 @@ def upload_file(request):
         elif not form.is_valid():
             response = {'form': form}
         elif 'run_code' in post: # This will handle server-side calculation
-            response = get_response(form.cleaned_data, files, form)
+            try:
+                response = get_response(form.cleaned_data, files, form)
+            except Exception as unforeseen:
+                response = {"form": form, "error_message": "Unexpected Error: " + unforeseen}
         elif 'gen_code' in post: # This will handle generation of code for client-side calculation
-            response = get_code(form.cleaned_data, files, form)
+            try:
+                response = get_code(form.cleaned_data, files, form)
+            except Exception as unforeseen:
+                response = {"form": form, "error_message": "Unexpected Error Generating Code: " + unforeseen}
     else: # GET Request, just render the page
         response = {'form': UploadFileForm()}
 
@@ -102,9 +108,9 @@ def get_response(data, files, form):
         except LimitExceeded:
             return get_code(data, files, form=form, sentFrom="Limit")
     elif question == '3':
-        try: 
+        try:
             return func_timeout(TIME_LIMIT, handle_construction, args=(property_type, data, files, form))
-        except FunctionTimedOut: 
+        except FunctionTimedOut:
             return get_code(data, files, form=form, sentFrom="Timeout")
         except LimitExceeded:
             return get_code(data, files, form=form, sentFrom="Limit")
@@ -132,7 +138,7 @@ def get_code(data, files, form=True, test_mode=None, sentFrom=None):
         return error("Please select a property type.")
 
     prop = regexp = fixed_type = sigma = aut_type = None
-    name = str(int(time()*1000)) #the name of the ZIP file, which is the current millisecond. 
+    name = str(int(time()*1000)) #the name of the ZIP file, which is the current millisecond.
     n_num = s_num = l_num = 0
     aut_str = t_str = ''
     transducer = fixed_type = transducer_type = trajectory = None
@@ -209,10 +215,10 @@ def get_code(data, files, form=True, test_mode=None, sentFrom=None):
                     prop = expand_carets(prop)
                 except ValueError as err:
                     return error(str(err))
-            try: 
+            try:
                 if not is_subset(aut, result):
                     return error("The automaton's alphabet should be a subset of the transducer's")
-            except UnboundLocalError: #there is no automaton (construction Question), so checking it is nonsensical     
+            except UnboundLocalError: #there is no automaton (construction Question), so checking it is nonsensical
                 err = check_construction_alphabets(s_num, result.Aut.Sigma)
                 if err is not None:
                     return error(err)
@@ -223,7 +229,7 @@ def get_code(data, files, form=True, test_mode=None, sentFrom=None):
     elif property_type == '3':
         try:
             prop = IPTProp(readOneFromString(t_str + "\n")) # Input Preserving Transducer Property
-            try: 
+            try:
                 if not is_subset(aut, prop):
                     return error("The automaton's alphabet should be a subset of the transducer's")
             except UnboundLocalError:
@@ -258,7 +264,7 @@ def get_code(data, files, form=True, test_mode=None, sentFrom=None):
             except (IncorrectFormat, TypeError):
                 return error(PROPERTY_INCORRECT_FORMAT)
             if not is_subset(aut, prop):
-                return error("The automaton's alphabet should be a subset of the transducer's")        
+                return error("The automaton's alphabet should be a subset of the transducer's")
 
     description = DESCRIBE[question]
     test = TEST_DICT[question]
@@ -280,7 +286,7 @@ def get_code(data, files, form=True, test_mode=None, sentFrom=None):
     url_params = (settings.MEDIA_URL, name)
     if sentFrom == "Timeout":
         decision = "The computation took too long!<br>Would you like to <a href=%s%s.zip>download your code</a>?<br>" % url_params
-    elif sentFrom == "Limit": 
+    elif sentFrom == "Limit":
         decision = "This query is too complex for the web server. <br>Would you like to <a href=%s%s.zip>download your code</a>?<br>" % url_params
         # The code has now been placed in the media folder, to download.
     else:

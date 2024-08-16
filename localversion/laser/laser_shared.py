@@ -1,4 +1,4 @@
-"""Common functions required by a lot of the FAdo backend. 
+"""Common functions required by a lot of the FAdo backend.
    This version of laser_shared is based off of the June 7, 2024 git commit
    and doesn't change very much compared to the web version, as much of this
    is back-end stuff
@@ -22,7 +22,7 @@ def construct_automaton(aut_str):
     except UnexpectedCharacters: #If the string is a regex
         try:
             return reex.str2regexp(aut_str).toNFA()
-        except Exception: #anything goes wrong with the regex parsing 
+        except Exception: #anything goes wrong with the regex parsing
             raise IncorrectFormat("could not build automaton")
 
 def detect_automaton_type(aut_str):
@@ -61,9 +61,9 @@ def construct_input_alt_prop(t_str, sigma, gen=False):
         except Exception:
             raise IncorrectFormat
 
-def convertToCorrectType(value, default, desiredType=float): 
+def convertToCorrectType(value, default, desiredType=float):
     '''Converts a value to any desired type, if this is not possible, supply a default'''
-    try: 
+    try:
         return desiredType(value)
     except (ValueError, TypeError):
         return default
@@ -105,7 +105,7 @@ def check_construction_alphabets(s_num, alphabet):
     if not all([i in alphabet for i in construction_alf]):
         return ALPHABET_MISMATCHED
     return None
-    
+
 
 def make_block_code(list_length, word_length, alphabet_size):
     """Returns an NFA and a list W of up to N words of length word_length, such that the NFA

@@ -18,16 +18,16 @@ def construct_automaton(aut_str):
     except UnexpectedCharacters: #If the string is a regex
         try:
             return reex.str2regexp(aut_str).toNFA()
-        except Exception: #anything goes wrong with the regex parsing 
+        except Exception: #anything goes wrong with the regex parsing
             raise IncorrectFormat("could not build automaton")
 
 def detect_automaton_type(aut_str):
-    """construct an automaton from a string"""
+    """construct an automaton from a string, and return its type"""
     aut_str = str(aut_str).strip()
     try:
         readOneFromString(aut_str + "\n")
         return 'readOneFromString'
-    except (UnexpectedCharacters, Exception): #couldn't read the automaton 
+    except (UnexpectedCharacters, Exception): #couldn't read the automaton
         try:
             reex.str2regexp(aut_str).toNFA()
             return 'str2regexp'
@@ -57,9 +57,9 @@ def construct_input_alt_prop(t_str, sigma, gen=False):
         except Exception:
             raise IncorrectFormat
 
-def convertToCorrectType(value, default, desiredType=float): 
+def convertToCorrectType(value, default, desiredType=float):
     '''Converts a value to any desired type, if this is not possible, supply a default'''
-    try: 
+    try:
         return desiredType(value)
     except (ValueError, TypeError):
         return default
@@ -123,7 +123,7 @@ def check_construction_alphabets(s_num, alphabet):
     if not all([i in alphabet for i in construction_alf]):
         return ALPHABET_MISMATCHED
     return None
-    
+
 def limit_tran_prop(aut_delta, tran_delta, limit, lang_size=0):
     """Find if the calculation would be too long to do on the server"""
     size = lang_size

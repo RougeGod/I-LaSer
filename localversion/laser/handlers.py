@@ -1,7 +1,7 @@
 '''Code mostly copy-pasted with a few modifications from the original LaSer web version
-   for the LaSer local (installable) version which does not use any web technologies. 
+   for the LaSer local (installable) version which does not use any web technologies.
 
-   The returned result is still a dict, as I would like the local version to 
+   The returned result is still a dict, as I would like the local version to
    be able to distinguish errors from regular results.'''
 
 import re
@@ -35,7 +35,7 @@ def error(err):
 
 def get_response(data):
     """
-    Handle the actual response based on the inputted data to the GUI program. 
+    Handle the actual response based on the inputted data to the GUI program.
     """
     question = data.get('question')
     property_type = data.get('property_type')
@@ -43,27 +43,27 @@ def get_response(data):
 
     if not question: #User clicked submit without specifying question (question is 0, so not question is true)
         return {'error_message': "Please select a question."}
-    if not property_type: 
+    if not property_type:
         return {"error_message": "Please select a property type."}
 
-    if (time_limit is None) or (time_limit <= 0): #no lime limit, go to completion no matter how long 
+    if (time_limit is None) or (time_limit <= 0): #no lime limit, go to completion no matter how long
         if question in [1, 2, 4]:
             return handle_satisfaction_maximality(data)
         elif question == 3:
             return handle_construction(data)
-    
+
     if question in [1, 2, 4]:
         try:
-            return func_timeout(time_limit, handle_satisfaction_maximality, args=(data,)) 
+            return func_timeout(time_limit, handle_satisfaction_maximality, args=(data,))
         #args must be a tuple, as if this is not, it is treated as a dict
         except FunctionTimedOut:
             return {"error_message": "The function timed out."}
     elif question == 3:
-        try: 
+        try:
             return func_timeout(time_limit, handle_construction, args=(data,))
-        except FunctionTimedOut: 
+        except FunctionTimedOut:
             return {"error_message": "The function timed out."}
-        
+
 def handle_iap(
         n_num, l_num, s_num, t_str
     ):
@@ -86,8 +86,8 @@ def handle_iap(
     try:
         _, witness = prop.makeCode(n_num, l_num, s_num)
     except DFAsymbolUnknown:
-        return error("The transducer's alphabet does not match the construction alphabet.") 
-        #probably not necessary, check_construction_alphabet
+        return error("The transducer's alphabet does not match the construction alphabet.")
+        #probably not necessary, check_construction_alphabet should handle this
 
     # If successful, return the given words that satisfy it.
     words = write_witness(witness)
@@ -162,8 +162,8 @@ def handle_construction(data):
         return error("This feature has not yet been implemented.")
 
     return result
-    
-def check_approx_maximality(automaton, prop, eps, t, disp): 
+
+def check_approx_maximality(automaton, prop, eps, t, disp):
     if not (0 < eps < 1):
         return error("Epsilon must be between 0 and 1.")
     if not (t > 1):
@@ -175,7 +175,7 @@ def check_approx_maximality(automaton, prop, eps, t, disp):
     witness = prax_maximal_nfa(wordDist, automaton, prop)
     if witness is None:
         return "Yes, the language is approximately maximal with respect to the property.", ""
-    else: 
+    else:
         return "No, the language is not maximal with respect to the property.", format_counter_example(witness)
 
 def check_satisfaction(automaton, prop):
@@ -195,14 +195,14 @@ def check_satisfaction(automaton, prop):
         proof = format_counter_example(witness)
         satisfaction = False
     return {'result':decision, 'proof': proof, "isSatisfied": satisfaction}
-    
+
 
 
 
 def handle_satisfaction_maximality(data):
     question = data.get("question")
     property_type = data.get("property_type")
-    
+
     """This method handles satisfaction and maximality choices."""
     def error(err):
         """Formats an error using the given string"""
@@ -225,19 +225,19 @@ def handle_satisfaction_maximality(data):
         return error(AUTOMATON_INCORRECT_FORMAT)
     except VisitError: #multiple paths, or multiple start states for a DFA
         return error("This should be an NFA, not a DFA")
-    except Exception: 
+    except Exception:
         return error("Unexpected error parsing automaton.")
 
-    if type(aut) == list: 
-        #When parsing, if there are multiple NFAs, FAdo returns a list. 
-        #Multiple languages at once are not permitted 
+    if type(aut) == list:
+        #When parsing, if there are multiple NFAs, FAdo returns a list.
+        #Multiple languages at once are not permitted
         return error("Only one automaton may be inputted at a time.")
 
     if property_type == 1: # Fixed type
         fixed_type = data.get('fixed_type')
         if fixed_type is None:
             return {'error_message': "No fixed type was entered."}
-            
+
         # This method will return a fixed property, or None if it's a UD Code.
         prop = create_fixed_property(aut.Sigma, fixed_type)
         if type(prop) == UDCodeProp:
@@ -264,8 +264,8 @@ def handle_satisfaction_maximality(data):
             elif question == 4:
                 #approximate maximality
                 return error("Approximate Maximality is not available for the UD Code Property.")
-            return {'result': decision, 'proof': proof}    
-                
+            return {'result': decision, 'proof': proof}
+
 
     # User-Input Property
     else:
@@ -372,7 +372,7 @@ def handle_satisfaction_maximality(data):
         elif not (sat["isSatisfied"]):
             return error("ERROR: The language does not satisfy the property.")
         else:
-            try: 
+            try:
                 epsi = float(data.get('epsilon'))
                 t = float(data.get('dirichletT'))
                 disp = int(data.get('displacement'))

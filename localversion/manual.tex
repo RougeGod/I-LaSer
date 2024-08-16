@@ -29,14 +29,14 @@ I-LaSer uses the formal languages library \href{https://fado.dcc.fc.up.pt/}{FAdo
 
 \section{Motivation for Creating the Local Version}
 \par The I-LaSer web version has some drawbacks, and the creation of a locally-run GUI aims to fix these issues.
-The main issue that the web version of I-LaSer faced was that the behind-the-scenes calculations took a lot of time and computing power. For more complex languages and/or properties, this caused too much strain on the server. Another issue is that the web server faced cyberattacks, resulting in its temporary removal. Having a locally run version protects against any future server downtime, as a user will have their own program available to run without depending on the server, and provides the ability for users to bypass server limits on language complexity and calculation time. A smaller benefit is that the local GUI can be run without Internet access. 
+The main issue that the web version of I-LaSer faced was that the behind-the-scenes calculations took a lot of time and computing power. For more complex languages and/or properties, this caused too much strain on the server. Another issue is that the web server faced cyberattacks, resulting in its temporary removal. Having a locally run version protects against any future server downtime, as a user will have their own program available to run without depending on the server, and provides the ability for users to bypass server limits on language complexity and calculation time. A smaller benefit is that the local GUI can be run without Internet access.
 
 \subsection{Problems with Program Generation}
 \par The web version's drawbacks are partially alleviated by allowing the user to generate a Python program, which, when run, produces the correct answer on the user's machine without forcing the web server to run calculations. However, this is not a perfect solution for a few reasons. Running the program requires the user have a working Python installation, and take the extra steps of unzipping the folder, running the Python program, then deleting the zipped folder and the extracted folder. Due to the newlines in the text areas not translating well to generated programs, the generated program must also encode input strings in base-64 and decode then during program execution. For these reasons, program generation has been intentionally left out of the I-LaSer GUI. Furthermore, if there are future issues resulting in server downtime, this would also prevent access to generating programs.
 
 \section{Time Limit}
-All submissions will disable further access to the form controls until the calculation either completes or times out. This will lock all buttons and textboxes. 
-Setting a good time limit will help the function time out as quickly as necessary and return control. 
+All submissions will disable further access to the form controls until the calculation either completes or times out. This will lock all buttons and textboxes.
+Setting a good time limit will help the function time out as quickly as necessary and return control.
 By default, the time limit is 60 seconds for the calculation. This limit can be lowered in the case of a simple query which should not take very long, raised for complicated queries intended to run for a long time, or eliminated entirely.
 To eliminate the time limit, enter a non-positive number or a non-number in the Time Limit field.
 Non-integer numbers of seconds are permitted to be used as the time limit.
@@ -47,7 +47,7 @@ Non-integer numbers of seconds are permitted to be used as the time limit.
 \par Roughly speaking, a language is said to \textit{satisfy} an independence property if and only if there does not exist a pair of words $w_1$ and $w_2$ such that $w_2$ can be created by performing operation $T$ on $w_1$. The operation $T$ is defined by the property. If a language satisfies a property, every subset of that language satisfies the same property. An empty language satisfies all independence properties, as there are no words to transform into other words in a language. For similar reasons, a language with only a single word (which may be the empty word) also satisfies all independence properties. %needs citation???
 
 \subsection{Maximality}
-\par A language $L$ satisfying property $P$ is said to be \textit{maximal} with respect to $P$ if and only if no more words can be added to $L$ without losing its satisfaction of $P$. When testing maximality and approximate maximality using I-LaSer, you will get an error if the language does not satisfy the property, as the (approximate) maximality question is meaningless on such languages, since the language has already lost satisfaction of the property without adding any words. 
+\par A language $L$ satisfying property $P$ is said to be \textit{maximal} with respect to $P$ if and only if no more words can be added to $L$ without losing its satisfaction of $P$. When testing maximality and approximate maximality using I-LaSer, you will get an error if the language does not satisfy the property, as the (approximate) maximality question is meaningless on such languages, since the language has already lost satisfaction of the property without adding any words.
 
 \subsection{Approximate Maximality}
 \par Testing code maximality is PSPACE-hard, and in the worst case takes exponential time \cite{Approx}.
@@ -55,7 +55,7 @@ The Approximate Maximality feature of I-LaSer 6 alleviates this problem by not t
 If the sample includes a word that can be added to the language, then the language is definitely not maximal and I-LaSer will provide the word that can be added to the language.
 If the sample does not include a word that can be added to the language, I-LaSer will conclude that the language is approximately maximal.
 Such a statement does not definitively mean that the language is truly maximal with respect to the property, but it can say that the language is close to being maximal.
-Setting up the random distribution of words takes time, so although calculating approximate maximality is in theory faster than true maximality, in practice it is only faster for complex languages and properties. 
+Setting up the random distribution of words takes time, so although calculating approximate maximality is in theory faster than true maximality, in practice it is only faster for complex languages and properties.
 
 \par I-LaSer uses a polynomial randomized approximation (PRAX) algorithm and the Dirichlet distribution over the positive integers to generate the samples. Due to the randomness involved, questions of approximate maximality may not result in the same output from I-LaSer when run multiple times. For more information on the theory behind approximate maximality, please read \cite{Approx}.
 
@@ -70,43 +70,43 @@ Setting up the random distribution of words takes time, so although calculating 
 This section contains simplified explanations of all fixed properties available to select in I-LaSer
 
 \subsection{Prefix}
-A language is a \textit{prefix code} if no word in the language is a prefix of another word in the language. If one word in the language can be formed by removing symbols from the end of another word in that language, then the language is not a prefix code. 
+A language is a \textit{prefix code} if no word in the language is a prefix of another word in the language. If one word in the language can be formed by removing symbols from the end of another word in that language, then the language is not a prefix code.
 
-\par An example of a language that is a prefix code is \verb-aa*b-, the language with all words containing one or more a's followed by a single b. This is a prefix code since removing the last symbol of any word will remove the b, and make the result a word that is not in the language. This language, however, is not a \textit{maximal} prefix code, since we could add the word "b", and the language would still be a prefix code. 
+\par An example of a language that is a prefix code is \verb-aa*b-, the language with all words containing one or more a's followed by a single b. This is a prefix code since removing the last symbol of any word will remove the b, and make the result a word that is not in the language. This language, however, is not a \textit{maximal} prefix code, since we could add the word "b", and the language would still be a prefix code.
 
-\par A language that is \textbf{not} a prefix code is \verb-a*b*-, zero or more a's followed by zero or more b's. The empty string, with zero a's and zero b's, is in the language, and if you keep 0 symbols from the start of a different word, and discard the rest, the result will be the empty string. In general, if a language includes the empty string and at least one non-empty word, it will not satisfy any of the fixed code properties shown by I-LaSer. 
+\par A language that is \textbf{not} a prefix code is \verb-a*b*-, zero or more a's followed by zero or more b's. The empty string, with zero a's and zero b's, is in the language, and if you keep 0 symbols from the start of a different word, and discard the rest, the result will be the empty string. In general, if a language includes the empty string and at least one non-empty word, it will not satisfy any of the fixed code properties shown by I-LaSer.
 
 \subsection{Suffix}
-A language is a \textit{suffix code} if no word in the language is a suffix of another word in the language. It is very similar to the prefix code. Discard zero or more symbols from the start, and keep the rest, if you end up with another word in the language, then the language is \textbf{not} a suffix code. 
+A language is a \textit{suffix code} if no word in the language is a suffix of another word in the language. It is very similar to the prefix code. Discard zero or more symbols from the start, and keep the rest, if you end up with another word in the language, then the language is \textbf{not} a suffix code.
 
-\par One language that is not a suffix code is the language \verb-(b+bb)aa*-, consisting of words with one or two b's, then one or more a's. This is not a suffix code because you can remove the first b from any word with two b's, and createa another word in the language. 
+\par One language that is not a suffix code is the language \verb-(b+bb)aa*-, consisting of words with one or two b's, then one or more a's. This is not a suffix code because you can remove the first b from any word with two b's, and createa another word in the language.
 
 \subsection{Bifix}
-A language is a \textit{bifix code} if and only if it is both a prefix code and a suffix code. 
+A language is a \textit{bifix code} if and only if it is both a prefix code and a suffix code.
 
 \subsection{Infix}
-A language is an \textit{infix code} if no word in the language can be found inside another word in the language, whether at either end or somewhere in the middle. It is necessary for a language to be a bifix code in order to be an infix code, but this is not a sufficient condition. 
+A language is an \textit{infix code} if no word in the language can be found inside another word in the language, whether at either end or somewhere in the middle. It is necessary for a language to be a bifix code in order to be an infix code, but this is not a sufficient condition.
 
-\par One language that is a bifix code but not an infix code is the language \verb-(ab*a)+(bbb)-, which consists of all words containing one a at the beginning and end of the word, and any number of b's in between, and the word "bbb". 
-When looking at the word "abbba", it's a prefix code because you cannot remove only letters from the start of the word to get "bbb", and you cannot remove only letters from the end of the word to get "bbb", but removing letters from both ends of the word at once can result in the word "bbb" and disqualify the language from being an infix code. 
+\par One language that is a bifix code but not an infix code is the language \verb-(ab*a)+(bbb)-, which consists of all words containing one a at the beginning and end of the word, and any number of b's in between, and the word "bbb".
+When looking at the word "abbba", it's a prefix code because you cannot remove only letters from the start of the word to get "bbb", and you cannot remove only letters from the end of the word to get "bbb", but removing letters from both ends of the word at once can result in the word "bbb" and disqualify the language from being an infix code.
 
 \subsection{Outfix}
-A language is an \textit{outfix code} if no word in the language can be formed by removing a single contiguous block of letters from any other word in the language. This piece may be at the start of the word, the end of the word, or anywhere in between. All outfix codes are also bifix codes. 
-\par A language that is not an outfix code is \verb-ab*a-, since you can remove the block of b's, however long it may be, and get "aa", which is in the language. 
+A language is an \textit{outfix code} if no word in the language can be formed by removing a single contiguous block of letters from any other word in the language. This piece may be at the start of the word, the end of the word, or anywhere in between. All outfix codes are also bifix codes.
+\par A language that is not an outfix code is \verb-ab*a-, since you can remove the block of b's, however long it may be, and get "aa", which is in the language.
 
 \subsection{UD Code}
-A language is not a \textit{uniquely decodable code} if there exists a string of characters, made up of multiple words concatenated together, has multiple places to put the word breaks, that is, some ambiguity in 'un-concatenating' the words. All prefix, suffix, infix, outfix, and bifix codes are uniquely decodable codes. One example of a language that isn't is \verb-a(aa)*-, all words with an odd number of a's, since, when given a string of 5 a's, it is impossible to tell whether it is a single word, or two "a"s and one "aaa" in some order. 
+A language is not a \textit{uniquely decodable code} if there exists a string of characters, made up of multiple words concatenated together, has multiple places to put the word breaks, that is, some ambiguity in 'un-concatenating' the words. All prefix, suffix, infix, outfix, and bifix codes are uniquely decodable codes. One example of a language that isn't is \verb-a(aa)*-, all words with an odd number of a's, since, when given a string of 5 a's, it is impossible to tell whether it is a single word, or two "a"s and one "aaa" in some order.
 
 \subsection{Hypercode}
-A language is a hypercode if it is not possible to remove any symbols from one word in the language to get another word in the language. The removed symbols need not be contiguous, and there is no restriction on the position of the removed symbols. A language satisfying the hypercode property is sufficient to conclude that the same language also satisfies the prefix, suffix, bifix, infix, outfix, and UD code properties. One such language is the language of all four-letter words over a given alphabet, which can be written as \verb-(0+1)^4- or \verb-(0+1)(0+1)(0+1)(0+1)-. Removing any letter from a word makes it a shorter word, so it wouldn't be in the language. 
+A language is a hypercode if it is not possible to remove any symbols from one word in the language to get another word in the language. The removed symbols need not be contiguous, and there is no restriction on the position of the removed symbols. A language satisfying the hypercode property is sufficient to conclude that the same language also satisfies the prefix, suffix, bifix, infix, outfix, and UD code properties. One such language is the language of all four-letter words over a given alphabet, which can be written as \verb-(0+1)^4- or \verb-(0+1)(0+1)(0+1)(0+1)-. Removing any letter from a word makes it a shorter word, so it wouldn't be in the language.
 
 \section{Input Areas}
 
 \subsection{File Input}
-I-LaSer can accept typed input in the large text boxes, for automata, transducers, and theta properties, or can accept file input. Clicking the "Upload File" button will open a file selector, from which you may select a text file. Selecting a text file will replace all input in the text box with the contents of the file. Selecting a non-text file or an unreadable file will result in the input area turning red and displaying an error. Cancelling file selection will preserve the data in the text area. 
+I-LaSer can accept typed input in the large text boxes, for automata, transducers, and theta properties, or can accept file input. Clicking the "Upload File" button will open a file selector, from which you may select a text file. Selecting a text file will replace all input in the text box with the contents of the file. Selecting a non-text file or an unreadable file will result in the input area turning red and displaying an error. Cancelling file selection will preserve the data in the text area.
 
 \subsection{Validation}
-I-LaSer will attempt to perform validation on the inputs to the text box, no matter if the inputs originated from the keyboard or from a file. If the input passes validation, the text box will turn green. If the input fails validation, the text box will remain white. It is still possible to submit inputs that the validator deems "invalid" and have them run without errors. Similarly, the green text box does not necessarily mean that no errors will occur. 
+I-LaSer will attempt to perform validation on the inputs to the text box, no matter if the inputs originated from the keyboard or from a file. If the input passes validation, the text box will turn green. If the input fails validation, the text box will remain white. It is still possible to submit inputs that the validator deems "invalid" and have them run without errors. Similarly, the green text box does not necessarily mean that no errors will occur.
 The validation is a guide, indicating which inputs are likely to result in an unsuccessful computation.
 \par For the construction question, the user is prompted to enter three integers, each of which are validated seperately.
 Similarly, all of the parameters for approximate maximality are independent of each other, in terms of validation, so there may be some green areas and some white areas.
@@ -123,14 +123,14 @@ See the ``automata format'' tab of I-LaSer for the basics of what to enter in th
 \par The first line of an automaton is the declaration line. The declaration line consists of the following fields, separated by spaces, where anything enclosed in square brackets is optional.\\
 Automaton Type (@NFA or @DFA), Final States, [ * Initial States], [\$Alphabet].
 The below example shows a delcaration line for an NFA which can start at states 0 or 5, can end at states 7 and 12, and uses the alphabet {a, b, c, 0, 1}.
-If the automaton uses symbols outside the defined alphabet, they are implicitly added. 
+If the automaton uses symbols outside the defined alphabet, they are implicitly added.
 \begin{center}
 \verb-@NFA 7 12 * 0 5 $abc01-
 \end{center}
 If a language has an explicitly defined start state, and the language does not have any state transitions coming from that state, the language is empty.
 Similarly, if there is no series of state transitions from a start state to any defined end state, the language will also be empty.
 The list of initial states is only permitted when entering an NFA.
-A DFA must only have one start state, so the start state is defined as the initial state of the first transition and listing the start state is unnecessary. 
+A DFA must only have one start state, so the start state is defined as the initial state of the first transition and listing the start state is unnecessary.
 
 \par When entering a finite automaton, there are two options.
 @DFA begins a Deterministic Finite Automaton, and comes with more restrictions.
@@ -145,8 +145,8 @@ The following list of state transitions would be legal as an NFA but illegal as 
 \par For a more detailed description of the grammar behind FAdo automata parsing, read \href{https://www.dcc.fc.up.pt/~rvr/FAdo.pdf}{the FAdo instruction manual} \cite{FAdoManual}.
 
 \subsection{Grail Automata}
-Along with the preferred FAdo syntax, automata in the Grail\cite{Grail} format are also supported. 
-The state transition lines are written identically to FAdo's format, with the source state, the symbol, and the state to advance to. 
+Along with the preferred FAdo syntax, automata in the Grail\cite{Grail} format are also supported.
+The state transition lines are written identically to FAdo's format, with the source state, the symbol, and the state to advance to.
 The differences between the two formats are in defining the start and end states.
 In Grail, the start state is defined with the string \verb=(START) |- N=, where N is a start state.
 Final states are defined with the string \verb=F -| (FINAL)=, where F is a final state.
@@ -192,7 +192,7 @@ A transducer can be thought of as a non-deterministic automaton, with an output 
 Similarly to the automaton format, the transducer input starts with the word @Transducer, a list of final states, and optionally, a list of starting states and an alphabet.
 When entering a transducer, the (input) alphabet of the transducer must cover all symbols in the language, or else I-LaSer will throw an error.
 
-A language is said to satisfy a transducer property if and only if no word in the language, when inputted to the transducer, outputs another word in the language. 
+A language is said to satisfy a transducer property if and only if no word in the language, when inputted to the transducer, outputs another word in the language.
 For example, the below transducer, when given the word "001", outputs "001", "101", "011", and "111", so a language including "001" and "111" would not satisfy the property defined by that transducer.
 \begin{center}
 @Transducer 0\\
@@ -201,7 +201,7 @@ For example, the below transducer, when given the word "001", outputs "001", "10
 0 1 1 0\\
 0 1 0 1\\
 \end{center}
-The above transducer is also \textit{input-preserving}, because any input may produce itself when run through the transducer. 
+The above transducer is also \textit{input-preserving}, because any input may produce itself when run through the transducer.
 A transducer which is not input-preserving is said to be \textit{input-altering}. An input-alterng transducer is one in which every word output from the transducer is different from its input, for all input words.
 
 \subsection{Trajectories}
@@ -229,10 +229,10 @@ See the Antimorphism tab in the I-LaSer GUI for basic information about theta pr
 Theta properties are used for DNA computing, and the only question that I-LaSer currently supports using theta-properties for is the Satisfaction question.
 Antimorphic ``swaps'' are specified in the theta text area, and may include any symbols legal in languages.
 
-Theta properties start with the string "@THETA", followed by a newline, and a list of swaps to be made. 
+Theta properties start with the string "@THETA", followed by a newline, and a list of swaps to be made.
 Satisfaction for theta-properties is handled quite differently than satisfaction for non-antimorphic properties.
 Before testing to see whether a word operation leads to another word in the language, the word first needs to be permuted.
-The permutation of the word involves reversing its symbols, then applying each of the specified swaps. 
+The permutation of the word involves reversing its symbols, then applying each of the specified swaps.
 
 For example, on the DNA alphabet with swaps {a, t} and {c, g}, the word ``gcct'' would be reversed to `tccg'', then the swaps would be performed, turning the original word into ``aggc''.
 %what paper was it? I know it came from a paper. needs to be cited
@@ -305,8 +305,8 @@ Input-preserving transducer which outputs all words formed by transposing two ad
 \section{Approximate Maximality Parameters}
 \begin{itemize}
 \item Epsilon - A higher epsilon value correlates to more error tolerance, and fewer words being sampled over the distribution. Epsilon must be greater than 0 and less than 1.
-\item $t$ - The Dirichlet distribution that the approximate maximality calculations use requires a parameter $t$. 
-This is used in the creation of the word sample space and correlates to the uniformity of the distribution of word lengths across the sample space. A smaller value of $t$ means that the sample will be more uniform in terms of word length, but will also take much longer to set up. 
+\item $t$ - The Dirichlet distribution that the approximate maximality calculations use requires a parameter $t$.
+This is used in the creation of the word sample space and correlates to the uniformity of the distribution of word lengths across the sample space. A smaller value of $t$ means that the sample will be more uniform in terms of word length, but will also take much longer to set up.
 $t$ must be greater than 1.
 \item Displacement - No words will be included in the sample if they have fewer than $d$ characters.
 This is useful when a language has a few uninteresting short words which could be added to the language.
@@ -323,7 +323,7 @@ Similarly to testing questions about satisfaction and maximality, the constructi
 \item $N$ - The construction query will attempt to generate $N$ unique words over the alphabet.
 This may not be possible due to the property inputted, or the length of the strings and the alphabets entered.
 For example, if $N > L^S$, it will be impossible to create $N$ unique strings of length $L$, and I-LaSer will stop when it cannot add any more words to the language.
-\item $L$ - The length of the words to be constructed. All words constructed will be the same length. 
+\item $L$ - The length of the words to be constructed. All words constructed will be the same length.
 \end{itemize}
 The output of the construction question is arbitrary, and may be different when run with the same inputs multiple times.
 If the Construction query outputs fewer than $N$ words, that means that I-LaSer could not generate any other words in the language which can coexist with the words it has already generated.

@@ -1,6 +1,6 @@
-#this file makes long regular expressions easier to write, by allowing their expansion. 
-#entering a caret character (^) followed by a number will cause the previous expression, 
-#whether bracketed or a symbol, to be repeated the number of times specified by what's 
+#this file makes long regular expressions easier to write, by allowing their expansion.
+#entering a caret character (^) followed by a number will cause the previous expression,
+#whether bracketed or a symbol, to be repeated the number of times specified by what's
 #on the right of the caret. For example, 0(0+1)^3 will become 0(0+1)(0+1)(0+1), while
 #(0^4)1 will become (0000)1 and 1^4 will become 1111
 
@@ -27,8 +27,8 @@ def find_matching_left_bracket(input_string, right_bracket_pos):
     right_brackets = 0
     left_brackets = 0
     position = right_bracket_pos
-    for position in range(right_bracket_pos, -1, -1): 
-        #stop point has to be -1 because the stop point is not evaluated. 
+    for position in range(right_bracket_pos, -1, -1):
+        #stop point has to be -1 because the stop point is not evaluated.
         #if it were 0, a matching bracket at the start of the string would not be found
         if (input_string[position] == ")"):
             right_brackets += 1
@@ -43,7 +43,7 @@ def find_matching_left_bracket(input_string, right_bracket_pos):
 def find_number(input_string, start):
     if (start < 0):
         raise ValueError("Start position cannot be negative.")
-    for position in range(len(input_string), start, -1): 
+    for position in range(len(input_string), start, -1):
         #search backwards, from the end of the string all the way down to the original starting position
         #return the first legal integer
         try:
@@ -51,5 +51,5 @@ def find_number(input_string, start):
             #also return the length of the number so that it can be properly removed
         except ValueError: #not legal integer
             continue #go back to the start of the loop
-    raise ValueError("Could not find the number of repititions.") 
+    raise ValueError("Could not find the number of repititions.")
     #we got all the way back to the caret without a legal number

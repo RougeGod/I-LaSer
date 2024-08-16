@@ -128,7 +128,7 @@ def parse_theta_str(theta_str):
         initial[tmp[0]] = tmp[1]
     for key in initial.keys():
         reverse[initial[key]] = key
-    return initial | reverse 
+    return initial | reverse
     """)
 
     list_.append("""
@@ -232,12 +232,12 @@ def program_lines(
 
         list_.append("ax = %s\n" % base64.b64encode(aut_str.encode(encoding='utf-8')))
 
-        list_.append("a = %s(str(base64.b64decode(ax).decode(encoding='utf-8').strip()+%s))%s\n" % (PARSERS_BEFORE[aut_type], "\"\\n\"" if PARSERS_BEFORE[aut_type] == "readOneFromString" else "\"\"", PARSERS_AFTER[aut_type])) #regular expression parsing needs no newline, but readOneFromString requires a newline at the end of the file, so add in a literal "\n" if we're reading an automaton from string 
-    
+        list_.append("a = %s(str(base64.b64decode(ax).decode(encoding='utf-8').strip()+%s))%s\n" % (PARSERS_BEFORE[aut_type], "\"\\n\"" if PARSERS_BEFORE[aut_type] == "readOneFromString" else "\"\"", PARSERS_AFTER[aut_type])) #regular expression parsing needs no newline, but readOneFromString requires a newline at the end of the file, so add in a literal "\n" if we're reading an automaton from string
+
         if (test == "AMAX"):
-            if dirichletT is None: 
+            if dirichletT is None:
                 dirichletT = 2.001
-            if epsi is None: 
+            if epsi is None:
                 epsi = 0.01
             if displacement is None:
                 displacement = 1
@@ -257,9 +257,9 @@ def program_lines(
                 else:
                     string += "%s," % expand(s_1)
             string = string[:-1] + ")\n"
-                       
+
             if (test == "AMAX"): #approximate maximality code has very different syntax so gets a special case
-                ans = "if p.notSatisfiesW(a) == (None, None):\n"                
+                ans = "if p.notSatisfiesW(a) == (None, None):\n"
                 ans += "    answer = %s(GenWordDis(Dirichlet(t=%s, d=%s), ssigma, %s), a, p)\n" % (TESTS["AMAX"], dirichletT, displacement, epsi)
                 ans += "else:\n    answer = 'Property not satisfied.'\n"
             elif (test == "MAXP"): #UD Code maximality needs a seperate check for non-satisfied property, same as AMAX
@@ -268,7 +268,7 @@ def program_lines(
             else:
                 ans = "answer = p.%s(%s)\n" % (TESTS[test], '' if theta_str else 'a')
 
-            
+
 
             list_.extend([string, ans, "print(answer) \n"])
         else:
