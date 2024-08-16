@@ -321,7 +321,7 @@ class MyTestCase(TestCase):
         files = create_file_dictionary(aut_file=REGS[1])
         lines = "".join(get_code(post, files, False, True)).split("\n")
         should_be = (lines[LN_REQ-1] == 'p = buildUDCodeProperty(ssigma)') and \
-                    (lines[LN_REQ+3] == 'answer = p.maximalP(a)')   
+                    (lines[LN_REQ+3] == 'answer = p.maximalP(a)')
         #3 lines in between them for the notsatisfied check, only applicable on maximality of UD codes
         self.assertTrue(should_be)
 

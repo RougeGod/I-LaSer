@@ -78,7 +78,7 @@ class MyTestCase(TestCase):
         t_text = readfile(TRAJ_NAMES[1])
         post = {'question': '1', 'property_type': '5', 'transducer_text1': t_text, 'theta_text': THETA_STR}
         files = create_file_dictionary(aut_file=REGS[3])
-        result = get_response(post, files, False)   
+        result = get_response(post, files, False)
         self.assertTrue(result.get('result', 'FAIL').startswith('YES'))
 
         t_text = readfile(TRAJ_NAMES[2])

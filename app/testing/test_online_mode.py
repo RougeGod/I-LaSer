@@ -139,7 +139,7 @@ class MyTestCase(TestCase):
         lines = get_code(post, files, False, True)
         self.assertTrue('p = buildErrorCorrectPropS(t)' in lines[-3].split("\n"))
         self.assertEqual(lines[-2],'answer = p.notSatisfiesW(a)\n')
-        
+
 
     def test_TRAJmaxNO(self):
         post = {'question': '2', 'property_type': '2'}

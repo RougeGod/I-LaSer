@@ -73,7 +73,7 @@ class MyTestCase(TestCase):
         prog = make_prog(lines, 'decide satisfaction')
         execReturn = {}
         exec(prog, globals(), execReturn)
-        answer = execReturn["answer"]        
+        answer = execReturn["answer"]
         self.assertEquals(set(answer), set(['ab', 'bb']))
 
 
@@ -217,7 +217,7 @@ class MyTestCase(TestCase):
         files = create_file_dictionary(aut_file=REGS[3])
         result = get_response(post, files, False)
         self.assertTrue(result['result'][:26], "NO, the language does not")
-    
+
         post = {"question": "1", "property_type": "1", "fixed_type": "3"} # BIFIX
         files = create_file_dictionary(aut_file=REGS[3])
         result = get_response(post, files, False)

@@ -49,9 +49,9 @@ def create_file_dictionary(aut_file=None, trans_file=None, theta_file=None):
         output['transducer_file'] = SimpleUploadedFile(trans.name, str.encode(trans.read(), encoding="utf-8"))
     if theta is not None:
         output['theta_file'] = SimpleUploadedFile(theta.name, str.encode(theta.read(), encoding="utf-8"))
-        
+
     return output
-    
+
 def exec_program(post, files):
     generated = "".join(get_code(post, files, None, True, None))
     if type(generated) == dict: #if there is a form error message, the return type is a dict
@@ -60,8 +60,8 @@ def exec_program(post, files):
     execvars = {}
     exec(prog, execvars, execvars) #may also raise an exception
     return execvars
-    
-    
+
+
 
 def readfile(file_):
     """Return the contents of a file"""
@@ -78,7 +78,7 @@ def make_prog(lines, request):
     plines = generate_program_file(lines, None, request, test=True).split("\n")
     len_ = len(plines)
     prog = ''
-    #remove all "input" and "print" statements so that generated programs can 
+    #remove all "input" and "print" statements so that generated programs can
     #be automatically tested
     for i in range(len_):
         if plines[i].find("input(") != -1:

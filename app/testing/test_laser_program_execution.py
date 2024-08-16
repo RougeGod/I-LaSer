@@ -437,7 +437,7 @@ class MyTestCase(TestCase):
         files = create_file_dictionary(aut_file=REGS[0], trans_file=TRAJ_NAMES[0])
         result = get_response(post, files, False)
         self.assertTrue(result.get('result'))
-        
+
         files = create_file_dictionary(aut_file=REGS[0], trans_file=TRAJ_NAMES[0])
         aut_str = bytes.decode(files['automata_file'].read(), encoding="utf-8") #these must always be strings not files
         t_str = bytes.decode(files['transducer_file'].read(), encoding="utf-8")
