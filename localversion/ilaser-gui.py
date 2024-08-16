@@ -11,6 +11,7 @@ class ResultFrame(ttk.Frame):
 
     def __init__(self, parent, row):
         self.styling = ttk.Style()
+        #when the result is an error, set the background of the text as well as the rest of the frame to be light red. 
         self.styling.configure("Error.TFrame", background=LIGHTRED)
         self.styling.configure("Error.TLabel", background=LIGHTRED)
 
@@ -33,16 +34,16 @@ class ResultFrame(ttk.Frame):
             self.resultFrame["style"] = 'TFrame' #remove all errors
             self.resultLabel["style"] = "TLabel"
             self.result.set(result)
-        elif (result.get('error_message')):
+        elif (result.get('error_message')): #some kind of error, display it and turn the box red
             self.result.set(result["error_message"])     
             self.resultFrame["style"] = "Error.TFrame"
             self.resultLabel["style"] = "Error.TLabel"
             self.resultLabel.text = result
-        elif (result.get("result")):
+        elif (result.get("result")): #no error, regular result, remove red colouring
             self.resultFrame["style"] = 'TFrame' #default TFrame
             self.resultLabel["style"] = "TLabel"
             if (result.get("proof")):
-                self.result.set(result["result"] + "\n" + result["proof"])
+                self.result.set(result["result"] + "\n" + result["proof"]) #if there is a counterexample, also show that
             else:
                 self.result.set(result.get("result"))
         self.show()
@@ -54,17 +55,19 @@ class QuestionFrame(ttk.Frame):
     def __init__(self, root, row, question, questionChangeFunc):
         self.questionVar = question
         self.questionReact = questionChangeFunc
-        self.questionVar.trace_add("write", self.questionReact)        
+        #these functions are passed in from the main window because they need to impact other frames
+        self.questionVar.trace_add("write", self.questionReact)       
+        #when the question is changed, run the reaction function (declared in MainApplication) 
         
         self.questionFrame = ttk.Frame(root, borderwidth=2, relief="solid")
-        self.questionFrame.grid(column=0, row=row, sticky="NEW") #result is above it, though if result doesn't exist, it doesn't take up space
+        self.questionFrame.grid(column=0, row=row, sticky="NEW") #result is above it, though if result doesn't exist, it won't take up space
         self.questionFrame.columnconfigure(0, weight=1)
         questionLabel = ttk.Label(self.questionFrame, text="What question would you like to solve?")
         questionLabel.grid(row=0, column=0)
         self.questionPicker = ttk.Combobox(self.questionFrame, justify="center", textvariable=self.questionVar)
-        self.questionPicker['state'] = 'readonly'
+        self.questionPicker['state'] = 'readonly' #user cannot type their own question names
         self.questionPicker['values'] = self.choices
-        self.questionPicker.current(newindex=0)
+        self.questionPicker.current(newindex=0) #when first initialized, question is "please select"
         self.questionPicker.grid(row=1, column=0)
 
     def getQuestionNumber(self):
@@ -96,7 +99,8 @@ class LargeEntryFrame(ttk.Frame):
 
   def validate(self, *uselessArgs):
     self.userinput.edit_modified(False) #clear the modified flag so it can fire again
-    if self.get_data() == self.BAD_FILE_ERROR:
+    if self.get_data() == self.BAD_FILE_ERROR: #hacky solution to turn the box red on bad file input
+        #the user can just type "Error: Not a text file." and turn the box red.
         self.userinput["bg"] = LIGHTRED
         return False
     for pattern in self.validation: 
@@ -126,6 +130,7 @@ class LargeEntryFrame(ttk.Frame):
         self.userinput.insert(1.0, self.BAD_FILE_ERROR)
 
   def __init__(self, root, row, file_request_text, file_button_text, textbox_label, validation_regex):
+    #the visual components common to the large entry frames
     self.validation = validation_regex
     self.aut_frame = ttk.Frame(root, relief="solid", borderwidth=2)
     self.aut_frame.grid(column=0, row=row, sticky=(EW))
@@ -137,7 +142,8 @@ class LargeEntryFrame(ttk.Frame):
     self.userinput["bg"] = "white"
     self.userinput["fg"] = "black"
     self.userinput.grid(column=1, row=1)
-    self.userinput.bind("<<Modified>>", self.validate)
+    self.userinput.bind("<<Modified>>", self.validate) 
+    #validate every time textbox contents are changed. This may fire multiple times per modification
 
   def hide(self):
         self.aut_frame.grid_remove()
@@ -179,7 +185,7 @@ class ThetaFrame(LargeEntryFrame):
         super().__init__(root, row, "Choose a Theta File", "Select Theta File", "Or enter an antimorphism here", (self.THETA_PATTERN,))
         #THETA_PATTERN must be in an iterable, even though there's only one pattern, because LargeEntryFrame wants an iterable.
 
-    #@Override
+    #Override. Probably not necessary
     def show(self):
         super().show(self)
 
@@ -200,6 +206,7 @@ class ConstructionFrame(ttk.Frame):
     self.n_int.trace_add("write", self.validate)
     self.l_int = StringVar(value="")
     self.l_int.trace_add("write", self.validate)
+    #validate every time construction inputs are changed (validates all 3 every time)
     self.constructionFrame = ttk.Frame(root, relief="solid", borderwidth=2)
     self.constructionFrame.grid(column=0, row=row, sticky=(EW))
     self.constructionFrame.columnconfigure(0, weight=1)
@@ -277,8 +284,8 @@ class ApproximationFrame(ttk.Frame): #should have made ApproximationFrame and Co
         self.styling.configure("Valid.TEntry", fieldbackground=LIGHTGREEN)
         self.styling.configure("Invalid.TEntry", fieldbackground="white")
 
-        self.epsi_value= StringVar(value="0.01")
-        self.epsi_value.trace_add("write", self.validate)
+        self.epsi_value= StringVar(value="0.01") #initial eps value of 0.01
+        self.epsi_value.trace_add("write", self.validate) #again validates all three fields when one is changed
 
         self.t_value = StringVar(value="2.001")
         self.t_value.trace_add("write", self.validate)
@@ -345,6 +352,8 @@ class PropertySelectorFrame(ttk.Frame):
 
         self.propertyVar = property
         self.propChanger = propertyChangeFunc
+        #similarly to the question frame, these two both come from MainApplication and need to 
+        #impact the rest of the frames, when property type is modified
         self.propertyVar.trace_add("write", self.propChanger)
 
         self.propertyFrame = ttk.Frame(root, relief="solid", borderwidth=2)
@@ -362,7 +371,8 @@ class PropertySelectorFrame(ttk.Frame):
         if (question == 1):
             self.propertyPicker["values"] = self.choices
         elif (question == 2):
-            if (self.getProperty() == 5):
+            if (self.getProperty() == 5): #combination of question 2, property type 5 is not allowed, so 
+            #if this is selected, reset the property and don't let user continue.
                 self.resetProperty()
             self.propertyPicker["values"] = self.choices[0:5]
         elif (question == 3):
@@ -373,7 +383,7 @@ class PropertySelectorFrame(ttk.Frame):
             if (self.getProperty() == 5):
                 self.resetProperty()
             self.propertyPicker["values"] = self.choices[0:5]
-        elif (question == 0):
+        elif (question == 0): #make the user select a question before the property
             self.hide()
 
     def getProperty(self):
@@ -607,9 +617,6 @@ class MainApplication(Tk):
                 self.Result.setResult("Result has been written to " + fileName)
         except:
             self.Result.setResult({"error_message": "File could not be written to."})
-    
-    def wordsToCreate(self, data):
-        return min(data["n_int"], data["s_int"] ** data["l_int"])
       
     def collect_data(self, toFile=False):
         data = {}
@@ -771,7 +778,7 @@ class MainApplication(Tk):
 if __name__ ==  '__main__':
     try:
         window = MainApplication()
-        window.resizable(width=False, height=False)
+        window.resizable(width=False, height=False) #the program may resize its own window, but not the user
         window.mainloop() #open the actual GUI window and start responding to inputs
     except SystemExit as ex:
         print("Fatal error: " + ex)

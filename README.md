@@ -11,6 +11,7 @@ It can compute the edit distance of L, as well as some other examples.
 ```
 app/
   templates/ - contains html templates for the given pages of LaSer
+    tabs/ - contains static HTML files corresponding to the non-interactive pieces of the website
   testing/ - contains tests and test files for LaSer Unit Testing
   transducer/ - contains the bulk of the site, including the views and handlers that integrate with FAdo.
 laser/ - contains configuration files for the server.
@@ -29,25 +30,17 @@ Contains the interface between the django frontend and the actual logic behind L
 `
 ### `app/transducer/handlers.py`
 
-Contains the methods that handle `get_response` - that is, the code that parses the user's input into automata, both the language and the property (Unless it's a fixed property). The methods are:
+Contains the methods that handle `get_response` - that is, the code that parses the user's input choices into automata. Importnatn methods in handlers.py include: 
 
 - `handle_construction`
 - `handle_iap`
 - `handle_ipp`
-- `handle_satisfaction_maximality`
 - `handle_approximate_maximality`
 
-All four of these methods support many ways to pass in the language and property:
-
-- Two separate files, one with the language as an automata and one with the property.
-- Two separate textareas, one with the language as an automata and one with the property.
-- A mix of any of the above
-- Everything in a single file - In the format property, then language.
-- Everything in a single textarea - In the format property, then language.
 
 #### `handle_construction`
 
-this method, as expected, handles language construction. It can handle fixed properties within it's own method - however, it uses two other methods, `handle_iap` and `handle_ipp` to handle more complex properties.
+This method handles language construction. It can handle fixed properties on its own. It uses two other methods, `handle_iap` and `handle_ipp` to handle more complex properties.
 
 #### `handle_iap`
 
@@ -55,7 +48,7 @@ this method, as expected, handles language construction. It can handle fixed pro
 
 #### `handle_ipp`
 
-`handle_ipp` is the method that handles language construction for input-preserving properties. If the calcultion is too large for the server to handle, it fails and alerts the user t generate the necessary python code to run it.
+`handle_ipp` is the method that handles language construction for input-preserving properties. If the calculation is too large for the server to handle, it fails and generates the necessary Python 3 code for the user to run
 
 #### `handle_satisfaction_maximality`
 
@@ -66,29 +59,6 @@ this method, as expected, handles language construction. It can handle fixed pro
 This file handles code generation for when the user wants to run the python program on their local machine instead of through the website. this is required if the question that is being asked is too computationally expensive to run.
 
 It contains methods that are used to generate the code for the local running of a question.
-
-## Single File Format
-
-This format can be followed in either an uploaded file, or the first textarea. This does not support theta-transducer properties, wue to the extra complexity of the theta-transducer properties.
-
-```
-# I = Input
-# P = Property
-# L = Language
-# F = Fixed
-# T = Type
-# D = Description
-# L = Language
-
-I -> PL|P
-P -> F|TD
-F -> @PREFIX|@SUFFIX|...
-T -> @ErrorDetection|@InputAltering|.....
-D -> @Transducer....|Trajectory
-L -> @DFA|@NFA|@REGEX
-
-Add language and property below result
-```
 
 ## Running Unit Tests
 
